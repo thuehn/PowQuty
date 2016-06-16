@@ -14,13 +14,13 @@ PKG_LICENSE_FILES:=LICENSE
 
 include $(INCLUDE_DIR)/package.mk
 
-define Package/dynapoint
+define Package/powquty
     SECTION:=utils
     CATEGORY:=Utilities
     TITLE:=Power Quality utility ...
 endef
 
-define Package/dynapoint/description
+define Package/powquty/description
         Here goes the description of the powquty library \\\
         the description will be here \\\\
 endef
@@ -30,9 +30,7 @@ define Build/Compile
 	true
 endef
 
-define Package/dynapoint/install
+define Package/powquty/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/powqutyd $(1)/bin/
-endef
-
-$(eval $(call BuildPackage,powquty))
+endef$(eval $(call BuildPackage,powquty))
