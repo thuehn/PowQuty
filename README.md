@@ -18,7 +18,7 @@ Sustainable energy production and consumption are crucial for a prospering life 
 
 ### How to use PowQuty ?
 
-TBD.
+TBD..
 
 ### How ti install PowQuty ?
 
