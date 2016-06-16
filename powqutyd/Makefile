@@ -25,6 +25,11 @@ define Package/powquty/description
         the description will be here \\\\
 endef
 
+define Build/Prepare
+	mkdir -p $(PKG_BUILD_DIR)
+	cp -r ./files/. $(PKG_BUILD_DIR)/.
+endef
+
 
 define Build/Compile
 	true
