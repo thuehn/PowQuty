@@ -33,4 +33,6 @@ endef
 define Package/powquty/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/powqutyd $(1)/bin/
-endef$(eval $(call BuildPackage,powquty))
+endef
+
+$(eval $(call BuildPackage,powquty))
