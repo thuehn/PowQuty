@@ -7,25 +7,37 @@ CFLAGS+=-I./lib/ -I. -I./include/
 LD_LIBS+= ./lib/libpqlib.a		## this did work 
 #LD_LIBS+=-lpqlib.a
 LD_LIBS+=-lm
+LD_LIBS+=-lmosquitto
+LD_LIBS+=-lpthread
 #LDFLAGS+=-static 
 #LD_PATH+=-L../
 #LD_PATH+=-L.
 OBJS= src/emulator.o \
+	src/mqtt.o \
 	src/main.o
+
+MQTT_OBJS= src/mqtt.o \
+	test/mqtt_test.o 
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 powqutyd: $(OBJS) 
+	$(CC) -o $@ $^ $(CFLAGS) $(LD_PATH) $(LDFLAGS) $(LD_LIBS)
 #	$(LD) $(LD_PATH) $(LDFLAGS) -o $@ $(LD_LIBS)
+
+mqtt_test: $(MQTT_OBJS)
 	$(CC) -o $@ $^ $(CFLAGS) $(LD_PATH) $(LDFLAGS) $(LD_LIBS)
 
 
 TARGETS=powqutyd
 
+TEST_TARGETS=mqtt_test
+
 all: $(TARGETS)
 
 clean:
-	rm -f *.o src/*.o 
+	rm -f *.o src/*.o test/*.o
 	rm -f $(TARGETS)
+	rm -f $(TEST_TARGETS)
 	rm -f *.txt
