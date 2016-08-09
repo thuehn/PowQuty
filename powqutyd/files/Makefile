@@ -9,15 +9,20 @@ LD_LIBS+= ./lib/libpqlib.a		## this did work
 LD_LIBS+=-lm
 LD_LIBS+=-lmosquitto
 LD_LIBS+=-lpthread
+LD_LIBS+=-lusb-1.0
+
 #LDFLAGS+=-static 
 #LD_PATH+=-L../
 #LD_PATH+=-L.
+
 OBJS= src/emulator.o \
 	src/mqtt.o \
 	src/main.o
 
 MQTT_OBJS= src/mqtt.o \
 	test/mqtt_test.o 
+
+USB_TEST_OBJS= test/usb_test.o
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS)
@@ -29,10 +34,13 @@ powqutyd: $(OBJS)
 mqtt_test: $(MQTT_OBJS)
 	$(CC) -o $@ $^ $(CFLAGS) $(LD_PATH) $(LDFLAGS) $(LD_LIBS)
 
+usb_test: $(USB_TEST_OBJS)
+	$(CC) -o $@ $^ $(CFLAGS) $(LD_PATH) $(LDFLAGS) $(LD_LIBS)
+
 
 TARGETS=powqutyd
 
-TEST_TARGETS=mqtt_test
+TEST_TARGETS=mqtt_test usb_test
 
 all: $(TARGETS)
 
