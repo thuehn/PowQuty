@@ -18,6 +18,7 @@ static const char* payload= "Test_Message";
 
 void stop_mosquitto(){
 	mosquitto_loop_stop = 1;
+	pthread_join(mosquitto_thread, NULL);
 }
 
 void connect_callback(void* obj, int res)
