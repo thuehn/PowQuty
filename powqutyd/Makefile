@@ -30,7 +30,6 @@ define Build/Prepare
 	cp -r ./files/. $(PKG_BUILD_DIR)/.
 endef
 
-
 define Build/Compile
 	true
 endef
