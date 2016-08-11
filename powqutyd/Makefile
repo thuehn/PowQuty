@@ -28,10 +28,10 @@ define Package/powquty/description
 	provide the PQ statistics via MQTT.
 endef
 
-#define Build/Prepare
-#	mkdir -p $(PKG_BUILD_DIR)
-#	cp -r ./files/. $(PKG_BUILD_DIR)/.
-#endef
+define Build/Prepare
+	mkdir -p $(PKG_BUILD_DIR)
+	cp -r ./files/. $(PKG_BUILD_DIR)/.
+endef
 
 define Build/Compile
 	true
@@ -39,7 +39,7 @@ endef
 
 define Package/powquty/install
 #	$(INSTALL_DIR) $(1)/usr/sbin
-#	$(INSTALL_BIN) $(PKG_BUILD_DIR)/powqutyd $(1)/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/powqutyd $(1)/bin/
 endef
 
 $(eval $(call BuildPackage,powquty))
