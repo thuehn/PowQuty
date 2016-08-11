@@ -22,9 +22,9 @@
 #define SAMPLES_PER_BLOCK	2048
 #define FRAMES_PER_BLOCK	(SAMPLES_PER_BLOCK / SAMPLES_PER_FRAME)	// 32
 #define NUMBER_OF_BLOCKS_IN_BUFFER	5
-#define BLOCK_BUFFER_SIZE	NUMBER_OF_BLOCKS_IN_BUFFER*SAMPLES_PER_BLOCK	// 4*2048 = 8096
-#define TS_BUFFER_SIZE	NUMBER_OF_BLOCKS_IN_BUFFER*FRAMES_PER_BLOCK			// 4*32 = 128
-#define FRAMES_IN_BLOCK_BUFFER NUMBER_OF_BLOCKS_IN_BUFFER*FRAMES_PER_BLOCK	// 4*32 = 128
+#define BLOCK_BUFFER_SIZE	NUMBER_OF_BLOCKS_IN_BUFFER*SAMPLES_PER_BLOCK	// 5*2048 = 10240
+#define TS_BUFFER_SIZE	NUMBER_OF_BLOCKS_IN_BUFFER*FRAMES_PER_BLOCK			// 5*32 = 160
+#define FRAMES_IN_BLOCK_BUFFER NUMBER_OF_BLOCKS_IN_BUFFER*FRAMES_PER_BLOCK	// 5*32 = 160
 
 long long get_curr_time_in_milliseconds();
 int serial_port_open(const char* device);
@@ -60,6 +60,13 @@ static volatile unsigned int stored_frame_idx = 0;
 
 unsigned char *current_frame;
 
+
+float get_hw_offset() {return device_offset;}
+
+float get_hw_scaling() {return device_scaling_factor;}
+
+
+
 void handle_other_message(int read_size) {
 	// currently irrelevant
 }
@@ -86,12 +93,11 @@ void handle_data_message(int read_size) {
 		// new Frame
 		// update last_idx
 		last_frame_idx = curr_idx;
-		printf("%d ",curr_idx);
+		//printf("%d ",curr_idx);
 
 		// Store the frame
 		// TODO
 		// update stored frame idx
-		// stored_frame_idx = (stored_frame_idx + 1) % (unsigned int)BLOCK_BUFFER_SIZE;
 		stored_frame_idx++;
 		stored_frame_idx%=FRAMES_IN_BLOCK_BUFFER;
 
@@ -100,7 +106,8 @@ void handle_data_message(int read_size) {
 
 		if(stored_frame_idx%FRAMES_PER_BLOCK == 0) {
 			// apply PQ-lib
-			printf("\n--->%d\n", stored_frame_idx);
+			// printf("\n--->%d\n", stored_frame_idx);
+			do_calculation(stored_frame_idx);
 		}
 
 	}

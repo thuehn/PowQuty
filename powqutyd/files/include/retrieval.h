@@ -19,4 +19,8 @@ int retrieval_init(const char* tty_device);
  */
 void stop_retrieval();
 
+float get_hw_offset();
+
+float get_hw_scaling();
+
 #endif /* RETRIEVAL_H_ */
