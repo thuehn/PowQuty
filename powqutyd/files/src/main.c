@@ -18,6 +18,7 @@ void handle_signal()
 	stop_mosquitto();
 	stop_calculation();
 	stop_main = 1;
+	publish_device_offline();
 }
 
 
@@ -36,6 +37,7 @@ int main (int argc, char *argv[]) {
 
 	if(!calculation_init()) {
 		printf("Calculation Thread started\n");
+		publish_device_online();
 	}
 
 	while (!stop_main){

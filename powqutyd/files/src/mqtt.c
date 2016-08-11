@@ -10,11 +10,13 @@
 #include <string.h>
 #include <mosquitto.h>
 #include <pthread.h>
+#include "retrieval.h"
 
+void mqtt_publish_payload();
 static void *mosquitto_thread_main(void* param);
 static pthread_t mosquitto_thread;
 
-static const char* payload= "Test_Message";
+static char payload[MAX_MQTT_MSG_LEN];
 
 void stop_mosquitto(){
 	mosquitto_loop_stop = 1;
@@ -58,15 +60,60 @@ int mqtt_init () {
 	return res;
 }
 
+void publish_device_offline() {
+	payload[0] = '\0';
+	long long ts = get_curr_time_in_milliseconds();
+	sprintf(payload,"%s,%lld,0",dev_uuid,ts);
+	mqtt_publish_payload();
+}
+
+void publish_device_online() {
+	payload[0] = '\0';
+	long long ts = get_curr_time_in_milliseconds();
+	sprintf(payload,
+			"%s,%lld,1,%s,%s,%s",
+			dev_uuid,
+			ts,
+			dev_FW_ver,
+			dev_APP_ver,
+			dev_HW_ver);
+	mqtt_publish_payload();
+}
+
+void publish_measurements(PQResult pqResult) {
+	payload[0] = '\0';
+	long long ts = get_curr_time_in_milliseconds();
+	sprintf(payload,
+			"%s,%lld,3,%.f,%.f,%.f,%.f,%.f,%.f,%.f,%.f,%.f",
+			dev_uuid,
+			ts,
+			pqResult.PowerVoltageEff_5060T,
+			pqResult.PowerFrequency5060T,
+			pqResult.Harmonics[0],
+			pqResult.Harmonics[1],
+			pqResult.Harmonics[2],
+			pqResult.Harmonics[3],
+			pqResult.Harmonics[4],
+			pqResult.Harmonics[5],
+			pqResult.Harmonics[6] );
+	mqtt_publish_payload();
+}
+void mqtt_publish_payload() {
+	printf("%s\n",payload);
+	// TODO lock Mutex
+	publish_msg = 1;
+}
+
 void mqtt_publish_msg(const char* msg) {
 	// TODO lock Mutex
-	payload = msg;
+	payload[0] = '\0';
+	sprintf(payload,"%s",msg);
 	publish_msg = 1;
 }
 
 int mqtt_publish(struct mosquitto *mosq, const char* msg ) {
 	uint32_t len = (uint32_t)strlen(msg);
-	return mosquitto_publish(mosq, NULL, topic,len, (const uint8_t *)msg, 0, false);
+	return mosquitto_publish(mosq, NULL, mqtt_topic,len, (const uint8_t *)msg, 0, false);
 }
 
 static void *mosquitto_thread_main(void* param) {

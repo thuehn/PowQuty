@@ -19,7 +19,6 @@
 #include "calculation.h"
 
 
-long long get_curr_time_in_milliseconds();
 int serial_port_open(const char* device);
 static void *reading_thread_run(void* param);
 

@@ -15,6 +15,7 @@
 #include "retrieval.h"
 #include <string.h>
 #include <stdlib.h>
+#include "mqtt.h"
 
 
 pPQInstance pPQInst = NULL;
@@ -108,7 +109,10 @@ static void *calculation_thread_run(void* param) {
 				printf("Error applying PQ-Lib\n");
 				break;
 			}
-			print_results();
+			// print_results();
+			if(pqResult.HarmonicsExist) {
+				publish_measurements(pqResult);
+			}
 			data_ready=0;
 		}
 	}

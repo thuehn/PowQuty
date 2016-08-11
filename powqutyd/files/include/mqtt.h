@@ -8,11 +8,20 @@
 #ifndef MQTT_H_
 #define MQTT_H_
 
+#include "PQ_App.h"
+
+#define MAX_MQTT_MSG_LEN		100
 
 static volatile int mosquitto_loop_stop = 0, publish_msg=0;
+
 
 void stop_mosquitto();
 int mqtt_init();
 void mqtt_publish_msg(const char* msg);
+
+
+void publish_device_offline();
+void publish_device_online();
+void publish_measurements(PQResult pqResult) ;
 
 #endif /* MQTT_H_ */
