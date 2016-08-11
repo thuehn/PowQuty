@@ -16,15 +16,8 @@
 #include <string.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include "calculation.h"
 
-#define MAX_FRAME_SIZE		160
-#define SAMPLES_PER_FRAME	64
-#define SAMPLES_PER_BLOCK	2048
-#define FRAMES_PER_BLOCK	(SAMPLES_PER_BLOCK / SAMPLES_PER_FRAME)	// 32
-#define NUMBER_OF_BLOCKS_IN_BUFFER	5
-#define BLOCK_BUFFER_SIZE	NUMBER_OF_BLOCKS_IN_BUFFER*SAMPLES_PER_BLOCK	// 5*2048 = 10240
-#define TS_BUFFER_SIZE	NUMBER_OF_BLOCKS_IN_BUFFER*FRAMES_PER_BLOCK			// 5*32 = 160
-#define FRAMES_IN_BLOCK_BUFFER NUMBER_OF_BLOCKS_IN_BUFFER*FRAMES_PER_BLOCK	// 5*32 = 160
 
 long long get_curr_time_in_milliseconds();
 int serial_port_open(const char* device);
@@ -39,6 +32,7 @@ int start_sampling();
 int stop_sampling();
 
 void print_received_buffer(unsigned char* buf, int len);
+void print_data(unsigned char* buf);
 float get_float_val(unsigned char* buf);
 unsigned short get_unsigned_short_val(unsigned char* buf);
 
@@ -93,16 +87,16 @@ void handle_data_message(int read_size) {
 		// new Frame
 		// update last_idx
 		last_frame_idx = curr_idx;
-		//printf("%d ",curr_idx);
 
-		// Store the frame
-		// TODO
-		// update stored frame idx
+		//printf("%d ",curr_idx);
+		//print_data(current_frame+6);
+
+		// Store the frame and the TS for the frame
+		store_data(current_frame+6, stored_frame_idx, current_time);
+
+		// update stored frame idx and stored TS idx (same)
 		stored_frame_idx++;
 		stored_frame_idx%=FRAMES_IN_BLOCK_BUFFER;
-
-		// Store the TS for the frame TODO
-		// update stored TS idx TODO
 
 		if(stored_frame_idx%FRAMES_PER_BLOCK == 0) {
 			// apply PQ-lib
@@ -159,6 +153,15 @@ void print_received_buffer(unsigned char* buf, int len) {
 	}
 }
 
+void print_data(unsigned char* buf){
+	int i = 0;
+	while(i<128) {
+		printf("%d ", get_short_val(buf+i) );
+		i+=2;
+	}
+	printf("\n");
+}
+
 float get_float_val(unsigned char* buf) {
 	float res=0.0;
 	//* ((unsigned char *)&x+0 )= buf[3];
@@ -177,6 +180,10 @@ float get_float_val(unsigned char* buf) {
 unsigned short get_unsigned_short_val(unsigned char* buf) {
 	unsigned char c0= buf[0], c1= buf[1];
 	return (unsigned short) (c1<<8 | c0);
+}
+short get_short_val(unsigned char* buf) {
+	unsigned char c0= buf[0], c1= buf[1];
+	return (short) (c1<<8 | c0);
 }
 
 long long get_curr_time_in_milliseconds() {

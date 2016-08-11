@@ -20,4 +20,6 @@ void stop_calculation();
 
 void do_calculation(unsigned int stored_frame_idx);
 
+void store_data(unsigned char * buf, unsigned int stored_frame_idx, long long ts);
+
 #endif /* CALCULATION_H_ */

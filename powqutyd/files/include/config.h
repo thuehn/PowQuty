@@ -13,6 +13,6 @@
 
 static const char* topic = "devices/update";
 
-static const char* device_tty = "/dev/ttyACM4";
+static const char* device_tty = "/dev/ttyACM3";
 
 #endif /* CONFIG_H_ */
