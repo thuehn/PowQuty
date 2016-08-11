@@ -18,6 +18,7 @@ LD_LIBS+=-lusb-1.0
 
 OBJS= src/emulator.o \
 	src/mqtt.o \
+	src/retrieval.o \
 	src/main.o
 
 MQTT_OBJS= src/mqtt.o \
