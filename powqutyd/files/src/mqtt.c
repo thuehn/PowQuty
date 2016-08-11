@@ -23,7 +23,7 @@ void stop_mosquitto(){
 
 void connect_callback(void* obj, int res)
 {
-	printf("connect callback, rc=%d\n", res);
+	// printf("connect callback, rc=%d\n", res);
 }
 
 void publish_callback(void* obj, uint16_t res) {
