@@ -45,7 +45,9 @@ usb_test: $(USB_TEST_OBJS)
 vserial_test: $(VSERIAL_TEST_OBJS)
 	$(CC) -o $@ $^ $(CFLAGS) $(LD_PATH) $(LDFLAGS) $(LD_LIBS)
 
+install: all
 
+compile: all
 
 TARGETS=powqutyd
 
