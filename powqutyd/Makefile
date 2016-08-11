@@ -17,12 +17,15 @@ include $(INCLUDE_DIR)/package.mk
 define Package/powquty
     SECTION:=utils
     CATEGORY:=Utilities
-    TITLE:=Power Quality utility ...
+    MAINTAINER:=El Sayed
+    TITLE:=Power quality measurement and analyzer toolset
 endef
 
 define Package/powquty/description
-        Here goes the description of the powquty library \\\
-        the description will be here \\\\
+	Powqty allows to connect to a USB oszilloscope, collect cyclic voltage
+	samples, analysze typical power quality key performance indicator (e.g.:
+	RMS voltage, undervoltages, overvoltages, voltage flicker, ect.) and
+	provide the PQ statistics via MQTT.
 endef
 
 #define Build/Prepare
