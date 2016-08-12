@@ -37,7 +37,7 @@ define Package/powqutyd/install
 	echo "############################## Install  powqutyd  #######################"
 	pwd
 	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/powqutyd $(1)/usr/sbin/
+	$(INSTALL_BIN) ./files/powqutyd $(1)/usr/sbin/
 endef
 
 $(eval $(call BuildPackage,powqutyd))
