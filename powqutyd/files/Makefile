@@ -10,7 +10,7 @@ LD_LIBS+=-lm
 LD_LIBS+=-lmosquitto
 LD_LIBS+=-lpthread
 #LD_LIBS+=-lusb
-LD_LIBS+=-lusb-1.0
+#LD_LIBS+=-lusb-1.0
 
 #LDFLAGS+=-static 
 #LD_PATH+=-L../
