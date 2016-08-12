@@ -36,6 +36,7 @@ endef
 
 define Build/Compile
 	echo "\n\n ######## Compiling powqutyd  ########"
+	$(MAKE)
 	true
 endef
 
