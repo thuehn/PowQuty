@@ -31,7 +31,8 @@ endef
 
 define Build/Compile
 	echo "############################## Compile  powqutyd  #######################"
-	$(MAKE) -C files
+	$(call Build/Compile/Default,all)
+	#$(MAKE) -C files
 endef
 
 define Package/powqutyd/install
