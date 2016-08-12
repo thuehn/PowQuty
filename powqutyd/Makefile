@@ -14,14 +14,14 @@ PKG_LICENSE_FILES:=LICENSE
 
 include $(INCLUDE_DIR)/package.mk
 
-define Package/powquty
+define Package/powqutyd
     SECTION:=utils
     CATEGORY:=Utilities
     MAINTAINER:=El Sayed
     TITLE:=Power quality measurement and analyzer toolset
 endef
 
-define Package/powquty/description
+define Package/powqutyd/description
 	Powqty allows to connect to a USB oszilloscope, collect cyclic voltage
 	samples, analysze typical power quality key performance indicator (e.g.:
 	RMS voltage, undervoltages, overvoltages, voltage flicker, ect.) and
@@ -34,12 +34,13 @@ define Build/Prepare
 endef
 
 define Build/Compile
+	echo "\n\n ######## Compiling powqutyd  ########"
 	true
 endef
 
-define Package/powquty/install
+define Package/powqutyd/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/powqutyd $(1)/usr/sbin/
 endef
 
-$(eval $(call BuildPackage,powquty))
+$(eval $(call BuildPackage,powqutyd))
