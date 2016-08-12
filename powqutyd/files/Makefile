@@ -33,6 +33,13 @@ VSERIAL_TEST_OBJS= test/vserial_test.o
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 powqutyd: $(OBJS) 
+	@echo ""
+	@echo ""
+	@echo ""
+	@echo "############################## Building powqutyd #########################"
+	@echo ""
+	@echo ""
+	@echo ""
 	$(CC) -o $@ $^ $(CFLAGS) $(LD_PATH) $(LDFLAGS) $(LD_LIBS)
 #	$(LD) $(LD_PATH) $(LDFLAGS) -o $@ $(LD_LIBS)
 
@@ -45,11 +52,9 @@ usb_test: $(USB_TEST_OBJS)
 vserial_test: $(VSERIAL_TEST_OBJS)
 	$(CC) -o $@ $^ $(CFLAGS) $(LD_PATH) $(LDFLAGS) $(LD_LIBS)
 
-install: all
-
-compile: all
 
 TARGETS=powqutyd
+
 
 TEST_TARGETS=mqtt_test usb_test vserial_test
 

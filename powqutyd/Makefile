@@ -33,6 +33,7 @@ define Build/Prepare
 	@echo ""
 	@echo ""
 	@echo "############################## Prepare  powqutyd  with @ #######################"
+	@echo ""
 	mkdir -p $(PKG_BUILD_DIR)
 	cp -r ./files/. $(PKG_BUILD_DIR)/.
 	@echo ""
@@ -44,6 +45,7 @@ define Build/Compile
 	@echo ""
 	@echo ""
 	@echo "############################## Compile  powqutyd  #######################"
+	@echo ""
 	$(call Build/Compile/Default,all)
 	#$(MAKE) -C files
 	@echo ""
@@ -56,6 +58,7 @@ define Package/powqutyd/install
 	@echo ""
 	@echo "############################## Install  powqutyd  #######################"
 	@echo $(PKG_BUILD_DIR)
+	@echo ""
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/files/powqutyd $(1)/usr/sbin/
 	@echo ""
