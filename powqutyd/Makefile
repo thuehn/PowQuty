@@ -36,8 +36,7 @@ endef
 
 define Build/Compile
 	echo "############################## Prepare  powqutyd  #######################"
-	MAKE_PATH=files
-	true
+	$(MAKE) -C files
 endef
 
 define Package/powqutyd/install
