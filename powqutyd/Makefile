@@ -29,6 +29,13 @@ define Package/powqutyd/description
 	provide the PQ statistics via MQTT.
 endef
 
+define Build/Prepare
+	echo "############################## Prepare  powqutyd  #######################"
+	@echo "############################## Prepare  powqutyd  with @ #######################"
+	mkdir -p $(PKG_BUILD_DIR)
+	cp -r ./files/. $(PKG_BUILD_DIR)/.
+endef
+
 define Build/Compile
 	echo "############################## Compile  powqutyd  #######################"
 	$(call Build/Compile/Default,all)
