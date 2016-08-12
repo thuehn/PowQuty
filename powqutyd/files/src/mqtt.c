@@ -35,6 +35,7 @@ void publish_callback(void* obj, unsigned short int res) {
 	// TODO unlock Mutex
 }
 
+/*
 void mqtt_message_print(struct mosquitto_message* msg) {
 	int i;
 	printf("MQTT-Msg: \n\tM-ID: %d\tTopic: %s\tQoS: %d",
@@ -54,6 +55,7 @@ void mqtt_message_print(struct mosquitto_message* msg) {
 		printf("\t--- No Payload ---\n");
 	}
 }
+*/
 
 int mqtt_init () {
 	int res = 0;
