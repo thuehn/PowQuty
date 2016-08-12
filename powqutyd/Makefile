@@ -17,10 +17,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/powqutyd
 	SECTION:=utils
 	CATEGORY:=Utilities
-	DEPENDS:=+libm
-	DEPENDS:=+libc
-	DEPENDS:=+libpthread
-	DEPENDS:=+libmosquitto
+	DEPENDS:=+libm +libc +libpthread +libmosquitto
 	MAINTAINER:=El Sayed
 	TITLE:=Power quality measurement and analyzer toolset
 endef
