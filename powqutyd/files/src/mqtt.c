@@ -12,6 +12,7 @@
 #include <pthread.h>
 #include "retrieval.h"
 
+void publish_callback(void* obj, uint16_t res);
 void mqtt_publish_payload();
 static void *mosquitto_thread_main(void* param);
 static pthread_t mosquitto_thread;
