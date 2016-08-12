@@ -29,6 +29,7 @@ define Package/powqutyd/description
 endef
 
 define Build/Prepare
+	echo "\n\n ######## Prepare  powqutyd  ########"
 	mkdir -p $(PKG_BUILD_DIR)
 	cp -r ./files/. $(PKG_BUILD_DIR)/.
 endef
