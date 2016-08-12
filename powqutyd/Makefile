@@ -35,7 +35,7 @@ define Build/Prepare
 endef
 
 define Build/Compile
-	echo "############################## Prepare  powqutyd  #######################"
+	echo "############################## Compile  powqutyd  #######################"
 	$(MAKE) -C files
 endef
 
