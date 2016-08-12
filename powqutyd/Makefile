@@ -30,23 +30,37 @@ define Package/powqutyd/description
 endef
 
 define Build/Prepare
-	echo "############################## Prepare  powqutyd  #######################"
+	@echo ""
+	@echo ""
 	@echo "############################## Prepare  powqutyd  with @ #######################"
 	mkdir -p $(PKG_BUILD_DIR)
 	cp -r ./files/. $(PKG_BUILD_DIR)/.
+	@echo ""
+	@echo "Done"
+	@echo ""
 endef
 
 define Build/Compile
-	echo "############################## Compile  powqutyd  #######################"
+	@echo ""
+	@echo ""
+	@echo "############################## Compile  powqutyd  #######################"
 	$(call Build/Compile/Default,all)
 	#$(MAKE) -C files
+	@echo ""
+	@echo "Done"
+	@echo ""
 endef
 
 define Package/powqutyd/install
-	echo "############################## Install  powqutyd  #######################"
-	pwd
+	@echo ""
+	@echo ""
+	@echo "############################## Install  powqutyd  #######################"
+	@echo $(PKG_BUILD_DIR)
 	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_BIN) ./files/powqutyd $(1)/usr/sbin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/files/powqutyd $(1)/usr/sbin/
+	@echo ""
+	@echo "Done"
+	@echo ""
 endef
 
 $(eval $(call BuildPackage,powqutyd))
