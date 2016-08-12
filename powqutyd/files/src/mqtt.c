@@ -12,7 +12,7 @@
 #include <pthread.h>
 #include "retrieval.h"
 
-void publish_callback(void* obj, uint16_t res);
+void publish_callback(void* obj, unsigned short int res);
 void mqtt_publish_payload();
 static void *mosquitto_thread_main(void* param);
 static pthread_t mosquitto_thread;
@@ -20,7 +20,7 @@ static pthread_t mosquitto_thread;
 static char payload[MAX_MQTT_MSG_LEN];
 
 void stop_mosquitto(){
-	mosquitto_loop_stop = 1;
+	mosquitto_thread_stop = 1;
 	pthread_join(mosquitto_thread, NULL);
 }
 
@@ -29,7 +29,7 @@ void connect_callback(void* obj, int res)
 	// printf("connect callback, rc=%d\n", res);
 }
 
-void publish_callback(void* obj, uint16_t res) {
+void publish_callback(void* obj, unsigned short int res) {
 	printf("publish callback, rp=%d\n", res);
 	publish_msg = 0;
 	// TODO unlock Mutex
@@ -113,8 +113,10 @@ void mqtt_publish_msg(const char* msg) {
 }
 
 int mqtt_publish(struct mosquitto *mosq, const char* msg ) {
-	uint32_t len = (uint32_t)strlen(msg);
-	return mosquitto_publish(mosq, NULL, mqtt_topic,len, (const uint8_t *)msg, 0, false);
+	int res;
+	unsigned int len = (unsigned int)strlen(msg);
+	res =  mosquitto_publish(mosq, NULL, mqtt_topic,len, (const unsigned char *)msg, 0, false);
+	return res;
 }
 
 static void *mosquitto_thread_main(void* param) {
@@ -135,7 +137,7 @@ static void *mosquitto_thread_main(void* param) {
 		mosquitto_connect_callback_set(mosq, connect_callback);
 		mosquitto_publish_callback_set(mosq, publish_callback);
 
-		while (!mosquitto_loop_stop) {
+		while (!mosquitto_thread_stop) {
 			mosq_loop = mosquitto_loop(mosq, 0);
 			if (mosq_loop) {
 				printf("Loop Failed: %d\t", mosq_loop);

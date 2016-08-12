@@ -12,7 +12,7 @@
 
 #define MAX_MQTT_MSG_LEN		100
 
-static volatile int mosquitto_loop_stop = 0, publish_msg=0;
+static volatile int mosquitto_thread_stop = 0, publish_msg=0;
 
 
 void stop_mosquitto();
