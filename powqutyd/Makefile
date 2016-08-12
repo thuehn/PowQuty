@@ -38,8 +38,8 @@ define Build/Compile
 endef
 
 define Package/powquty/install
-#	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/powqutyd $(1)/bin/
+	$(INSTALL_DIR) $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/powqutyd $(1)/usr/sbin/
 endef
 
 $(eval $(call BuildPackage,powquty))
