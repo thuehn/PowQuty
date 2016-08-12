@@ -15,10 +15,14 @@ PKG_LICENSE_FILES:=LICENSE
 include $(INCLUDE_DIR)/package.mk
 
 define Package/powqutyd
-    SECTION:=utils
-    CATEGORY:=Utilities
-    MAINTAINER:=El Sayed
-    TITLE:=Power quality measurement and analyzer toolset
+	SECTION:=utils
+	CATEGORY:=Utilities
+	DEPENDS:=+libm
+	DEPENDS:=+libc
+	DEPENDS:=+libpthread
+	DEPENDS:=+libmosquitto
+	MAINTAINER:=El Sayed
+	TITLE:=Power quality measurement and analyzer toolset
 endef
 
 define Package/powqutyd/description
