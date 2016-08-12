@@ -12,24 +12,26 @@
 #include <pthread.h>
 #include "retrieval.h"
 
-void publish_callback(void* obj, unsigned short int res);
+void publish_callback(struct mosquitto *mosq, void* obj, int res);
 void mqtt_publish_payload();
 static void *mosquitto_thread_main(void* param);
 static pthread_t mosquitto_thread;
 
 static char payload[MAX_MQTT_MSG_LEN];
 
+struct mosquitto *mosq;
+
 void stop_mosquitto(){
 	mosquitto_thread_stop = 1;
 	pthread_join(mosquitto_thread, NULL);
 }
 
-void connect_callback(void* obj, int res)
+void connect_callback(struct mosquitto *mosq, void* obj, int res)
 {
 	// printf("connect callback, rc=%d\n", res);
 }
 
-void publish_callback(void* obj, unsigned short int res) {
+void publish_callback(struct mosquitto *mosq, void* obj, int res) {
 	printf("publish callback, rp=%d\n", res);
 	publish_msg = 0;
 	// TODO unlock Mutex
@@ -124,15 +126,15 @@ int mqtt_publish(struct mosquitto *mosq, const char* msg ) {
 static void *mosquitto_thread_main(void* param) {
 	char buff[250];
 	char* clientid = "MQTT_Client";
-	struct mosquitto *mosq;
+
 	int mosq_loop= 0, rc = 0, pub_res = 0;
 	// char payload_msg[250] ="";
 
 	mosquitto_lib_init();
-	mosq = mosquitto_new(clientid, 0);
+	mosq = mosquitto_new(clientid, true, 0);
 
 	if(mosq){
-		rc = mosquitto_connect(mosq, mqtt_host, mqtt_port, 60, true);
+		rc = mosquitto_connect(mosq, mqtt_host, mqtt_port, 60);
 		if(rc != MOSQ_ERR_SUCCESS) {
 			printf("Error: mosquitto_connect\n");
 		}
@@ -140,7 +142,7 @@ static void *mosquitto_thread_main(void* param) {
 		mosquitto_publish_callback_set(mosq, publish_callback);
 
 		while (!mosquitto_thread_stop) {
-			mosq_loop = mosquitto_loop(mosq, 0);
+			mosq_loop = mosquitto_loop(mosq, 0, 1);
 			if (mosq_loop) {
 				printf("Loop Failed: %d\t", mosq_loop);
 				strerror_r(mosq_loop,buff,250);
