@@ -17,7 +17,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/powqutyd
 	SECTION:=utils
 	CATEGORY:=Utilities
-	DEPENDS:=+libm +libc +libpthread +libmosquitto
+	DEPENDS:=+libmosquitto +kmod-usb-acm
 	MAINTAINER:=El Sayed
 	TITLE:=Power quality measurement and analyzer toolset
 endef
@@ -32,7 +32,7 @@ endef
 define Build/Prepare
 	@echo ""
 	@echo ""
-	@echo "############################## Prepare  powqutyd  with @ #######################"
+	@echo "############################## Prepare  powqutyd  #######################"
 	@echo ""
 	mkdir -p $(PKG_BUILD_DIR)
 	cp -r ./files/. $(PKG_BUILD_DIR)/.
