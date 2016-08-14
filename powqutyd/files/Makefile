@@ -7,6 +7,8 @@ CFLAGS+=-I./lib/ -I. -I./include/
 LD_LIBS+= ./lib/libpqlib.a		## this did work 
 #LD_LIBS+=-lpqlib.a
 LD_LIBS+=-lm
+LD_LIBS+=-lconfig
+
 LD_LIBS+=-lmosquitto
 LD_LIBS+=-lpthread
 #LD_LIBS+=-lusb
@@ -17,6 +19,7 @@ LD_LIBS+=-lpthread
 #LD_PATH+=-L.
 
 OBJS= src/emulator.o \
+	src/config.o \
 	src/mqtt.o \
 	src/retrieval.o \
 	src/calculation.o \

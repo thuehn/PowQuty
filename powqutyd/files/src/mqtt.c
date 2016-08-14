@@ -12,6 +12,14 @@
 #include <pthread.h>
 #include "retrieval.h"
 
+static const char* mqtt_host = "localhost";
+static const char* mqtt_topic = "devices/update";
+static const char* dev_uuid = "BERTUB001";
+static const char* dev_gps = "BERTUB001";
+static const char* dev_FW_ver = "0.1";
+static const char* dev_APP_ver = "0.1";
+static const char* dev_HW_ver = "029";
+
 void publish_callback(struct mosquitto *mosq, void* obj, int res);
 void mqtt_publish_payload();
 static void *mosquitto_thread_main(void* param);
@@ -57,10 +65,44 @@ void mqtt_message_print(struct mosquitto_message* msg) {
 		printf("\t--- No Payload ---\n");
 	}
 }
-*/
+ */
+int mqtt_load_from_config () {
+	int res= 0;
+	if(!config_lookup_string(&cfg, "mqtt_host", &mqtt_host)) {
+		return -1;
+	}
+
+	if(!config_lookup_string(&cfg, "mqtt_topic", &mqtt_topic)) {
+		return -1;
+	}
+
+	if(!config_lookup_string(&cfg, "dev_uuid", &dev_uuid)) {
+		return -1;
+	}
+
+	if(!config_lookup_string(&cfg, "dev_gps", &dev_gps)) {
+		return -1;
+	}
+
+	if(!config_lookup_string(&cfg, "dev_FW_ver", &dev_FW_ver)) {
+		return -1;
+	}
+
+	if(!config_lookup_string(&cfg, "dev_APP_ver", &dev_APP_ver)) {
+		return -1;
+	}
+
+	if(!config_lookup_string(&cfg, "dev_HW_ver", &dev_HW_ver)) {
+		return -1;
+	}
+	return res;
+}
 
 int mqtt_init () {
 	int res = 0;
+	if(config_loaded) {
+		res = mqtt_load_from_config();
+	}
 	res = pthread_create(&mosquitto_thread,NULL, mosquitto_thread_main,NULL);
 	return res;
 }

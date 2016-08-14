@@ -10,6 +10,7 @@
 #include "PQ_App.h"
 #include "mqtt.h"
 #include "calculation.h"
+#include "config.h"
 
 static volatile int stop_main = 0;
 
@@ -25,6 +26,11 @@ void handle_signal()
 int main (int argc, char *argv[]) {
 	signal(SIGINT, handle_signal);
 	signal(SIGTERM, handle_signal);
+
+	if(load_config("/etc/powqutyd/powqutyd.cfg")){
+		printf("Error: could not load some config from /etc/powqutyd.cfg\n");
+		// return -1;
+	}
 
 	PQ_ERROR err = PQ_NO_ERROR;
 	printf("powqutyd ...\n");
