@@ -67,6 +67,7 @@ void handle_other_message(int read_size) {
 void handle_calib_message(int read_size) {
 	// parse the calibration parameters
 	printf("handle_calib_message: testing print float ==> %f \n", 3.1416);
+	print_received_buffer(current_frame, read_size);
 	device_offset = get_float_val(current_frame+4);
 	device_scaling_factor = get_float_val(current_frame+8);
 	printf("Offset: %f\tScaling: %f\n",device_offset, device_scaling_factor);
