@@ -66,13 +66,16 @@ void handle_other_message(int read_size) {
 
 void handle_calib_message(int read_size) {
 	// parse the calibration parameters
-	printf("handle_calib_message: testing print float ==> %f \n", 3.1416);
-	print_received_buffer(current_frame, read_size);
-	device_offset = get_float_val(current_frame+4);
-	device_scaling_factor = get_float_val(current_frame+8);
-	printf("Offset: %f\tScaling: %f\n",device_offset, device_scaling_factor);
-
-	got_calib_resp = 1;
+	if( read_size > 2 && current_frame[1] == (unsigned char) 0x82)  {
+		// printf("handle_calib_message: testing print float ==> %f \n", 3.1416);
+		print_received_buffer(current_frame, read_size);
+		device_offset = get_float_val(current_frame+4);
+		device_scaling_factor = get_float_val(current_frame+8);
+		printf("Offset: %f\tScaling: %f\n",device_offset, device_scaling_factor);
+		got_calib_resp = 1;
+	} else {
+		handle_other_message(read_size);
+	}
 }
 
 void handle_status_message(int read_size) {
