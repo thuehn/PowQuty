@@ -89,7 +89,7 @@ void publish_measurements(PQResult pqResult) {
 	payload[0] = '\0';
 	long long ts = get_curr_time_in_milliseconds();
 	sprintf(payload,
-			"%s,%lld,3,%.f,%.f,%.f,%.f,%.f,%.f,%.f,%.f,%.f",
+			"%s,%lld,3,%.12f,%.12f,%.f,%.f,%.f,%.f,%.f,%.f,%.f",
 			dev_uuid,
 			ts,
 			pqResult.PowerVoltageEff_5060T,
