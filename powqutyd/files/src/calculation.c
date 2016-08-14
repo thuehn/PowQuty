@@ -188,6 +188,7 @@ void print_from_ts_buffer() {
 }
 
 void load_data_to_in() {
+	printf("load_data_to_in: \n");
 	int buffer_idx=buffer_data_start_idx*SAMPLES_PER_FRAME;
 	int in_idx = 0;
 	float scale = 1.0f;

@@ -10,7 +10,7 @@
 
 #include "PQ_App.h"
 
-#define MAX_MQTT_MSG_LEN		100
+#define MAX_MQTT_MSG_LEN		200
 
 static volatile int mosquitto_thread_stop = 0, publish_msg=0;
 

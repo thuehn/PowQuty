@@ -29,7 +29,7 @@ int main (int argc, char *argv[]) {
 	PQ_ERROR err = PQ_NO_ERROR;
 	printf("powqutyd ...\n");
 	if(!mqtt_init()) {
-		printf("MQTT started \n");
+		printf("MQTT Thread started \n");
 	} else {
 		printf("couldn't start MQTT-Thread\n");
 		// return -1;

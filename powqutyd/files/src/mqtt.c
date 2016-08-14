@@ -86,6 +86,7 @@ void publish_device_online() {
 }
 
 void publish_measurements(PQResult pqResult) {
+	printf("publish_measurements: \n");
 	payload[0] = '\0';
 	long long ts = get_curr_time_in_milliseconds();
 	sprintf(payload,
