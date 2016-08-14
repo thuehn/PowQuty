@@ -30,40 +30,40 @@ define Package/powqutyd/description
 endef
 
 define Build/Prepare
-	@echo ""
-	@echo ""
-	@echo "############################## Prepare  powqutyd  #######################"
-	@echo ""
+#	@echo ""
+#	@echo ""
+#	@echo "############################## Prepare  powqutyd  #######################"
+#	@echo ""
 	mkdir -p $(PKG_BUILD_DIR)
 	cp -r ./files/. $(PKG_BUILD_DIR)/.
-	@echo ""
-	@echo "Done"
-	@echo ""
+#	@echo ""
+#	@echo "Done"
+#	@echo ""
 endef
 
 define Build/Compile
-	@echo ""
-	@echo ""
-	@echo "############################## Compile  powqutyd  #######################"
-	@echo ""
+#	@echo ""
+#	@echo ""
+#	@echo "############################## Compile  powqutyd  #######################"
+#	@echo ""
 	$(call Build/Compile/Default,all)
 	#$(MAKE) -C files
-	@echo ""
-	@echo "Done"
-	@echo ""
+#	@echo ""
+#	@echo "Done"
+#	@echo ""
 endef
 
 define Package/powqutyd/install
-	@echo ""
-	@echo ""
-	@echo "############################## Install  powqutyd  #######################"
-	@echo $(PKG_BUILD_DIR)
-	@echo ""
+#	@echo ""
+#	@echo ""
+#	@echo "############################## Install  powqutyd  #######################"
+#	@echo $(PKG_BUILD_DIR)
+#	@echo ""
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/powqutyd $(1)/usr/sbin/
-	@echo ""
-	@echo "Done"
-	@echo ""
+#	@echo ""
+#	@echo "Done"
+#	@echo ""
 endef
 
 $(eval $(call BuildPackage,powqutyd))

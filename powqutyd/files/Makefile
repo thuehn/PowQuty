@@ -33,13 +33,13 @@ VSERIAL_TEST_OBJS= test/vserial_test.o
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 powqutyd: $(OBJS) 
-	@echo ""
-	@echo ""
-	@echo ""
-	@echo "############################## Building powqutyd #########################"
-	@echo ""
-	@echo ""
-	@echo ""
+#	@echo ""
+#	@echo ""
+#	@echo ""
+#	@echo "############################## Building powqutyd #########################"
+#	@echo ""
+#	@echo ""
+#	@echo ""
 	$(CC) -o $@ $^ $(CFLAGS) $(LD_PATH) $(LDFLAGS) $(LD_LIBS)
 #	$(LD) $(LD_PATH) $(LDFLAGS) -o $@ $(LD_LIBS)
 

@@ -32,7 +32,7 @@ void connect_callback(struct mosquitto *mosq, void* obj, int res)
 }
 
 void publish_callback(struct mosquitto *mosq, void* obj, int res) {
-	printf("publish callback, rp=%d\n", res);
+	//printf("publish callback, rp=%d\n", res);
 	publish_msg = 0;
 	// TODO unlock Mutex
 }
@@ -86,7 +86,7 @@ void publish_device_online() {
 }
 
 void publish_measurements(PQResult pqResult) {
-	printf("publish_measurements: \n");
+	// printf("publish_measurements: \n");
 	payload[0] = '\0';
 	long long ts = get_curr_time_in_milliseconds();
 	sprintf(payload,
@@ -105,7 +105,7 @@ void publish_measurements(PQResult pqResult) {
 	mqtt_publish_payload();
 }
 void mqtt_publish_payload() {
-	printf("%s\n",payload);
+	// printf("%s\n",payload);
 	// TODO lock Mutex
 	publish_msg = 1;
 }
@@ -149,7 +149,7 @@ static void *mosquitto_thread_main(void* param) {
 				strerror_r(mosq_loop,buff,250);
 				printf("%s\n",buff);
 				// TODO
-				printf("Do something! like reconnect?");
+				printf("Do something! like reconnect?\n");
 			} else {
 				if(publish_msg) {
 					pub_res = mqtt_publish(mosq,payload);

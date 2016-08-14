@@ -86,7 +86,7 @@ static void *calculation_thread_run(void* param) {
 	while(!stop_calculation_run) {
 		if(data_ready) {
 			// do the calculation
-			printf("\n\ncalculating @ idx: %d\n", buffer_data_start_idx );
+			//printf("\n\ncalculating @ idx: %d\n", buffer_data_start_idx );
 			//print_from_buffer();
 			//print_from_ts_buffer();
 
