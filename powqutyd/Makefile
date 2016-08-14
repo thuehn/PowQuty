@@ -17,7 +17,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/powqutyd
 	SECTION:=utils
 	CATEGORY:=Utilities
-	DEPENDS:=+libmosquitto +lconfig +kmod-usb-acm
+	DEPENDS:=+libmosquitto +libconfig +kmod-usb-acm
 	MAINTAINER:=El Sayed
 	TITLE:=Power quality measurement and analyzer toolset
 endef
