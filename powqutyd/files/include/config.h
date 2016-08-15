@@ -10,13 +10,13 @@
 
 #include <libconfig.h>
 
-static config_t cfg;
-
-static volatile int config_loaded = 0;
+struct config_t* get_cfg_ptr();
 
 int load_config(char * path);
 
 void destroy_config ();
+
+int is_config_loaded();
 
 /*
 #define mqtt_host		"localhost"

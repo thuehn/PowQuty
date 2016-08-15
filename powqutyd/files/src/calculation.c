@@ -17,7 +17,8 @@
 #include "mqtt.h"
 #include "config.h"
 
-static const char* device_tty = "/dev/ttyACM3";
+const char* device_tty;
+
 
 pPQInstance pPQInst = NULL;
 PQConfig pqConfig;
@@ -50,16 +51,22 @@ void print_results();
 
 int calculation_load_from_config() {
 	int res = 0;
-	if(!config_lookup_string(&cfg, "device_tty", &device_tty)) {
+	device_tty = "/dev/ttyACM3";
+
+	// printf("looking up device_tty: currently ==> %s\n", device_tty);
+	if(!config_lookup_string(get_cfg_ptr(), "device_tty", &device_tty)) {
+		printf("looking up device_tty: \n");
 		return -1;
 	}
+	// printf("looking up device_tty: currently ==> %s\n", device_tty);
+
 	return res;
 }
 
 int calculation_init() {
 	int res=0;
 
-	if(config_loaded) {
+	if(is_config_loaded()) {
 		res= calculation_load_from_config();
 	}
 

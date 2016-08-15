@@ -68,39 +68,42 @@ void mqtt_message_print(struct mosquitto_message* msg) {
  */
 int mqtt_load_from_config () {
 	int res= 0;
-	if(!config_lookup_string(&cfg, "mqtt_host", &mqtt_host)) {
-		return -1;
+
+	// printf("looking up mqtt_host: currently ==> %s\n", mqtt_host);
+	if(!config_lookup_string(get_cfg_ptr(), "mqtt_host", &mqtt_host)) {
+		res= -1;
+	}
+	// printf("looking up mqtt_host: currently ==> %s\n", mqtt_host);
+
+	if(!config_lookup_string(get_cfg_ptr(), "mqtt_topic", &mqtt_topic)) {
+		res= -1;
 	}
 
-	if(!config_lookup_string(&cfg, "mqtt_topic", &mqtt_topic)) {
-		return -1;
+	if(!config_lookup_string(get_cfg_ptr(), "dev_uuid", &dev_uuid)) {
+		res= -1;
 	}
 
-	if(!config_lookup_string(&cfg, "dev_uuid", &dev_uuid)) {
-		return -1;
+	if(!config_lookup_string(get_cfg_ptr(), "dev_gps", &dev_gps)) {
+		res= -1;
 	}
 
-	if(!config_lookup_string(&cfg, "dev_gps", &dev_gps)) {
-		return -1;
+	if(!config_lookup_string(get_cfg_ptr(), "dev_FW_ver", &dev_FW_ver)) {
+		res= -1;
 	}
 
-	if(!config_lookup_string(&cfg, "dev_FW_ver", &dev_FW_ver)) {
-		return -1;
+	if(!config_lookup_string(get_cfg_ptr(), "dev_APP_ver", &dev_APP_ver)) {
+		res= -1;
 	}
 
-	if(!config_lookup_string(&cfg, "dev_APP_ver", &dev_APP_ver)) {
-		return -1;
-	}
-
-	if(!config_lookup_string(&cfg, "dev_HW_ver", &dev_HW_ver)) {
-		return -1;
+	if(!config_lookup_string(get_cfg_ptr(), "dev_HW_ver", &dev_HW_ver)) {
+		res= -1;
 	}
 	return res;
 }
 
 int mqtt_init () {
 	int res = 0;
-	if(config_loaded) {
+	if(is_config_loaded()) {
 		res = mqtt_load_from_config();
 	}
 	res = pthread_create(&mosquitto_thread,NULL, mosquitto_thread_main,NULL);

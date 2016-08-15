@@ -60,7 +60,9 @@ define Package/powqutyd/install
 #	@echo $(PKG_BUILD_DIR)
 #	@echo ""
 	$(INSTALL_DIR) $(1)/usr/sbin
+	$(INSTALL_DIR) $(1)/etc/powqutyd/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/powqutyd $(1)/usr/sbin/
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/etc/powqutyd/powqutyd.cfg $(1)/etc/powqutyd/
 #	@echo ""
 #	@echo "Done"
 #	@echo ""

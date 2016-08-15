@@ -26,14 +26,15 @@ void handle_signal()
 int main (int argc, char *argv[]) {
 	signal(SIGINT, handle_signal);
 	signal(SIGTERM, handle_signal);
+	char* config_file = "/etc/powqutyd/powqutyd.cfg";
 
-	if(load_config("/etc/powqutyd/powqutyd.cfg")){
-		printf("Error: could not load some config from /etc/powqutyd.cfg\n");
+	if(load_config(config_file)){
+		printf("Error: could not load some config from %s\n", config_file);
 		// return -1;
 	}
 
-	PQ_ERROR err = PQ_NO_ERROR;
-	printf("powqutyd ...\n");
+	// PQ_ERROR err = PQ_NO_ERROR;
+	printf("Starting powqutyd ...\n");
 	if(!mqtt_init()) {
 		printf("MQTT Thread started \n");
 	} else {
@@ -51,6 +52,6 @@ int main (int argc, char *argv[]) {
 
 	}
 
-	return err;
+	return 0;
 }
 
