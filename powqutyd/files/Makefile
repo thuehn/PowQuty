@@ -16,7 +16,7 @@ LD_LIBS+=-lpthread
 
 #LDFLAGS+=-static 
 #LD_PATH+=-L../
-LD_PATH+=-L/usr/local/lib/
+#LD_PATH+=-L/usr/local/lib/
 
 OBJS= src/emulator.o \
 	src/config.o \
