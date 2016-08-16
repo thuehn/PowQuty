@@ -19,10 +19,6 @@
 #define FRAMES_IN_BLOCK_BUFFER NUMBER_OF_BLOCKS_IN_BUFFER*FRAMES_PER_BLOCK	// 5*32 = 160
 
 
-long long get_curr_time_in_milliseconds();
-
-short get_short_val(unsigned char* buf);
-
 /*
  * init function for the retrieval functionality
  */

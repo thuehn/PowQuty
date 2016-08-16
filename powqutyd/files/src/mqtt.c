@@ -4,13 +4,14 @@
  *  Created on: Jul 12, 2016
  *      Author: neez
  */
+
 #include "config.h"
 #include "mqtt.h"
 #include <stdio.h>
 #include <string.h>
 #include <mosquitto.h>
 #include <pthread.h>
-#include "retrieval.h"
+#include "helper.h"
 
 static const char* mqtt_host = "localhost";
 static const char* mqtt_topic = "devices/update";

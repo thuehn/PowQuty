@@ -19,6 +19,7 @@ LD_LIBS+=-lpthread
 #LD_PATH+=-L/usr/local/lib/
 
 OBJS= src/emulator.o \
+	src/helper.o \
 	src/config.o \
 	src/mqtt.o \
 	src/retrieval.o \

@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include "mqtt.h"
 #include "config.h"
+#include "helper.h"
 
 const char* device_tty;
 
