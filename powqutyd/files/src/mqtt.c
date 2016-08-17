@@ -151,7 +151,7 @@ void publish_measurements(PQResult pqResult) {
 	mqtt_publish_payload();
 }
 void mqtt_publish_payload() {
-	// printf("%s\n",payload);
+	printf("%s\n",payload);
 	// TODO lock Mutex
 	publish_msg = 1;
 }
