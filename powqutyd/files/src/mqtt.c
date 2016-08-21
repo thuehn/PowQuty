@@ -20,6 +20,7 @@ static const char* dev_gps = "BERTUB001";
 static const char* dev_FW_ver = "0.1";
 static const char* dev_APP_ver = "0.1";
 static const char* dev_HW_ver = "029";
+static int powqutyd_print = 0;
 
 void publish_callback(struct mosquitto *mosq, void* obj, int res);
 void mqtt_publish_payload();
@@ -99,6 +100,10 @@ int mqtt_load_from_config () {
 	if(!config_lookup_string(get_cfg_ptr(), "dev_HW_ver", &dev_HW_ver)) {
 		res= -1;
 	}
+
+	if(!config_lookup_int(get_cfg_ptr(), "powqutyd_print", &powqutyd_print)) {
+		res= -1;
+	}
 	return res;
 }
 
@@ -151,7 +156,9 @@ void publish_measurements(PQResult pqResult) {
 	mqtt_publish_payload();
 }
 void mqtt_publish_payload() {
-	printf("%s\n",payload);
+	if(powqutyd_print) {
+		printf("%s\n",payload);
+	}
 	// TODO lock Mutex
 	publish_msg = 1;
 }
