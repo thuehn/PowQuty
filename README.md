@@ -135,6 +135,8 @@ Powqutyd sends three types of messages to the MQTT-broker:
  * msg_device_online 
  * msg_device_data
  * msg_device_offline
+
+
 ### msg_device_online 
 Once powqutyd is started it sends msg_device_online message that signalize to the MQTT-Broker that the device is online. Here we see an example
 ```
