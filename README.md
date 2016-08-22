@@ -124,7 +124,7 @@ It is possible to print the results messages that powqutyd sends to the MQTT-Bro
 ```
 
 ## Running powqutyd
-Once all the configuration above are done powqutyd can be started by tyoing:
+Once all the configuration above are done powqutyd can be started by typing:
 ```
 powqutyd &
 ```
