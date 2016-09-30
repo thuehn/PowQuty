@@ -5,11 +5,13 @@
  *      Author: neez
  */
 #include <signal.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include "PQ_App.h"
 #include "mqtt.h"
 #include "calculation.h"
+#include "retrieval.h"
 #include "config.h"
 
 static volatile int stop_main = 0;
@@ -22,6 +24,18 @@ void handle_signal()
 	publish_device_offline();
 }
 
+void handle_args (int argc, char **argv) {
+	int c;
+	while ((c = getopt (argc, argv, "r")) != -1) {
+		switch (c) {
+			case 'r':
+				set_raw_print(1);
+				break;
+			default:
+				break;
+		}
+	}
+}
 
 int main (int argc, char *argv[]) {
 	signal(SIGINT, handle_signal);
@@ -42,6 +56,7 @@ int main (int argc, char *argv[]) {
 		// return -1;
 	}
 
+	handle_args(argc, argv);
 
 	if(!calculation_init()) {
 		printf("Calculation Thread started\n");

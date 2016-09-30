@@ -203,6 +203,7 @@ static void *mosquitto_thread_main(void* param) {
 				printf("%s\n",buff);
 				// TODO
 				printf("Do something! like reconnect?\n");
+				break;
 			} else {
 				if(publish_msg) {
 					pub_res = mqtt_publish(mosq,payload);

@@ -18,6 +18,7 @@
 #include "calculation.h"
 #include "helper.h"
 
+static int raw_print = 0;
 
 int serial_port_open(const char* device);
 static void *reading_thread_run(void* param);
@@ -30,6 +31,10 @@ int calibrate_device();
 int start_sampling();
 int stop_sampling();
 
+
+void set_raw_print(int i) {
+	raw_print = i;
+}
 void print_data(unsigned char* buf);
 
 static pthread_t reading_thread;
@@ -91,8 +96,10 @@ void handle_data_message(int read_size) {
 		last_frame_idx = curr_idx;
 
 		//printf("%d ",curr_idx);
-		//print_data(current_frame+6);
-
+		if (raw_print) {
+			printf("%lld,,", current_time);
+			print_data(current_frame+6);
+		}
 		// Store the frame and the TS for the frame
 		store_data(current_frame+6, stored_frame_idx, current_time);
 

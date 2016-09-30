@@ -23,6 +23,8 @@
  * init function for the retrieval functionality
  */
 int retrieval_init(const char* tty_device);
+void set_raw_print(int i);
+
 
 /*
  * stop function for the retrieval functionality
