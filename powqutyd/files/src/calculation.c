@@ -130,8 +130,11 @@ static void *calculation_thread_run(void* param) {
 				break;
 			}
 			// print_results();
+
 			if(pqResult.HarmonicsExist) {
+#ifdef MQTT
 				publish_measurements(pqResult);
+#endif
 			}
 			data_ready=0;
 		}

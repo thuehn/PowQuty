@@ -9,7 +9,9 @@
 #include <stdio.h>
 #include <string.h>
 #include "PQ_App.h"
+#ifdef MQTT
 #include "mqtt.h"
+#endif
 #include "calculation.h"
 #include "retrieval.h"
 #include "config.h"
@@ -18,10 +20,14 @@ static volatile int stop_main = 0;
 
 void handle_signal()
 {
+#ifdef MQTT
 	stop_mosquitto();
+#endif
 	stop_calculation();
 	stop_main = 1;
+#ifdef MQTT
 	publish_device_offline();
+#endif
 }
 
 void handle_args (int argc, char **argv) {
@@ -48,19 +54,23 @@ int main (int argc, char *argv[]) {
 	}
 
 	// PQ_ERROR err = PQ_NO_ERROR;
+
 	printf("Starting powqutyd ...\n");
+#ifdef MQTT
 	if(!mqtt_init()) {
 		printf("MQTT Thread started \n");
 	} else {
 		printf("couldn't start MQTT-Thread\n");
 		// return -1;
 	}
-
+#endif MQTT	
 	handle_args(argc, argv);
 
 	if(!calculation_init()) {
 		printf("Calculation Thread started\n");
+#ifdef MQTT
 		publish_device_online();
+#endif
 	}
 
 	while (!stop_main){
