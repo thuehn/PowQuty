@@ -12,12 +12,27 @@ PKG_MAINTAINER:=Neez <neez.el.sayed@gmail.com>
 PKG_LICENSE:=GPL-3.0+
 PKG_LICENSE_FILES:=LICENSE
 
+PKG_CONFIG_DEPENDS:= CONFIG_POWQUTYD_NO_MQTT
+
 include $(INCLUDE_DIR)/package.mk
+
+define Package/powqutyd/config
+menu "Configuration"
+	depends on PACKAGE_powqutyd
+
+config POWQUTYD_NO_MQTT
+	bool
+	default n
+	prompt "Compile without MQTT/Mosquitto"
+
+endmenu
+endef
+
 
 define Package/powqutyd
 	SECTION:=utils
 	CATEGORY:=Utilities
-	DEPENDS:=+libconfig +kmod-usb-acm +libmosquitto
+	DEPENDS:=+libconfig +kmod-usb-acm +!POWQUTYD_NO_MQTT:libmosquitto
 	MAINTAINER:=El Sayed
 	TITLE:=Power quality measurement and analyzer toolset
 endef
@@ -28,6 +43,19 @@ define Package/powqutyd/description
 	RMS voltage, undervoltages, overvoltages, voltage flicker, ect.) and
 	provide the PQ statistics via MQTT.
 endef
+
+
+ifeq ($(CONFIG_POWQUTYD_NO_MQTT),y)
+
+  NO_MQTT := y
+  export NO_MQTT
+  
+  JKL := $(filter-out +libmosquitto,$(DEPENDS))
+  DEPENDS := $(JKL)
+else
+  NO_MQTT := n
+  export NO_MQTT
+endif
 
 define Build/Prepare
 #	@echo ""

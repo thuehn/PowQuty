@@ -10,9 +10,11 @@ LD_LIBS+= ./lib/libpqlib.a		## this did work
 LD_LIBS+=-lm
 LD_LIBS+=-lconfig
 
-CFLAGS+=-DMQTT 		#uncomment if you want to use mqtt
-LD_LIBS+=-lmosquitto 	#uncomment if you want to use mqtt
-
+ifeq ($(NO_MQTT),y)
+else
+  CFLAGS+=-DMQTT 		
+  LD_LIBS+=-lmosquitto
+endif
 
 LD_LIBS+=-lpthread
 #LD_LIBS+=-lusb

@@ -63,7 +63,7 @@ int main (int argc, char *argv[]) {
 		printf("couldn't start MQTT-Thread\n");
 		// return -1;
 	}
-#endif MQTT	
+#endif
 	handle_args(argc, argv);
 
 	if(!calculation_init()) {
