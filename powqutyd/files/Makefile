@@ -2,6 +2,7 @@ CC:=gcc
 LD=ld
 CFLAGS+=-g -Wall
 CFLAGS+=-I./lib/ -I. -I./include/
+
 #CFLAGS+=-DDEBUG_PRINT
 
 LD_LIBS+= ./lib/libpqlib.a		## this did work 
@@ -9,7 +10,12 @@ LD_LIBS+= ./lib/libpqlib.a		## this did work
 LD_LIBS+=-lm
 LD_LIBS+=-lconfig
 
-LD_LIBS+=-lmosquitto
+ifeq ($(NO_MQTT),y)
+else
+  CFLAGS+=-DMQTT 		
+  LD_LIBS+=-lmosquitto
+endif
+
 LD_LIBS+=-lpthread
 #LD_LIBS+=-lusb
 #LD_LIBS+=-lusb-1.0

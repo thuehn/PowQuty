@@ -4,7 +4,7 @@
  *  Created on: Jul 12, 2016
  *      Author: neez
  */
-
+#ifdef MQTT
 #include "config.h"
 #include "mqtt.h"
 #include <stdio.h>
@@ -221,3 +221,4 @@ static void *mosquitto_thread_main(void* param) {
 	mosquitto_lib_cleanup();
 	return NULL;
 }
+#endif
