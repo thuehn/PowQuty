@@ -5,7 +5,24 @@ CFLAGS+=-I./lib/ -I. -I./include/
 
 #CFLAGS+=-DDEBUG_PRINT
 
-LD_LIBS+= ./lib/libpqlib.a		## this did work 
+ifeq ($(ARCH),i386)
+LD_LIBS+= ./lib/libpqlib_i386_pentium4.a
+endif
+
+ifeq ($(ARCH),x86_64)
+LD_LIBS+= ./lib/libpqlib_x86_64.a
+endif
+
+ifeq ($(ARCH),powerpc)
+LD_LIBS+= ./lib/libpqlib_powerpc_8540.a
+endif
+
+ifeq ($(ARCH),mips)
+LD_LIBS+= ./lib/libpqlib_mips_34kc.a
+endif
+
+
+#LD_LIBS+= ./lib/libpqlib.a		## this did work 
 #LD_LIBS+=-lpqlib.a
 LD_LIBS+=-lm
 LD_LIBS+=-lconfig

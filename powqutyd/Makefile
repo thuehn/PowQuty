@@ -70,6 +70,9 @@ define Build/Prepare
 endef
 
 define Build/Compile
+	@echo "ARCH:"
+	@echo $(ARCH)
+	export ARCH
 #	@echo ""
 #	@echo ""
 #	@echo "############################## Compile  powqutyd  #######################"
