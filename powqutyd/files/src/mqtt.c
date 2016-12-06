@@ -12,6 +12,7 @@
 #include <mosquitto.h>
 #include <pthread.h>
 #include "helper.h"
+#include "uci_config.h"
 
 static const char* mqtt_host = "localhost";
 static const char* mqtt_topic = "devices/update";
@@ -22,6 +23,7 @@ static const char* dev_APP_ver = "0.1";
 static const char* dev_HW_ver = "029";
 static int powqutyd_print = 0;
 
+struct powquty_conf* config;
 void publish_callback(struct mosquitto *mosq, void* obj, int res);
 void mqtt_publish_payload();
 static void *mosquitto_thread_main(void* param);
@@ -68,24 +70,35 @@ void mqtt_message_print(struct mosquitto_message* msg) {
 	}
 }
  */
-int mqtt_load_from_config () {
+int mqtt_load_from_config() {
 	int res= 0;
 
 	// printf("looking up mqtt_host: currently ==> %s\n", mqtt_host);
-	if(!config_lookup_string(get_cfg_ptr(), "mqtt_host", &mqtt_host)) {
+	/*if(!config_lookup_string(get_cfg_ptr(), "mqtt_host", &mqtt_host)) {
 		res= -1;
-	}
+	}*/
 	// printf("looking up mqtt_host: currently ==> %s\n", mqtt_host);
 
-	if(!config_lookup_string(get_cfg_ptr(), "mqtt_topic", &mqtt_topic)) {
-		res= -1;
-	}
+	mqtt_host = config->mqtt_host;
 
+
+	/*if(!config_lookup_string(get_cfg_ptr(), "mqtt_topic", &mqtt_topic)) {
+		res= -1;
+	}*/
+
+	mqtt_topic = config->mqtt_topic;
+
+
+/*
 	if(!config_lookup_string(get_cfg_ptr(), "dev_uuid", &dev_uuid)) {
 		res= -1;
-	}
+	}*/
 
-	if(!config_lookup_string(get_cfg_ptr(), "dev_gps", &dev_gps)) {
+	dev_uuid = config->dev_uuid;
+	printf("dev_uuid: %s\n", dev_uuid);
+
+
+	/*if(!config_lookup_string(get_cfg_ptr(), "dev_gps", &dev_gps)) {
 		res= -1;
 	}
 
@@ -101,17 +114,25 @@ int mqtt_load_from_config () {
 		res= -1;
 	}
 
+
+
+
 	if(!config_lookup_int(get_cfg_ptr(), "powqutyd_print", &powqutyd_print)) {
 		res= -1;
-	}
+	}*/
+
+	powqutyd_print = config->powqutyd_print;
+	printf("powqutyd_print: %d\n", powqutyd_print);
+
 	return res;
 }
 
-int mqtt_init () {
+int mqtt_init (struct powquty_conf* conf) {
 	int res = 0;
-	if(is_config_loaded()) {
+	config = conf;
+	//if(is_config_loaded()) {
 		res = mqtt_load_from_config();
-	}
+	//}
 	res = pthread_create(&mosquitto_thread,NULL, mosquitto_thread_main,NULL);
 	return res;
 }

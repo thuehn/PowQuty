@@ -10,7 +10,8 @@ LD_LIBS+= ./lib/libpqlib_i386_pentium4.a
 endif
 
 ifeq ($(ARCH),x86_64)
-LD_LIBS+= ./lib/libpqlib_x86_64.a
+#LD_LIBS+= ./lib/libpqlib_x86_64.a
+LD_LIBS+= ./lib/libpqlib.a
 endif
 
 ifeq ($(ARCH),powerpc)
@@ -26,6 +27,7 @@ endif
 #LD_LIBS+=-lpqlib.a
 LD_LIBS+=-lm
 LD_LIBS+=-lconfig
+LD_LIBS+=-luci
 
 ifeq ($(NO_MQTT),y)
 else
@@ -44,6 +46,7 @@ LD_LIBS+=-lpthread
 OBJS= src/emulator.o \
 	src/helper.o \
 	src/config.o \
+	src/uci_config.o \
 	src/mqtt.o \
 	src/retrieval.o \
 	src/calculation.o \

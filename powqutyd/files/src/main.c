@@ -15,6 +15,7 @@
 #include "calculation.h"
 #include "retrieval.h"
 #include "config.h"
+#include "uci_config.h"
 
 static volatile int stop_main = 0;
 
@@ -48,16 +49,20 @@ int main (int argc, char *argv[]) {
 	signal(SIGTERM, handle_signal);
 	char* config_file = "/etc/powqutyd/powqutyd.cfg";
 
-	if(load_config(config_file)){
+	/*if(load_config(config_file)){
 		printf("Error: could not load some config from %s\n", config_file);
 		// return -1;
-	}
+	}*/
+
+	struct powquty_conf conf;
+	uci_config_powquty(&conf);
+	printf("UCI CONFIG FTW!!!");
 
 	// PQ_ERROR err = PQ_NO_ERROR;
 
 	printf("Starting powqutyd ...\n");
 #ifdef MQTT
-	if(!mqtt_init()) {
+	if(!mqtt_init(&conf)) {
 		printf("MQTT Thread started \n");
 	} else {
 		printf("couldn't start MQTT-Thread\n");
@@ -66,7 +71,7 @@ int main (int argc, char *argv[]) {
 #endif
 	handle_args(argc, argv);
 
-	if(!calculation_init()) {
+	if(!calculation_init(&conf)) {
 		printf("Calculation Thread started\n");
 #ifdef MQTT
 		publish_device_online();
