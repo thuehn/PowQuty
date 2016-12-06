@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# needed for "Save and Apply" to restart dynapoint
+uci -q batch <<-EOF >/dev/null
+	delete ucitrack.@powquty[-1]
+	add ucitrack powquty
+	set ucitrack.@powquty[-1].init="powquty"
+	commit powquty
+EOF
+
+rm -f /tmp/luci-indexcache
+exit 0
+
