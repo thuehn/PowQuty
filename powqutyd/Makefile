@@ -32,7 +32,7 @@ endef
 define Package/powqutyd
 	SECTION:=utils
 	CATEGORY:=Utilities
-	DEPENDS:=+libconfig +kmod-usb-acm +!POWQUTYD_NO_MQTT:libmosquitto
+	DEPENDS:=+libconfig +kmod-usb-acm +!POWQUTYD_NO_MQTT:libmosquitto +libuci
 	MAINTAINER:=El Sayed
 	TITLE:=Power quality measurement and analyzer toolset
 endef
@@ -91,9 +91,9 @@ define Package/powqutyd/install
 #	@echo $(PKG_BUILD_DIR)
 #	@echo ""
 	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_DIR) $(1)/etc/powqutyd/
+	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/powqutyd $(1)/usr/sbin/
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/etc/powqutyd/powqutyd.cfg $(1)/etc/powqutyd/
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/etc/powqutyd.config $(1)/etc/config/powquty
 #	@echo ""
 #	@echo "Done"
 #	@echo ""

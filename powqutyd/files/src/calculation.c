@@ -16,6 +16,7 @@
 #include "mqtt.h"
 #include "config.h"
 #include "helper.h"
+#include "uci_config.h"
 
 const char* device_tty;
 
@@ -42,6 +43,7 @@ float hw_offset= 0.0, hw_scale=0.0;
 short block_buffer[BLOCK_BUFFER_SIZE];
 long long timestamp_buffer[TS_BUFFER_SIZE];
 float in[SAMPLES_PER_BLOCK];
+struct powquty_conf* config;
 
 void load_data_to_in();
 void print_from_buffer();
@@ -54,23 +56,29 @@ int calculation_load_from_config() {
 	device_tty = "/dev/ttyACM3";
 
 	// printf("looking up device_tty: currently ==> %s\n", device_tty);
-	if(!config_lookup_string(get_cfg_ptr(), "device_tty", &device_tty)) {
+	/*if(!config_lookup_string(get_cfg_ptr(), "device_tty", &device_tty)) {
 		printf("looking up device_tty: \n");
 		return -1;
-	}
+	}*/
 	// printf("looking up device_tty: currently ==> %s\n", device_tty);
+
+	device_tty = config->device_tty;
+	printf("looking up device_tty!!!! currently ==> %s\n", device_tty);
 
 	return res;
 }
 
-int calculation_init() {
+int calculation_init(struct powquty_conf* conf) {
 	int res=0;
 
+	config = conf;
+	printf("conf device_tty ==> %s\n", conf->device_tty);
+	printf("config device_tty ==> %s\n", config->device_tty);
 	if(is_config_loaded()) {
 		res= calculation_load_from_config();
 	}
 
-	if(!retrieval_init(device_tty)) {
+	if(!retrieval_init(config->device_tty)) {
 		printf("Retrieval Thread started \n");
 	} else {
 		printf("couldn't start Retrieval-Thread\n");
