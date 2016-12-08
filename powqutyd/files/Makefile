@@ -10,8 +10,8 @@ LD_LIBS+= ./lib/libpqlib_i386_pentium4.a
 endif
 
 ifeq ($(ARCH),x86_64)
-#LD_LIBS+= ./lib/libpqlib_x86_64.a
-LD_LIBS+= ./lib/libpqlib.a
+LD_LIBS+= ./lib/libpqlib_x86_64.a
+#LD_LIBS+= ./lib/libpqlib.a
 endif
 
 ifeq ($(ARCH),powerpc)
