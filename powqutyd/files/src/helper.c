@@ -92,4 +92,5 @@ void store_to_file(PQResult pqResult) {
 				pqResult.Harmonics[4],
 				pqResult.Harmonics[5],
 				pqResult.Harmonics[6] );
+		fclose(pf);
 }
