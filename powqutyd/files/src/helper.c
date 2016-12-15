@@ -80,7 +80,7 @@ void store_to_file(PQResult pqResult) {
 	pf = fopen("/tmp/powquty.log","a");
 	long long ts = get_curr_time_in_milliseconds();
 	fprintf(pf,
-			"%s,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
+			"%s,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f\n",
 			"DEV_UUID",
 			ts,
 			pqResult.PowerVoltageEff_5060T,
