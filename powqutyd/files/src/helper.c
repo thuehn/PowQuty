@@ -79,18 +79,18 @@ void store_to_file(PQResult pqResult) {
 	FILE* pf;
 	pf = fopen("/tmp/powquty.log","a");
 	long long ts = get_curr_time_in_milliseconds();
-		sprintf(pf,
-				"%s,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
-				"DEV_UUID",
-				ts,
-				pqResult.PowerVoltageEff_5060T,
-				pqResult.PowerFrequency5060T,
-				pqResult.Harmonics[0],
-				pqResult.Harmonics[1],
-				pqResult.Harmonics[2],
-				pqResult.Harmonics[3],
-				pqResult.Harmonics[4],
-				pqResult.Harmonics[5],
-				pqResult.Harmonics[6] );
-		fclose(pf);
+	fprintf(pf,
+			"%s,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
+			"DEV_UUID",
+			ts,
+			pqResult.PowerVoltageEff_5060T,
+			pqResult.PowerFrequency5060T,
+			pqResult.Harmonics[0],
+			pqResult.Harmonics[1],
+			pqResult.Harmonics[2],
+			pqResult.Harmonics[3],
+			pqResult.Harmonics[4],
+			pqResult.Harmonics[5],
+			pqResult.Harmonics[6] );
+	fclose(pf);
 }
