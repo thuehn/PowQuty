@@ -135,11 +135,13 @@ static void *calculation_thread_run(void* param) {
 			/* exit processing on error */
 			if(err != PQ_NO_ERROR) {
 				printf("Error applying PQ-Lib\n");
+				print_PQ_Error(err);
 				break;
 			}
 			// print_results();
 
 			if(pqResult.HarmonicsExist) {
+				store_to_file(pqResult);
 #ifdef MQTT
 				publish_measurements(pqResult);
 #endif

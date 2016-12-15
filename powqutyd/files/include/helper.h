@@ -8,6 +8,8 @@
 #ifndef HELPER_H_
 #define HELPER_H_
 
+#include "PQ_App.h"
+
 long long get_curr_time_in_milliseconds();
 
 short get_short_val(unsigned char* buf);
@@ -18,6 +20,8 @@ float get_float_val(unsigned char* buf);
 
 unsigned short get_unsigned_short_val(unsigned char* buf);
 
+void print_PQ_Error(PQ_ERROR err);
 
+void store_to_file(PQResult pqResult);
 
 #endif /* HELPER_H_ */
