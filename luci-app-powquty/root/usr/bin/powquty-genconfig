@@ -1,0 +1,57 @@
+#!/usr/bin/lua
+
+require("nixio")
+require("luci.model.uci")
+
+nixio.stdout:write("\n")
+nixio.stdout:write("LoadPlugin tail_csv\n")
+
+nixio.stdout:write("\n")
+
+nixio.stdout:write("<Plugin \"tail_csv\">\n")
+
+nixio.stdout:write("\n")
+
+nixio.stdout:write("\t<Metric \"voltage0\">\n")
+nixio.stdout:write("\t\tType \"gauge\"\n")
+nixio.stdout:write("\t\tInstance \"voltage0\"\n")
+nixio.stdout:write("\t\tValueFrom 4\n")
+nixio.stdout:write("\t</Metric>\n")
+
+nixio.stdout:write("\t<Metric \"frequency0\">\n")
+nixio.stdout:write("\t\tType \"gauge\"\n")
+nixio.stdout:write("\t\tInstance \"frequency0\"\n")
+nixio.stdout:write("\t\tValueFrom 5\n")
+nixio.stdout:write("\t</Metric>\n")
+
+nixio.stdout:write("\t<Metric \"h30\">\n")
+nixio.stdout:write("\t\tType \"gauge\"\n")
+nixio.stdout:write("\t\tInstance \"h30\"\n")
+nixio.stdout:write("\t\tValueFrom 6\n")
+nixio.stdout:write("\t</Metric>\n")
+
+nixio.stdout:write("\t<Metric \"h50\">\n")
+nixio.stdout:write("\t\tType \"gauge\"\n")
+nixio.stdout:write("\t\tInstance \"h50\"\n")
+nixio.stdout:write("\t\tValueFrom 7\n")
+nixio.stdout:write("\t</Metric>\n")
+
+nixio.stdout:write("\t<Metric \"h70\">\n")
+nixio.stdout:write("\t\tType \"gauge\"\n")
+nixio.stdout:write("\t\tInstance \"h70\"\n")
+nixio.stdout:write("\t\tValueFrom 8\n")
+nixio.stdout:write("\t</Metric>\n")
+
+nixio.stdout:write("\n")
+
+nixio.stdout:write("\t<File \"/tmp/powquty.log\">\n")
+nixio.stdout:write("\t\tInstance \"powquty0\"\n")
+nixio.stdout:write("\t\tInterval 5\n")
+nixio.stdout:write("\t\tCollect \"voltage0\" \"frequency0\" \"h30\" \"h50\" \"h70\"\n")
+nixio.stdout:write("\t\tTimeFrom 1\n")
+nixio.stdout:write("\t</File>\n")
+
+nixio.stdout:write("\n")
+
+nixio.stdout:write("</Plugin>\n")
+
