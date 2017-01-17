@@ -55,6 +55,12 @@ long long get_curr_time_in_milliseconds() {
 	return (long long) ( (tv.tv_sec * 1000) + (int)tv.tv_usec/1000 );
 }
 
+int get_curr_time_in_seconds() {
+	struct timeval tv;
+	gettimeofday(&tv,NULL);
+	return (int) (tv.tv_sec);
+}
+
 void print_PQ_Error(PQ_ERROR err) {
 	switch (err) {
 		case PQ_MEM_ERROR:
@@ -79,9 +85,11 @@ void store_to_file(PQResult pqResult) {
 	FILE* pf;
 	pf = fopen("/tmp/powquty.log","a");
 	long long ts = get_curr_time_in_milliseconds();
+	int ts_sec = get_curr_time_in_seconds();
 	fprintf(pf,
-			"%s,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f\n",
+			"%s,%d,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f\n",
 			"DEV_UUID",
+			ts_sec,
 			ts,
 			pqResult.PowerVoltageEff_5060T,
 			pqResult.PowerFrequency5060T,
