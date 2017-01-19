@@ -3,7 +3,6 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=luci-app-powquty
 PKG_VERSION:=0.1
 PKG_RELEASE:=1
-
 PKG_MAINTAINER:=Tobias Ilte <Email ?>
 PKG_LICENSE:=GPL-3.0+
 PKG_LICENSE_FILES:=LICENSE
@@ -14,7 +13,7 @@ define Package/luci-app-powquty
 	SECTION:=luci
 	CATEGORY:=LuCI
 	DEPENDS:=+lua +luci-base +powqutyd
-	MAINTAINER:=me
+	MAINTAINER:=Tobias Ilte <Email ?>
 	TITLE:=LuCI Support for powqutyd
 	PKGARCH:=all
 endef
