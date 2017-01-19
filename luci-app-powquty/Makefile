@@ -10,16 +10,19 @@ PKG_LICENSE_FILES:=LICENSE
 include $(INCLUDE_DIR)/package.mk
 
 define Package/luci-app-powquty
-	SECTION:=luci
+	SECTION:=LuCI
 	CATEGORY:=LuCI
+	SUBMENU:=3. Applications
+	TITLE:=LuCI Support for visulizing powqutyd PQ measurements
 	DEPENDS:=+lua +luci-base +powqutyd
 	MAINTAINER:=Tobias Ilte <Email ?>
-	TITLE:=LuCI Support for powqutyd
 	PKGARCH:=all
 endef
 
 define Package/luci-app-powquty/description
-	LuCI Support for powqutyd
+	LuCI Support for PowQutyd. The power quality measurements of RMS voltage, 
+	frequnecy and harmonics collected with the mini Oscilloscope WeSense are 
+	visualized via collectd and rrd tools on the luci web interface.
 endef
 
 define Build/Compile
