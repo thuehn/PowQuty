@@ -8,6 +8,7 @@
 #include "helper.h"
 #include <stdio.h>
 #include <sys/time.h>
+#include <sys/stat.h>
 #include <string.h>
 #include "config.h"
 
@@ -79,6 +80,26 @@ void print_PQ_Error(PQ_ERROR err) {
 			printf("Unknown Error: %d\n",err);
 			break;
 	}
+}
+
+/* check if a file is above a given limit
+ * @file: file to check
+ * @max_size: maximal size of file
+ * return: returns 1 if file is above the limit, else 0
+ */
+int has_max_size(FILE* file, off_t max_size) {
+	struct stat st;
+	off_t filesize;
+
+	if (stat((const char*)file, &st) == 0)
+		filesize = st.st_size;
+	else
+		printf("Could not get filesize\n");
+
+	if (filesize >= max_size)
+		return 1;
+
+	return 0;
 }
 
 void store_to_file(PQResult pqResult) {
