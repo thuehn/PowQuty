@@ -90,6 +90,8 @@ void handle_data_message(int read_size) {
 	// Check that Data Messages has to have a read size equal to 134 (= 1xID + 1xCC + 2xLEN + 130-Data)
 	if (read_size != 134) {
 		printf("WARNING - READ_SIZE != 134\t read_size=%d\n", read_size);
+	} else {
+		printf("read_size is OK\n");
 	}
 
 	unsigned short curr_idx = get_unsigned_short_val(current_frame+4);
