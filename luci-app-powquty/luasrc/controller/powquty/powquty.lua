@@ -41,12 +41,13 @@ end
 
 
 -- Returns a legend declaration for a metric
---function rrd_metric_legend ( metric ) 
---    local var = "rel_" .. metric
---    return " \"GPRINT:" .. var .. ":MIN:\t\tMin\\: %8.2lf%s %%\" \\\n"
---             .. " \"GPRINT:" .. var .. ":AVERAGE:\tAvg\\: %8.2lf%s %%\" \\\n"
---             .. " \"GPRINT:" .. var .. ":MAX:\tMax\\: %8.2lf%s %%\\n\" \\\n"
---end
+function rrd_metric_legend ( metric ) 
+    --local var = "rel_" .. metric
+    local var = metric
+    return " \"GPRINT:" .. var .. ":MIN:\t\tMin\\: %8.2lf%s \" \\\n"
+             .. " \"GPRINT:" .. var .. ":AVERAGE:\tAvg\\: %8.2lf%s \" \\\n"
+             .. " \"GPRINT:" .. var .. ":MAX:\tMax\\: %8.2lf%s \\n\" \\\n"
+end
 
 
 -- Returns rrd command line parts for a metric.
@@ -111,22 +112,22 @@ function generate_rrdimage ( phy, image, span, width, height, rrd_path,
 
     cmd = cmd .. " --end now" .. " --start end-" .. span_seconds .. "s"
     
-    local upper_limit = 250
-    local lower_limit = 200
+    local upper_limit = 240
+    local lower_limit = 220
     local vertical_label = "RMS(Voltage) [V]"
     
     if (phy == 0) then
     elseif (phy == 1) then
-        upper_limit = 60
-        lower_limit = 40
+        upper_limit = 51
+        lower_limit = 49
         vertical_label = "Frequency [Hz]"
     elseif (phy == 2) then
-      	upper_limit = 80
+      	upper_limit = 40
       	lower_limit = 0
       	vertical_label = "Harmonics [V]"
     end
     
-    cmd = cmd .. " --upper-limit " .. upper_limit .. " --lower-limit " .. lower_limit .. " --rigid"
+    cmd = cmd .. " --upper-limit " .. upper_limit .. " --lower-limit " .. lower_limit .. " --alt-autoscale" --.. " --rigid"
     
     
     cmd = cmd .. " --vertical-label \"" .. vertical_label .. "\""
@@ -184,9 +185,12 @@ function generate_rrdimage ( phy, image, span, width, height, rrd_path,
                 out_shape = "STACK"
             end
             cmd = cmd .. rrd_metric_shape ( phy, metric, stacked, out_shape, colors[i] )
-           -- cmd = cmd .. rrd_metric_legend ( metric .. phy )
+            if (phy == 0 or phy == 1) then
+            	cmd = cmd .. rrd_metric_legend ( metric .. "0" )
+            end
         end
     end
+    
 
     --cmd = cmd .. " " .. out_shape .. ":rel_noise" .. phy .. "_norm" .. colors[#metrics+1] .. ":noise" .. phy
     --cmd = cmd .. rrd_metric_legend ( "noise" .. phy .. "_norm" )
@@ -238,7 +242,7 @@ function powquty_render()
     local hostname = luci.sys.hostname()
     local img_width = '800'
     local img_height = '500'
-    local stacked = '1'
+    local stacked = '0'
     local highlight = '1'
     local shape = 'LINE2'
 
@@ -253,7 +257,7 @@ function powquty_render()
 		if ( index == 2) then
             metrics = {"frequency"}
         elseif (index == 3) then
-        	metrics = {"h3","h5","h7"}   
+        	metrics = {"h3","h5","h7","h9","h11"}   
         end
         local rrdimg = "powquty" .. (index-1) .. ".png"
         --local tailcsv_dir = "tail_csv-powquty" .. (index-1)
