@@ -91,6 +91,13 @@ void handle_data_message(int read_size) {
 	unsigned short curr_idx = get_unsigned_short_val(current_frame+4);
 	// do not store the same index twice
 	if (last_frame_idx != curr_idx) {
+		if ((last_frame_idx+1)%65536 != curr_idx%65536) {
+			printf("WARNING - Frame Got Missing:\tlast_Frame_idx: %d,\tcurr_Frame_idx: %d", last_frame_idx, curr_idx);
+		}
+		// Check the frame Length at Bytes [2-3]
+		if(130 != get_unsigned_short_val(current_frame+2)) {
+			printf("WARNING - Packet with unexpected Data-Length: \tLEN: %d", get_unsigned_short_val(current_frame+2));
+		}
 		// new Frame
 		// update last_idx
 		last_frame_idx = curr_idx;
