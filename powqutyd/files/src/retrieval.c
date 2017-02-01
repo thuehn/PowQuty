@@ -87,6 +87,10 @@ void handle_status_message(int read_size) {
 
 void handle_data_message(int read_size) {
 	long long current_time = get_curr_time_in_milliseconds();
+	// Check that Data Messages has to have a read size equal to 134 (= 1xID + 1xCC + 2xLEN + 130-Data)
+	if (read_size != 134) {
+		printf("WARNING - READ_SIZE != 134\t read_size=%d\n", read_size);
+	}
 
 	unsigned short curr_idx = get_unsigned_short_val(current_frame+4);
 	// do not store the same index twice
