@@ -38,6 +38,9 @@ void handle_args (int argc, char **argv) {
 			case 'r':
 				set_raw_print(1);
 				break;
+			case 'd':
+				set_debug(1);
+				break;
 			default:
 				break;
 		}

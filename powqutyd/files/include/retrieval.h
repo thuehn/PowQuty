@@ -24,6 +24,7 @@
  */
 int retrieval_init(const char* tty_device);
 void set_raw_print(int i);
+void set_debug(int i);
 
 
 /*
