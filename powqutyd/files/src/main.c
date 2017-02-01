@@ -33,7 +33,7 @@ void handle_signal()
 
 void handle_args (int argc, char **argv) {
 	int c;
-	while ((c = getopt (argc, argv, "rd:")) != -1) {
+	while ((c = getopt (argc, argv, "rd")) != -1) {
 		switch (c) {
 			case 'r':
 				set_raw_print(1);
