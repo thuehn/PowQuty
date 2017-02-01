@@ -36,6 +36,10 @@ int stop_sampling();
 void set_raw_print(int i) {
 	raw_print = i;
 }
+
+void set_debug(int i) {
+	raw_print = i;
+}
 void print_data(unsigned char* buf);
 
 static pthread_t reading_thread;
