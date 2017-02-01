@@ -38,7 +38,7 @@ void set_raw_print(int i) {
 }
 
 void set_debug(int i) {
-	raw_print = i;
+	debug_flag = i;
 }
 void print_data(unsigned char* buf);
 
