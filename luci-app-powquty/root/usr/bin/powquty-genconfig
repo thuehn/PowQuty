@@ -3,6 +3,11 @@
 require("nixio")
 require("luci.model.uci")
 
+local uci = luci.model.uci.cursor()
+local powquty_path = uci.get("powquty", "powquty", "powquty_path") or "/tmp/powquty.log"
+
+
+
 nixio.stdout:write("\n")
 nixio.stdout:write("LoadPlugin tail_csv\n")
 
@@ -56,7 +61,7 @@ nixio.stdout:write("\t</Metric>\n")
 
 nixio.stdout:write("\n")
 
-nixio.stdout:write("\t<File \"/tmp/powquty.log\">\n")
+nixio.stdout:write("\t<File \"" .. powquty_path .. "\">\n")
 nixio.stdout:write("\t\tInstance \"powquty0\"\n")
 nixio.stdout:write("\t\tInterval 5\n")
 nixio.stdout:write("\t\tCollect \"voltage0\" \"frequency0\" \"h30\" \"h50\" \"h70\" \"h90\" \"h110\"\n")

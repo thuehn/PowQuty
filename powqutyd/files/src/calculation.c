@@ -141,7 +141,7 @@ static void *calculation_thread_run(void* param) {
 			// print_results();
 
 			if(pqResult.HarmonicsExist) {
-				store_to_file(pqResult);
+				store_to_file(pqResult, &config->powquty_path);
 #ifdef MQTT
 				publish_measurements(pqResult);
 #endif
