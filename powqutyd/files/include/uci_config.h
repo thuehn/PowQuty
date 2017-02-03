@@ -16,6 +16,7 @@ struct powquty_conf {
 	char mqtt_host[32];
 	char mqtt_topic[32];
 	char dev_uuid[32];
+	char powquty_path[32];
 	int powqutyd_print;
 
 /*	option device_tty '/dev/ttyACM0'

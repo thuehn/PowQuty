@@ -20,6 +20,10 @@ dev_uuid = s:option(Value, "dev_uuid", "dev_uuid", "The dev_uuid sets the device
 dev_uuid.datatype = "string"
 dev_uuid.default = "BERTUB001"
 
+powquty_path = s:option(Value, "powquty_path", "powquty_path", "The path of the output logfile.")
+powquty_path.datatype = "string"
+powquty_path.default = "/tmp/powquty.log"
+
 powqutyd_print = s:option(Flag, "powqutyd_print", "powqutyd_print", "If activated, will print the results published to the MQTT broker to stdout")
 powqutyd_print.rmempty = false
 powqutyd_print.default = true
