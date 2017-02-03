@@ -19,6 +19,7 @@
 #include "helper.h"
 
 static int raw_print = 0;
+static int debug_flag = 0;
 
 int serial_port_open(const char* device);
 static void *reading_thread_run(void* param);
@@ -34,6 +35,10 @@ int stop_sampling();
 
 void set_raw_print(int i) {
 	raw_print = i;
+}
+
+void set_debug(int i) {
+	debug_flag = i;
 }
 void print_data(unsigned char* buf);
 
@@ -87,10 +92,27 @@ void handle_status_message(int read_size) {
 
 void handle_data_message(int read_size) {
 	long long current_time = get_curr_time_in_milliseconds();
+	// Check that Data Messages has to have a read size equal to 134 (= 1xID + 1xCC + 2xLEN + 130-Data)
+	if (debug_flag) {
+		if (read_size != 134) {
+			printf("WARNING - READ_SIZE != 134\t read_size=%d\n", read_size);
+		} else {
+			printf("read_size is OK\n");
+		}
+	}
 
 	unsigned short curr_idx = get_unsigned_short_val(current_frame+4);
 	// do not store the same index twice
 	if (last_frame_idx != curr_idx) {
+		if(debug_flag) {
+			if ((last_frame_idx+1)%65536 != curr_idx%65536) {
+				printf("WARNING - Frame Got Missing:\tlast_Frame_idx: %d,\tcurr_Frame_idx: %d\n", last_frame_idx, curr_idx);
+			}
+			// Check the frame Length at Bytes [2-3]
+			if(130 != get_unsigned_short_val(current_frame+2)) {
+				printf("WARNING - Packet with unexpected Data-Length: \tLEN: %d\n", get_unsigned_short_val(current_frame+2));
+			}
+		}
 		// new Frame
 		// update last_idx
 		last_frame_idx = curr_idx;

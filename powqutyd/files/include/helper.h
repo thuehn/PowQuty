@@ -24,6 +24,6 @@ unsigned short get_unsigned_short_val(unsigned char* buf);
 
 void print_PQ_Error(PQ_ERROR err);
 
-void store_to_file(PQResult pqResult);
+void store_to_file(PQResult pqResult, char *powquty_path);
 
 #endif /* HELPER_H_ */

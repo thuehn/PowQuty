@@ -111,10 +111,9 @@ int has_max_size(FILE* file, off_t max_size) {
 	return 0;
 }
 
-void store_to_file(PQResult pqResult) {
+void store_to_file(PQResult pqResult, char *powquty_path) {
 	FILE* pf;
-	pf = fopen("/tmp/powquty.log","a");
-
+	pf = fopen(powquty_path,"a");
 	long long ts = get_curr_time_in_milliseconds();
 	int ts_sec = get_curr_time_in_seconds();
 	fprintf(pf,

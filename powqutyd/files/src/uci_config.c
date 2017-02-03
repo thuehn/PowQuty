@@ -24,6 +24,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 	const char* str;
 
 	char default_device_tty[32] = "/dev/ttyACM0";
+	char default_powquty_path[32] = "/tmp/powquty.log";
 	char default_mqtt_host[32] = "localhost";
 	char default_mqtt_topic[32] = "devices/update";
 	char default_dev_uuid[32] = "BERTUB001";
@@ -44,9 +45,9 @@ int uci_config_powquty(struct powquty_conf* conf) {
 		if (strcmp(s->type, "powquty") == 0) {
 
 			strcpy(conf->dev_uuid, default_dev_uuid);
-			strcpy(conf->dev_uuid, default_mqtt_host);
-			strcpy(conf->dev_uuid, default_mqtt_topic);
-			strcpy(conf->dev_uuid, default_device_tty);
+			strcpy(conf->mqtt_host, default_mqtt_host);
+			strcpy(conf->mqtt_topic, default_mqtt_topic);
+			strcpy(conf->powquty_path, default_powquty_path);
 
 			conf->powqutyd_print = default_powqutyd_print;
 
@@ -87,6 +88,15 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			}
 			strcpy(conf->device_tty, str);
 			printf("looking up device_tty currently ==> %s\n", conf->device_tty);
+
+			str = uci_lookup_option_string(uci, s, "powquty_path");
+			if (str == NULL)
+				continue;
+			if (strlen(str) >= MAX_STR_LEN) {
+				continue;
+			}
+			strcpy(conf->powquty_path, str);
+			printf("looking up powquty_path currently ==> %s\n", conf->powquty_path);
 
 			conf->powqutyd_print = uci_lookup_option_int(uci, s,
 					"powqutyd_print");
