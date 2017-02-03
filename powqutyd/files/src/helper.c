@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <sys/stat.h>
+#include <stdlib.h>
 #include <string.h>
 #include "config.h"
 
@@ -92,17 +93,17 @@ void print_PQ_Error(PQ_ERROR err) {
  * @max_size: maximal size of file in MB
  * return: returns 1 if file is above the limit, else 0
  */
-int has_max_size(FILE* file, off_t max_size) {
+int has_max_size(char *powquty_path, off_t max_size) {
 	struct stat st;
 	off_t filesize;
 
 	max_size *= MB_TO_BYTE;
 
-	if (stat((const char*)file, &st) == 0) {
+	if (stat(powquty_path, &st) == 0) {
 		filesize = st.st_size;
 	} else {
 		printf("Could not get filesize\n");
-		exit(1);
+		exit(2);
 	}
 
 	if (filesize >= max_size)
