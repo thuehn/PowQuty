@@ -12,6 +12,11 @@
 #include <string.h>
 #include "config.h"
 
+#define MB_TO_BYTE 1048576
+#define MAX_FILE_SIZE 4096
+
+off_t max_filesize = MAX_FILE_SIZE;
+
 void print_received_buffer(unsigned char* buf, int len) {
 	if(len>0) {
 		int i=0;
@@ -84,17 +89,21 @@ void print_PQ_Error(PQ_ERROR err) {
 
 /* check if a file is above a given limit
  * @file: file to check
- * @max_size: maximal size of file
+ * @max_size: maximal size of file in MB
  * return: returns 1 if file is above the limit, else 0
  */
 int has_max_size(FILE* file, off_t max_size) {
 	struct stat st;
 	off_t filesize;
 
-	if (stat((const char*)file, &st) == 0)
+	max_size *= MB_TO_BYTE;
+
+	if (stat((const char*)file, &st) == 0) {
 		filesize = st.st_size;
-	else
+	} else {
 		printf("Could not get filesize\n");
+		exit(1);
+	}
 
 	if (filesize >= max_size)
 		return 1;
@@ -105,6 +114,7 @@ int has_max_size(FILE* file, off_t max_size) {
 void store_to_file(PQResult pqResult) {
 	FILE* pf;
 	pf = fopen("/tmp/powquty.log","a");
+
 	long long ts = get_curr_time_in_milliseconds();
 	int ts_sec = get_curr_time_in_seconds();
 	fprintf(pf,
