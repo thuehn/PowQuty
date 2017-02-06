@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "config.h"
 
 #define MB_TO_BYTE 1048576
@@ -129,6 +130,7 @@ char * get_last_line(FILE *file, ssize_t line_length) {
 
 /*
  * get the number of characters in a regular line in file
+ * this assumes, that _only_ the first line in a file may not match the others
  * @file: file to check for line length
  * return: returns regular line length
  */
@@ -202,6 +204,9 @@ int has_max_size(char *powquty_path, off_t max_size) {
 
 	max_size *= MB_TO_BYTE;
 
+	if (access(powquty_path, F_OK ))
+		return 0;
+
 	if (stat(powquty_path, &st) == 0) {
 		filesize = st.st_size;
 	} else {
@@ -215,9 +220,72 @@ int has_max_size(char *powquty_path, off_t max_size) {
 	return 0;
 }
 
+/*
+ * calculate real number of a line
+ * @offset: offset of line in file
+ * @line_length number of characters in line
+ * return the line number
+ */
+long get_line_number(long offset, ssize_t line_length) {
+	long line_number = (offset / line_length) + 1;
+	return line_number;
+}
+
+/*
+ * get an Entry(timestamp) from a line
+ * the position of the line hast to be set before calling this function
+ * @file file to read from
+ * return timestam as integer
+ */
+int get_line_entry(FILE *file) {
+	char *line = NULL;
+	size_t len = 0;
+	int val;
+
+	getline(&line, &len, file);
+	val = atoi(get_entry(line, TIME_STAMP));
+	return val;
+}
+
+/*
+ * set the position to resume write operations after powqutyd stopped
+ * @file: file to write to
+ * @u_bound position closest to file start to check for last write
+ * @l_bound lower bound for last timestamp check
+ * @line_length: length of line to calculate offset
+ */
+void set_position(FILE *file, long u_bound, long l_bound, ssize_t line_length) {
+	long u_offset, m_offset, l_offset;
+	long u_line_number, m_line_number, l_line_number;
+	int u_val, m_val, l_val;
+
+	fseek(file, u_bound, SEEK_SET);
+	u_offset = ftell(file);
+	u_val = get_line_entry(file);
+	u_line_number = get_line_number(u_offset, line_length);
+
+	fseek(file, l_bound, SEEK_SET);
+	l_offset = ftell(file);
+	l_val = get_line_entry(file);
+	l_line_number = get_line_number(l_offset, line_length);
+
+	m_line_number = ((l_line_number + u_line_number) / 2);
+	m_offset = ((m_line_number * line_length) - line_length);
+	fseek(file, m_offset, SEEK_SET);
+	m_val = get_line_entry(file);
+
+	if ((m_val > l_val) && (m_val > u_val))
+		set_position(file, m_offset, l_offset, line_length);
+	if ((m_val < l_val) && (m_val < u_val))
+		set_position(file, u_offset, m_offset, line_length);
+	if ((m_val == u_val) || (m_val == l_val))
+		fseek(file, m_offset, SEEK_SET);
+}
+
 void store_to_file(PQResult pqResult, char *powquty_path) {
 	FILE* pf;
 	ssize_t line_length;
+	long lower_bound, upper_bound;
 
 	if (!has_max_size(powquty_path, max_filesize)) {
 		pf = fopen(powquty_path,"a");
@@ -227,16 +295,19 @@ void store_to_file(PQResult pqResult, char *powquty_path) {
 		pf = fopen(powquty_path, "r+");
 		if (pf == NULL)
 			exit(EXIT_FAILURE);
-		line_length = get_regular_line_length(pf)
+		line_length = get_regular_line_length(pf);
 		if (is_unchecked) {
 			is_unchecked = 0;
 			if (is_outdated(pf,line_length)) {
-				fseek(file, 0 ,SEEK_SET);
+				fseek(pf, 0 ,SEEK_SET);
 			} else {
-				//TODO: get position to resume file write
+				fseek(pf, 0, SEEK_SET);
+				upper_bound = ftell(pf);
+				fseek(pf, -line_length, SEEK_END);
+				lower_bound = ftell(pf);
+				set_position(pf,upper_bound,lower_bound,
+					     line_length);
 			}
-		} else {
-			fsetpos();
 		}
 	}
 	long long ts = get_curr_time_in_milliseconds();
