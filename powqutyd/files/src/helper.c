@@ -215,10 +215,6 @@ int has_max_size(char *powquty_path, off_t max_size) {
 	return 0;
 }
 
-fpos_t get_start_of_line(FILE *file, fpos_t pos) {
-	fsetpos(file,
-}
-
 void store_to_file(PQResult pqResult, char *powquty_path) {
 	FILE* pf;
 	ssize_t line_length;
@@ -235,7 +231,7 @@ void store_to_file(PQResult pqResult, char *powquty_path) {
 		if (is_unchecked) {
 			is_unchecked = 0;
 			if (is_outdated(pf,line_length)) {
-				fsetpos(pf, first_valid_line);
+				fseek(file, 0 ,SEEK_SET);
 			} else {
 				//TODO: get position to resume file write
 			}
