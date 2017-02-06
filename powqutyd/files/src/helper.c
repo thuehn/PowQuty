@@ -214,7 +214,7 @@ int has_max_size(char *powquty_path, off_t max_size) {
 		exit(2);
 	}
 
-	if (filesize >= max_size)
+	if (filesize > max_size)
 		return 1;
 
 	return 0;
