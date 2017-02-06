@@ -8,8 +8,15 @@
 #include "helper.h"
 #include <stdio.h>
 #include <sys/time.h>
+#include <sys/stat.h>
+#include <stdlib.h>
 #include <string.h>
 #include "config.h"
+
+#define MB_TO_BYTE 1048576
+#define MAX_FILE_SIZE 4096
+
+off_t max_filesize = MAX_FILE_SIZE;
 
 void print_received_buffer(unsigned char* buf, int len) {
 	if(len>0) {
@@ -79,6 +86,30 @@ void print_PQ_Error(PQ_ERROR err) {
 			printf("Unknown Error: %d\n",err);
 			break;
 	}
+}
+
+/* check if a file is above a given limit
+ * @file: file to check
+ * @max_size: maximal size of file in MB
+ * return: returns 1 if file is above the limit, else 0
+ */
+int has_max_size(char *powquty_path, off_t max_size) {
+	struct stat st;
+	off_t filesize;
+
+	max_size *= MB_TO_BYTE;
+
+	if (stat(powquty_path, &st) == 0) {
+		filesize = st.st_size;
+	} else {
+		printf("Could not get filesize\n");
+		exit(2);
+	}
+
+	if (filesize > max_size)
+		return 1;
+
+	return 0;
 }
 
 void store_to_file(PQResult pqResult, char *powquty_path) {
