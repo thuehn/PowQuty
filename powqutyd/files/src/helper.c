@@ -15,8 +15,11 @@
 
 #define MB_TO_BYTE 1048576
 #define MAX_FILE_SIZE 4096
+#define TIME_STAMP 2
 
 off_t max_filesize = MAX_FILE_SIZE;
+fpos_t first_valid_line;
+int is_unchecked = 1;
 
 void print_received_buffer(unsigned char* buf, int len) {
 	if(len>0) {
@@ -88,7 +91,107 @@ void print_PQ_Error(PQ_ERROR err) {
 	}
 }
 
-/* check if a file is above a given limit
+/*
+ * returns content from comma separated line
+ * @line: comma separated line, to parse
+ * @entry: position in line
+ * return: token if found, else NULL
+ */
+char * get_entry(char* line, int entry) {
+	char* token;
+	for (token = strtok(line, ","); token && *token;
+	     token = strtok(NULL, ",\n")) {
+		if (!--entry)
+			return token;
+	}
+	return NULL;
+}
+
+/*
+ * get the last line of a file
+ * @file: file to get line from
+ * @line_length: offset to get the start of line
+ * return: complete last line of file
+ */
+char * get_last_line(FILE *file, ssize_t line_length) {
+	char *line = NULL;
+	ssize_t read;
+	size_t len = 0;
+
+	fseek(file, -line_length,SEEK_END);
+	read = getline(&line, &len, file);
+	if (read == -1) {
+		printf("Could not get last line\n");
+		exit(EXIT_FAILURE);
+	}
+	return line;
+}
+
+/*
+ * get the number of characters in a regular line in file
+ * @file: file to check for line length
+ * return: returns regular line length
+ */
+ssize_t get_regular_line_length(FILE *file) {
+	char *line = NULL;
+	char *next_line = NULL;
+	size_t len = 0;
+	size_t next_len = 0;
+	ssize_t reg_read, next_read = 0;
+
+	reg_read = getline(&line, &len, file);
+	if (reg_read == -1) {
+		printf("Error in line read: Could not get length of first line\n");
+		exit(EXIT_FAILURE);
+	}
+	fseek(file, reg_read, SEEK_SET);
+	next_read = getline(&next_line, &next_len, file);
+
+	if (next_read == reg_read) {
+		fseek(file, -reg_read, SEEK_CUR);
+		fgetpos(file, &first_valid_line);
+		return reg_read;
+	}
+
+	if (next_read != -1) {
+		reg_read = next_read;
+	} else {
+		printf("Error in line read: Could not get length of line\n");
+		exit(EXIT_FAILURE);
+	}
+
+	fgetpos(file, &first_valid_line);
+	return reg_read;
+}
+
+/*
+ * checks if the log file can be rewritten from start, or has to be resumed
+ * @file: file to check
+ * @line_length: number of chars in regular line
+ * return 0 if file write has to be resumed, 1 if the first entry is the oldest
+ */
+int is_outdated(FILE *file, ssize_t line_length) {
+	int first_time, last_time;
+	char *line =NULL;
+	char *last_line = malloc((sizeof(char) * line_length) + 1);
+	size_t len = 0;
+
+	fsetpos(file, &first_valid_line);
+	getline(&line, &len, file);
+	first_time = atoi(get_entry(line, TIME_STAMP));
+
+	memcpy(last_line,get_last_line(file,line_length), line_length);
+	last_line[line_length] = '\0';
+	last_time = atoi(get_entry(last_line, TIME_STAMP));
+
+	if (last_time > first_time)
+		return 1;
+
+	return 0;
+}
+
+/*
+ * check if a file is above a given limit
  * @file: file to check
  * @max_size: maximal size of file in MB
  * return: returns 1 if file is above the limit, else 0
@@ -112,9 +215,34 @@ int has_max_size(char *powquty_path, off_t max_size) {
 	return 0;
 }
 
+fpos_t get_start_of_line(FILE *file, fpos_t pos) {
+	fsetpos(file,
+}
+
 void store_to_file(PQResult pqResult, char *powquty_path) {
 	FILE* pf;
-	pf = fopen(powquty_path,"a");
+	ssize_t line_length;
+
+	if (!has_max_size(powquty_path, max_filesize)) {
+		pf = fopen(powquty_path,"a");
+		if (pf == NULL)
+			exit(EXIT_FAILURE);
+	} else {
+		pf = fopen(powquty_path, "r+");
+		if (pf == NULL)
+			exit(EXIT_FAILURE);
+		line_length = get_regular_line_length(pf)
+		if (is_unchecked) {
+			is_unchecked = 0;
+			if (is_outdated(pf,line_length)) {
+				fsetpos(pf, first_valid_line);
+			} else {
+				//TODO: get position to resume file write
+			}
+		} else {
+			fsetpos();
+		}
+	}
 	long long ts = get_curr_time_in_milliseconds();
 	int ts_sec = get_curr_time_in_seconds();
 	fprintf(pf,
