@@ -264,7 +264,7 @@ void set_position(FILE *file, long u_bound, long l_bound, ssize_t char_count) {
 	if ((m_val < l_val) && (m_val < u_val))
 		set_position(file, u_offset, m_offset, char_count);
 	if ((m_val == u_val) || (m_val == l_val))
-		fseek(file, m_offset, SEEK_SET);
+		fseek(file, m_offset + char_count, SEEK_SET);
 }
 
 void store_to_file(PQResult pqResult, char *powquty_path) {
