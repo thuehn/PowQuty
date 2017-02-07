@@ -44,9 +44,9 @@ end
 function rrd_metric_legend ( metric ) 
     --local var = "rel_" .. metric
     local var = metric
-    return " \"GPRINT:" .. var .. ":MIN:\t\tMin\\: %8.2lf%s \" \\\n"
-             .. " \"GPRINT:" .. var .. ":AVERAGE:\tAvg\\: %8.2lf%s \" \\\n"
-             .. " \"GPRINT:" .. var .. ":MAX:\tMax\\: %8.2lf%s \\n\" \\\n"
+    return " \"GPRINT:" .. var .. ":MIN:\t\tmin\\: %8.2lf%s \" \\\n"
+             .. " \"GPRINT:" .. var .. ":AVERAGE:\tavg\\: %8.2lf%s \" \\\n"
+             .. " \"GPRINT:" .. var .. ":MAX:\tmax\\: %8.2lf%s \\n\" \\\n"
 end
 
 
@@ -122,12 +122,12 @@ function generate_rrdimage ( phy, image, span, width, height, rrd_path,
         lower_limit = 49
         vertical_label = "Frequency [Hz]"
     elseif (phy == 2) then
-      	upper_limit = 40
+      	upper_limit = 16
       	lower_limit = 0
       	vertical_label = "Harmonics [V]"
     end
     
-    cmd = cmd .. " --upper-limit " .. upper_limit .. " --lower-limit " .. lower_limit .. " --alt-autoscale" --.. " --rigid"
+    cmd = cmd .. " --upper-limit " .. upper_limit .. " --lower-limit " .. lower_limit .. " --alt-autoscale-max"
     
     
     cmd = cmd .. " --vertical-label \"" .. vertical_label .. "\""
