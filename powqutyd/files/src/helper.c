@@ -111,15 +111,15 @@ char * get_entry(char* line, int entry) {
 /*
  * get the last line of a file
  * @file: file to get line from
- * @line_length: offset to get the start of line
+ * @char_count: offset to get the start of line
  * return: complete last line of file
  */
-char * get_last_line(FILE *file, ssize_t line_length) {
+char * get_last_line(FILE *file, ssize_t char_count) {
 	char *line = NULL;
 	ssize_t read;
 	size_t len = 0;
 
-	fseek(file, -line_length,SEEK_END);
+	fseek(file, -char_count,SEEK_END);
 	read = getline(&line, &len, file);
 	if (read == -1) {
 		printf("Could not get last line\n");
@@ -134,7 +134,7 @@ char * get_last_line(FILE *file, ssize_t line_length) {
  * @file: file to check for line length
  * return: returns regular line length
  */
-ssize_t get_regular_line_length(FILE *file) {
+ssize_t get_character_count(FILE *file) {
 	char *line = NULL;
 	char *next_line = NULL;
 	size_t len = 0;
@@ -169,21 +169,21 @@ ssize_t get_regular_line_length(FILE *file) {
 /*
  * checks if the log file can be rewritten from start, or has to be resumed
  * @file: file to check
- * @line_length: number of chars in regular line
+ * @char_count: number of chars in regular line
  * return 0 if file write has to be resumed, 1 if the first entry is the oldest
  */
-int is_outdated(FILE *file, ssize_t line_length) {
+int is_outdated(FILE *file, ssize_t char_count) {
 	int first_time, last_time;
 	char *line =NULL;
-	char *last_line = malloc((sizeof(char) * line_length) + 1);
+	char *last_line = malloc((sizeof(char) * char_count) + 1);
 	size_t len = 0;
 
 	fsetpos(file, &first_valid_line);
 	getline(&line, &len, file);
 	first_time = atoi(get_entry(line, TIME_STAMP));
 
-	memcpy(last_line,get_last_line(file,line_length), line_length);
-	last_line[line_length] = '\0';
+	memcpy(last_line,get_last_line(file,char_count), char_count);
+	last_line[char_count] = '\0';
 	last_time = atoi(get_entry(last_line, TIME_STAMP));
 
 	if (last_time > first_time)
@@ -223,11 +223,11 @@ int has_max_size(char *powquty_path, off_t max_size) {
 /*
  * calculate real number of a line
  * @offset: offset of line in file
- * @line_length number of characters in line
+ * @char_count number of characters in line
  * return the line number
  */
-long get_line_number(long offset, ssize_t line_length) {
-	long line_number = (offset / line_length) + 1;
+long get_line_number(long offset, ssize_t char_count) {
+	long line_number = (offset / char_count) + 1;
 	return line_number;
 }
 
@@ -252,9 +252,9 @@ int get_line_entry(FILE *file) {
  * @file: file to write to
  * @u_bound position closest to file start to check for last write
  * @l_bound lower bound for last timestamp check
- * @line_length: length of line to calculate offset
+ * @char_count: length of line to calculate offset
  */
-void set_position(FILE *file, long u_bound, long l_bound, ssize_t line_length) {
+void set_position(FILE *file, long u_bound, long l_bound, ssize_t char_count) {
 	long u_offset, m_offset, l_offset;
 	long u_line_number, m_line_number, l_line_number;
 	int u_val, m_val, l_val;
@@ -262,29 +262,29 @@ void set_position(FILE *file, long u_bound, long l_bound, ssize_t line_length) {
 	fseek(file, u_bound, SEEK_SET);
 	u_offset = ftell(file);
 	u_val = get_line_entry(file);
-	u_line_number = get_line_number(u_offset, line_length);
+	u_line_number = get_line_number(u_offset, char_count);
 
 	fseek(file, l_bound, SEEK_SET);
 	l_offset = ftell(file);
 	l_val = get_line_entry(file);
-	l_line_number = get_line_number(l_offset, line_length);
+	l_line_number = get_line_number(l_offset, char_count);
 
 	m_line_number = ((l_line_number + u_line_number) / 2);
-	m_offset = ((m_line_number * line_length) - line_length);
+	m_offset = ((m_line_number * char_count) - char_count);
 	fseek(file, m_offset, SEEK_SET);
 	m_val = get_line_entry(file);
 
 	if ((m_val > l_val) && (m_val > u_val))
-		set_position(file, m_offset, l_offset, line_length);
+		set_position(file, m_offset, l_offset, char_count);
 	if ((m_val < l_val) && (m_val < u_val))
-		set_position(file, u_offset, m_offset, line_length);
+		set_position(file, u_offset, m_offset, char_count);
 	if ((m_val == u_val) || (m_val == l_val))
 		fseek(file, m_offset, SEEK_SET);
 }
 
 void store_to_file(PQResult pqResult, char *powquty_path) {
 	FILE* pf;
-	ssize_t line_length;
+	ssize_t char_count;
 	long lower_bound, upper_bound;
 
 	if (!has_max_size(powquty_path, max_filesize)) {
@@ -295,18 +295,18 @@ void store_to_file(PQResult pqResult, char *powquty_path) {
 		pf = fopen(powquty_path, "r+");
 		if (pf == NULL)
 			exit(EXIT_FAILURE);
-		line_length = get_regular_line_length(pf);
+		char_count = get_character_count(pf);
 		if (is_unchecked) {
 			is_unchecked = 0;
-			if (is_outdated(pf,line_length)) {
+			if (is_outdated(pf,char_count)) {
 				fseek(pf, 0 ,SEEK_SET);
 			} else {
 				fseek(pf, 0, SEEK_SET);
 				upper_bound = ftell(pf);
-				fseek(pf, -line_length, SEEK_END);
+				fseek(pf, -char_count, SEEK_END);
 				lower_bound = ftell(pf);
 				set_position(pf,upper_bound,lower_bound,
-					     line_length);
+					     char_count);
 			}
 		}
 	}
