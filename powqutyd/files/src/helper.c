@@ -118,7 +118,8 @@ void store_to_file(PQResult pqResult, char *powquty_path) {
 	long long ts = get_curr_time_in_milliseconds();
 	int ts_sec = get_curr_time_in_seconds();
 	fprintf(pf,
-			"%s,%d,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f\n",
+			"%s,%d,%lld,3,%03.6f,%02.6f,%09.6f,%09.6f,%09.6f,%09.6f,"
+			"%09.6f,%09.6f,%09.6f\n",
 			"DEV_UUID",
 			ts_sec,
 			ts,
