@@ -20,6 +20,7 @@
 
 off_t max_filesize = MAX_FILE_SIZE;
 int is_unchecked = 1;
+long cur_offset;
 
 void print_received_buffer(unsigned char* buf, int len) {
 	if(len>0) {
@@ -278,21 +279,29 @@ void store_to_file(PQResult pqResult, char *powquty_path) {
 			exit(EXIT_FAILURE);
 	} else {
 		pf = fopen(powquty_path, "r+");
-		if (pf == NULL)
-			exit(EXIT_FAILURE);
 		char_count = get_character_count(pf);
+		fseek(pf, -char_count, SEEK_END);
+		lower_bound = ftell(pf);
 		if (is_unchecked) {
 			is_unchecked = 0;
+
 			if (is_outdated(pf,char_count)) {
-				fseek(pf, 0 ,SEEK_SET);
+				fseek(pf, 0, SEEK_SET);
+				cur_offset = 0;
 			} else {
 				fseek(pf, 0, SEEK_SET);
 				upper_bound = ftell(pf);
-				fseek(pf, -char_count, SEEK_END);
-				lower_bound = ftell(pf);
 				set_position(pf,upper_bound,lower_bound,
 					     char_count);
+				cur_offset = ftell(pf);
+				if (cur_offset == lower_bound)
+					is_unchecked = 1;
 			}
+		} else {
+			cur_offset += (long)get_character_count(pf);
+			fseek(pf, cur_offset, SEEK_SET);
+			if (cur_offset == lower_bound)
+				is_unchecked = 1;
 		}
 	}
 	long long ts = get_curr_time_in_milliseconds();
