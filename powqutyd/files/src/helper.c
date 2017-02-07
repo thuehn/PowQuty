@@ -114,13 +114,13 @@ int has_max_size(char *powquty_path, off_t max_size) {
 
 /*
  * check if Harmonic values are in a reasonable range
- * returns 1 if a value is 10 or more, else 0
+ * returns 0 if a value is 10 or more, else 1
  */
-int is_faulty_line(PQResult pqResult) {
+int is_valid_input(PQResult pqResult) {
 	for (int i = 1; i < 7; i++)
 		if (pqResult.Harmonics[i] >= 10)
-			return 1;
-	return 0;
+			return 0;
+	return 1;
 }
 
 void store_to_file(PQResult pqResult, char *powquty_path) {
@@ -129,7 +129,7 @@ void store_to_file(PQResult pqResult, char *powquty_path) {
 	long long ts = get_curr_time_in_milliseconds();
 	int ts_sec = get_curr_time_in_seconds();
 
-	if (is_faulty_line(pqResult)) {
+	if (!is_valid_input(pqResult)) {
 		fclose(pf);
 		return;
 	}
