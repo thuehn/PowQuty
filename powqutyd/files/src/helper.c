@@ -140,14 +140,14 @@ ssize_t get_character_count(FILE *file) {
 
 	fseek(file, 0, SEEK_SET);
 	char_count = getline(&line, &len, file);
-	if (reg_read == -1) {
+	if (char_count == -1) {
 		printf("Error in line read: Could not get number of characters"
 			" in first line\n");
 		exit(EXIT_FAILURE);
 	}
 	fseek(file, 0, SEEK_SET);
 
-	return reg_read;
+	return char_count;
 }
 
 /*
