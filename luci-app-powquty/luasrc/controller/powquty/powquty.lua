@@ -44,9 +44,9 @@ end
 function rrd_metric_legend ( metric ) 
     --local var = "rel_" .. metric
     local var = metric
-    return " \"GPRINT:" .. var .. ":MIN:\t\tMin\\: %8.2lf%s \" \\\n"
-             .. " \"GPRINT:" .. var .. ":AVERAGE:\tAvg\\: %8.2lf%s \" \\\n"
-             .. " \"GPRINT:" .. var .. ":MAX:\tMax\\: %8.2lf%s \\n\" \\\n"
+    return " \"GPRINT:" .. var .. ":MIN:\t\tmin\\: %8.2lf%s \" \\\n"
+             .. " \"GPRINT:" .. var .. ":AVERAGE:\tavg\\: %8.2lf%s \" \\\n"
+             .. " \"GPRINT:" .. var .. ":MAX:\tmax\\: %8.2lf%s \\n\" \\\n"
 end
 
 
