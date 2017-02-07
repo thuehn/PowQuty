@@ -14,7 +14,7 @@ define Package/luci-app-powquty
 	CATEGORY:=LuCI
 	SUBMENU:=3. Applications
 	TITLE:=LuCI Support for visulizing powqutyd PQ measurements
-	DEPENDS:=+lua +luci-base +powqutyd
+	DEPENDS:=+lua +luci-base +powqutyd +luafilesystem +collectd-mod-tail-csv
 	MAINTAINER:=Tobias Ilte <Email ?>
 	PKGARCH:=all
 endef
