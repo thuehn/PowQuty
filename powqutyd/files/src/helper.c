@@ -19,7 +19,6 @@
 #define TIME_STAMP 2
 
 off_t max_filesize = MAX_FILE_SIZE;
-fpos_t first_valid_line;
 int is_unchecked = 1;
 
 void print_received_buffer(unsigned char* buf, int len) {
@@ -136,33 +135,18 @@ char * get_last_line(FILE *file, ssize_t char_count) {
  */
 ssize_t get_character_count(FILE *file) {
 	char *line = NULL;
-	char *next_line = NULL;
 	size_t len = 0;
-	size_t next_len = 0;
-	ssize_t reg_read, next_read = 0;
+	ssize_t char_count;
 
-	reg_read = getline(&line, &len, file);
+	fseek(file, 0, SEEK_SET);
+	char_count = getline(&line, &len, file);
 	if (reg_read == -1) {
-		printf("Error in line read: Could not get length of first line\n");
+		printf("Error in line read: Could not get number of characters"
+			" in first line\n");
 		exit(EXIT_FAILURE);
 	}
-	fseek(file, reg_read, SEEK_SET);
-	next_read = getline(&next_line, &next_len, file);
+	fseek(file, 0, SEEK_SET);
 
-	if (next_read == reg_read) {
-		fseek(file, -reg_read, SEEK_CUR);
-		fgetpos(file, &first_valid_line);
-		return reg_read;
-	}
-
-	if (next_read != -1) {
-		reg_read = next_read;
-	} else {
-		printf("Error in line read: Could not get length of line\n");
-		exit(EXIT_FAILURE);
-	}
-
-	fgetpos(file, &first_valid_line);
 	return reg_read;
 }
 
@@ -178,7 +162,7 @@ int is_outdated(FILE *file, ssize_t char_count) {
 	char *last_line = malloc((sizeof(char) * char_count) + 1);
 	size_t len = 0;
 
-	fsetpos(file, &first_valid_line);
+	fseek(file, 0, SEEK_SET);
 	getline(&line, &len, file);
 	first_time = atoi(get_entry(line, TIME_STAMP));
 
