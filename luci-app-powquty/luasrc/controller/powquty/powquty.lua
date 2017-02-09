@@ -41,12 +41,21 @@ end
 
 
 -- Returns a legend declaration for a metric
-function rrd_metric_legend ( metric ) 
+function rrd_metric_legend ( metric, phy ) 
     --local var = "rel_" .. metric
     local var = metric
-    return " \"GPRINT:" .. var .. ":MIN:\t\tmin\\: %8.2lf%s \" \\\n"
-             .. " \"GPRINT:" .. var .. ":AVERAGE:\tavg\\: %8.2lf%s \" \\\n"
-             .. " \"GPRINT:" .. var .. ":MAX:\tmax\\: %8.2lf%s \\n\" \\\n"
+    local unit
+    
+    if (phy == 0) then
+    	unit = "V"
+    else
+    	unit = "Hz"
+    end
+    
+    return " \"GPRINT:" .. var .. ":MIN:\t\tmin\\: %8.2lf%s "..unit.."\" \\\n"
+             .. " \"GPRINT:" .. var .. ":AVERAGE:\tavg\\: %8.2lf%s "..unit.."\" \\\n"
+             .. " \"GPRINT:" .. var .. ":MAX:\tmax\\: %8.2lf%s "..unit.."\\n\" \\\n"
+    
 end
 
 
@@ -186,7 +195,7 @@ function generate_rrdimage ( phy, image, span, width, height, rrd_path,
             end
             cmd = cmd .. rrd_metric_shape ( phy, metric, stacked, out_shape, colors[i] )
             if (phy == 0 or phy == 1) then
-            	cmd = cmd .. rrd_metric_legend ( metric .. "0" )
+            	cmd = cmd .. rrd_metric_legend ( metric .. "0", phy )
             end
         end
     end
@@ -231,7 +240,7 @@ function powquty_render()
     -- create the image
     local vars  = luci.http.formvalue()
     --local spans = luci.util.split( uci.get( "luci_statistics", "collectd_rrdtool", "RRATimespans" ), "%s+", nil, true )
-    local spans = luci.util.split( "1hour 1day 1week 1month 1year", "%s+", nil, true )
+    local spans = luci.util.split( "10min 1hour 1day 1week 1month 1year", "%s+", nil, true )
    	local span  = vars.timespan or uci.get( "luci_statistics", "rrdtool", "default_timespan" ) or spans[1]
 
     local powquty_paths = uci.get("powquty", "powquty", "powquty_path") or "/tmp/powquty.log"
