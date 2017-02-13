@@ -16,7 +16,7 @@
 
 #define KB_TO_BYTE 1024
 #define MAX_FILE_SIZE 4096
-#define TIME_STAMP 2
+#define TIME_STAMP_POSITION 2
 
 off_t max_filesize = MAX_FILE_SIZE;
 int is_unchecked = 1;
@@ -165,11 +165,13 @@ int is_outdated(FILE *file, ssize_t char_count) {
 
 	fseek(file, 0, SEEK_SET);
 	getline(&line, &len, file);
-	first_time = atoi(get_entry_from_line_position(line, TIME_STAMP));
+	first_time = atoi(get_entry_from_line_position(line,
+						       TIME_STAMP_POSITION));
 
 	memcpy(last_line,get_last_line(file,char_count), char_count);
 	last_line[char_count] = '\0';
-	last_time = atoi(get_entry_from_line_position(last_line, TIME_STAMP));
+	last_time = atoi(get_entry_from_line_position(last_line,
+						      TIME_STAMP_POSITION));
 
 	if (last_time > first_time)
 		return 1;
@@ -228,7 +230,7 @@ int get_line_entry(FILE *file) {
 	int val;
 
 	getline(&line, &len, file);
-	val = atoi(get_entry_from_line_position(line, TIME_STAMP));
+	val = atoi(get_entry_from_line_position(line, TIME_STAMP_POSITION));
 	return val;
 }
 
