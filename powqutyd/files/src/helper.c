@@ -270,6 +270,9 @@ void set_position(FILE *file, long u_bound, long l_bound, ssize_t char_count) {
 		fseek(file, m_offset + char_count, SEEK_SET);
 }
 
+/*
+ * For a correct file write all line must have the same number of characters.
+ */
 void store_to_file(PQResult pqResult, char *powquty_path) {
 	FILE* pf;
 	ssize_t char_count;
