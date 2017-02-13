@@ -134,7 +134,7 @@ char * get_last_line(FILE *file, ssize_t char_count) {
  * @file: file to check for line length
  * return: returns character count of first line
  */
-ssize_t get_character_count(FILE *file) {
+ssize_t get_character_count_per_line(FILE *file) {
 	char *line = NULL;
 	size_t len = 0;
 	ssize_t char_count;
@@ -281,7 +281,7 @@ void store_to_file(PQResult pqResult, char *powquty_path) {
 			exit(EXIT_FAILURE);
 	} else {
 		pf = fopen(powquty_path, "r+");
-		char_count = get_character_count(pf);
+		char_count = get_character_count_per_line(pf);
 		fseek(pf, -char_count, SEEK_END);
 		lower_bound = ftell(pf);
 		if (is_unchecked) {
@@ -300,7 +300,7 @@ void store_to_file(PQResult pqResult, char *powquty_path) {
 					is_unchecked = 1;
 			}
 		} else {
-			cur_offset += (long)get_character_count(pf);
+			cur_offset += (long)get_character_count_per_line(pf);
 			fseek(pf, cur_offset, SEEK_SET);
 			if (cur_offset == lower_bound)
 				is_unchecked = 1;
