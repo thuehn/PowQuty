@@ -98,7 +98,7 @@ void print_PQ_Error(PQ_ERROR err) {
  * @entry: position in line
  * return: token if found, else NULL
  */
-char * get_entry(char* line, int entry) {
+char * get_entry_from_line_position(char* line, int entry) {
 	char* token;
 	for (token = strtok(line, ","); token && *token;
 	     token = strtok(NULL, ",\n")) {
@@ -165,11 +165,11 @@ int is_outdated(FILE *file, ssize_t char_count) {
 
 	fseek(file, 0, SEEK_SET);
 	getline(&line, &len, file);
-	first_time = atoi(get_entry(line, TIME_STAMP));
+	first_time = atoi(get_entry_from_line_position(line, TIME_STAMP));
 
 	memcpy(last_line,get_last_line(file,char_count), char_count);
 	last_line[char_count] = '\0';
-	last_time = atoi(get_entry(last_line, TIME_STAMP));
+	last_time = atoi(get_entry_from_line_position(last_line, TIME_STAMP));
 
 	if (last_time > first_time)
 		return 1;
@@ -228,7 +228,7 @@ int get_line_entry(FILE *file) {
 	int val;
 
 	getline(&line, &len, file);
-	val = atoi(get_entry(line, TIME_STAMP));
+	val = atoi(get_entry_from_line_position(line, TIME_STAMP));
 	return val;
 }
 
