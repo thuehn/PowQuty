@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include "config.h"
 
-#define MB_TO_BYTE 1048576
+#define KB_TO_BYTE 1024
 #define MAX_FILE_SIZE 4096
 #define TIME_STAMP 2
 
@@ -180,14 +180,14 @@ int is_outdated(FILE *file, ssize_t char_count) {
 /*
  * check if a file is above a given limit
  * @file: file to check
- * @max_size: maximal size of file in MB
+ * @max_size: maximal size of file in kB
  * return: returns 1 if file is above the limit, else 0
  */
 int has_max_size(char *powquty_path, off_t max_size) {
 	struct stat st;
 	off_t filesize;
 
-	max_size *= MB_TO_BYTE;
+	max_size *= KB_TO_BYTE;
 
 	if (access(powquty_path, F_OK ))
 		return 0;
