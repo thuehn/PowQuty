@@ -161,9 +161,9 @@ void publish_measurements(PQResult pqResult) {
 	// printf("publish_measurements: \n");
 	payload[0] = '\0';
 	long long ts = get_curr_time_in_milliseconds();
-	int ts_sec = get_curr_time_in_seconds();
+	long ts_sec = get_curr_time_in_seconds();
 	sprintf(payload,
-			"%s,%d,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
+			"%s,%ld,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
 			dev_uuid,
 			ts_sec,
 			ts,

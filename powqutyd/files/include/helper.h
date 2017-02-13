@@ -12,7 +12,7 @@
 
 long long get_curr_time_in_milliseconds();
 
-int get_curr_time_in_seconds();
+long get_curr_time_in_seconds();
 
 short get_short_val(unsigned char* buf);
 
