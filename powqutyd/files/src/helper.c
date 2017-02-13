@@ -66,10 +66,10 @@ long long get_curr_time_in_milliseconds() {
 	return (long long) ( (tv.tv_sec * 1000) + (int)tv.tv_usec/1000 );
 }
 
-int get_curr_time_in_seconds() {
+long get_curr_time_in_seconds() {
 	struct timeval tv;
 	gettimeofday(&tv,NULL);
-	return (int) (tv.tv_sec);
+	return tv.tv_sec;
 }
 
 void print_PQ_Error(PQ_ERROR err) {
@@ -158,19 +158,19 @@ ssize_t get_character_count_per_line(FILE *file) {
  * return 0 if file write has to be resumed, 1 if the first entry is the oldest
  */
 int is_outdated(FILE *file, ssize_t char_count) {
-	int first_time, last_time;
+	long first_time, last_time;
 	char *line =NULL;
 	char *last_line = malloc((sizeof(char) * char_count) + 1);
 	size_t len = 0;
 
 	fseek(file, 0, SEEK_SET);
 	getline(&line, &len, file);
-	first_time = atoi(get_entry_from_line_position(line,
+	first_time = atol(get_entry_from_line_position(line,
 						       TIME_STAMP_POSITION));
 
 	memcpy(last_line,get_last_line(file,char_count), char_count);
 	last_line[char_count] = '\0';
-	last_time = atoi(get_entry_from_line_position(last_line,
+	last_time = atol(get_entry_from_line_position(last_line,
 						      TIME_STAMP_POSITION));
 
 	if (last_time > first_time)
@@ -227,10 +227,10 @@ long get_line_number(long offset, ssize_t char_count) {
 int get_line_entry(FILE *file) {
 	char *line = NULL;
 	size_t len = 0;
-	int val;
+	long val;
 
 	getline(&line, &len, file);
-	val = atoi(get_entry_from_line_position(line, TIME_STAMP_POSITION));
+	val = atol(get_entry_from_line_position(line, TIME_STAMP_POSITION));
 	return val;
 }
 
@@ -310,9 +310,9 @@ void store_to_file(PQResult pqResult, char *powquty_path) {
 		}
 	}
 	long long ts = get_curr_time_in_milliseconds();
-	int ts_sec = get_curr_time_in_seconds();
+	long ts_sec = get_curr_time_in_seconds();
 	fprintf(pf,
-			"%s,%d,%lld,3,%010.6f,%09.6f,%09.6f,%09.6f,%09.6f,%09.6f,"
+			"%s,%ld,%lld,3,%010.6f,%09.6f,%09.6f,%09.6f,%09.6f,%09.6f,"
 			"%09.6f,%09.6f,%09.6f\n",
 			"DEV_UUID",
 			ts_sec,
