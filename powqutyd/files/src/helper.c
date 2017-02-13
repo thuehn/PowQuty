@@ -19,7 +19,7 @@
 #define TIME_STAMP_POSITION 2
 
 off_t max_filesize = MAX_FILE_SIZE;
-int is_unchecked = 1;
+int file_is_unchecked = 1;
 long cur_offset;
 
 void print_received_buffer(unsigned char* buf, int len) {
@@ -284,8 +284,8 @@ void store_to_file(PQResult pqResult, char *powquty_path) {
 		char_count = get_character_count_per_line(pf);
 		fseek(pf, -char_count, SEEK_END);
 		lower_bound = ftell(pf);
-		if (is_unchecked) {
-			is_unchecked = 0;
+		if (file_is_unchecked) {
+			file_is_unchecked = 0;
 
 			if (is_outdated(pf,char_count)) {
 				fseek(pf, 0, SEEK_SET);
@@ -297,13 +297,13 @@ void store_to_file(PQResult pqResult, char *powquty_path) {
 					     char_count);
 				cur_offset = ftell(pf);
 				if (cur_offset == lower_bound)
-					is_unchecked = 1;
+					file_is_unchecked = 1;
 			}
 		} else {
 			cur_offset += (long)get_character_count_per_line(pf);
 			fseek(pf, cur_offset, SEEK_SET);
 			if (cur_offset == lower_bound)
-				is_unchecked = 1;
+				file_is_unchecked = 1;
 		}
 	}
 	long long ts = get_curr_time_in_milliseconds();
