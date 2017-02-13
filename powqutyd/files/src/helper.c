@@ -112,11 +112,28 @@ int has_max_size(char *powquty_path, off_t max_size) {
 	return 0;
 }
 
+/*
+ * check if Harmonic values are in a reasonable range
+ * returns 0 if a value is 10 or more, else 1
+ */
+int is_valid_input(PQResult pqResult) {
+	for (int i = 1; i < 7; i++)
+		if (pqResult.Harmonics[i] >= 10)
+			return 0;
+	return 1;
+}
+
 void store_to_file(PQResult pqResult, char *powquty_path) {
 	FILE* pf;
 	pf = fopen(powquty_path,"a");
 	long long ts = get_curr_time_in_milliseconds();
 	int ts_sec = get_curr_time_in_seconds();
+
+	if (!is_valid_input(pqResult)) {
+		fclose(pf);
+		return;
+	}
+
 	fprintf(pf,
 			"%s,%d,%lld,3,%010.6f,%09.6f,%09.6f,%09.6f,%09.6f,%09.6f,"
 			"%09.6f,%09.6f,%09.6f\n",
