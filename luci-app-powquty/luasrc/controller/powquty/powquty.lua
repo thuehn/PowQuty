@@ -10,10 +10,10 @@ function index()
  	if not nixio.fs.access("/etc/config/powquty") then
       return
    	end
-   	entry({"admin", "services", "powquty"}, cbi("powquty/powquty"), _("Powquty"))
+   	entry({"admin", "services", "powquty"}, cbi("powquty/powquty"), _("PowQuty"))
    	
     -- entry for menu node
-    entry ( { "admin", "statistics", "powquty" }, firstchild (), "powquty", 60 ).dependent=false
+    entry ( { "admin", "statistics", "powquty" }, firstchild (), "PowQuty", 60 ).dependent=false
     
     -- entry and route for the graph page
     entry ( { "admin", "statistics", "powquty", "graph" }, template ( "powquty/graph" ), "Graph", 1)  
@@ -259,8 +259,7 @@ function powquty_render()
     lfs.mkdir ( rrdimg_dir )
 
     local phys = ""
-    local index = 1 --just added for testing purpose
-    --for index, path in ipairs ( regmon_paths ) do
+    local index = 1
     for index=1,3 do
 
 		if ( index == 2) then
@@ -277,7 +276,7 @@ function powquty_render()
         end
         phys = phys .. index-1
 
-        --if ( vars.img == nil or tonumber ( vars.img ) == index-1 ) then
+        if ( vars.img == nil or tonumber ( vars.img ) == index-1 ) then
             generate_rrdimage ( index-1
                               , rrdimg_dir .. "/" .. rrdimg
                               , span
@@ -290,8 +289,7 @@ function powquty_render()
                               , highlight
                               , busy_metric
                               )
-        --end
-    --end
+        end
 	end
 	
     -- deliver the image
