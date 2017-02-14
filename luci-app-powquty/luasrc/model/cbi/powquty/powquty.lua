@@ -1,7 +1,7 @@
 
 m = Map("powquty")
 
-s = m:section(NamedSection, "powquty", "powquty", "Configuration", "Configuration and stuff...")
+s = m:section(NamedSection, "powquty", "powquty", "Configuration")
 
 
 device_tty = s:option(Value, "device_tty", "Device tty", "The path to the tty device created by cdc-acm driver")
@@ -12,7 +12,7 @@ mqtt_host = s:option(Value, "mqtt_host", "mqtt_host", "IP-address or URL to the 
 mqtt_host.datatype = "string"
 mqtt_host.default = "localhost"
 
-mqtt_topic = s:option(Value, "mqtt_topic", "mqtt_topic", "The topic under which powquty will publish the mesurement results. The Format is the following: device_uuid,timestamp,3,RMS_Voltag_RMS_Frequency,H3,H5,H7,H9,H11,H13,H15")
+mqtt_topic = s:option(Value, "mqtt_topic", "mqtt_topic", "The topic under which powquty will publish the mesurement results. The Format is the following: device_uuid,timestamp(sec),timestamp(millisec),3,RMS_Voltage,RMS_Frequency,H3,H5,H7,H9,H11,H13,H15")
 mqtt_topic.datatype = "string"
 mqtt_topic.default = "devices/update"
 

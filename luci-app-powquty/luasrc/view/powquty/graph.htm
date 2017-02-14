@@ -33,14 +33,14 @@
 		<h3>Harmonics</h3>
 	<% end %>
     <div style="text-align: center">
-       <img src="/luci-static/resources/icons/loading.gif" id="regmonimg<%=phy%>" />
+       <img src="/luci-static/resources/icons/loading.gif" id="powqutyimg<%=phy%>" />
     </div>
 <% end %>
 
 <script language="javascript" type="text/javascript">
     function refresh(x) {
         <% for i, phy in ipairs ( phys_list ) do %>
-            var img = document.getElementById('regmonimg<%=phy%>');
+            var img = document.getElementById('powqutyimg<%=phy%>');
             img.src  = "<%=REQUEST_URI%>?timespan=<%=current_timespan%>&img=<%=phy%>&phys=<%=phys%>&" + new Date().getTime();
         <% end %>
     }
