@@ -28,5 +28,9 @@ powqutyd_print = s:option(Flag, "powqutyd_print", "powqutyd_print", "If activate
 powqutyd_print.rmempty = false
 powqutyd_print.default = true
 
+max_log_size_kb = s:option(Value, "max_log_size_kb", "max_log_size_kb", "Maximum size of log files in kB")
+max_log_size_kb.datatype = "string"
+max_log_size_kb.default = "4096"
+
 return m
 

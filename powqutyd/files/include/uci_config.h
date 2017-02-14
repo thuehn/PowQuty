@@ -18,6 +18,7 @@ struct powquty_conf {
 	char dev_uuid[32];
 	char powquty_path[32];
 	int powqutyd_print;
+	long max_log_size_kb;
 
 /*	option device_tty '/dev/ttyACM0'
 		option mqtt_host 'localhost'
