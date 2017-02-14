@@ -10,10 +10,10 @@ function index()
  	if not nixio.fs.access("/etc/config/powquty") then
       return
    	end
-   	entry({"admin", "services", "powquty"}, cbi("powquty/powquty"), _("Powquty"))
+   	entry({"admin", "services", "powquty"}, cbi("powquty/powquty"), _("PowQuty"))
    	
     -- entry for menu node
-    entry ( { "admin", "statistics", "powquty" }, firstchild (), "powquty", 60 ).dependent=false
+    entry ( { "admin", "statistics", "powquty" }, firstchild (), "PowQuty", 60 ).dependent=false
     
     -- entry and route for the graph page
     entry ( { "admin", "statistics", "powquty", "graph" }, template ( "powquty/graph" ), "Graph", 1)  
@@ -155,35 +155,10 @@ function generate_rrdimage ( phy, image, span, width, height, rrd_path,
     local colors = { "#FF5555", "#55FF55", "#5555FF", "#FF55FF", "#55FFFF", "#FFFF55" }
     local colors2 = { "#AA0000", "#00AA00", "#0000AA", "#AA00AA", "#00AAAA", "#AAAA00" }
 
-    -- fixme: redeclaration of "abs_count" metric name (first in /usr/bin/regmon-genconfig)
-    --cmd = cmd .. rrd_metric_def ( phy, vertical_label, rrd_path, file_prefix, rrd_suffix, column_name )
-
     -- print defs for each metric
     for i, metric in ipairs ( metrics ) do
         cmd = cmd .. rrd_metric_defs ( phy, metric, rrd_path, file_prefix, rrd_suffix, column_name )
     end
-
-    -- add def for other metrics than the explicit monitored one
-    -- i.e. "noise = busy - rx - tx"
-    --cmd = cmd .. " \"CDEF:rel_noise" .. phy .. "=rel_" .. busy_metric .. phy
-   -- for i, metric in ipairs ( metrics ) do
-   --     if ( metric ~= busy_metric ) then
-   --         cmd = cmd .. ",rel_" .. metric .. phy.. ",-"
-   --     end
-   -- end
-    --cmd = cmd .. "\" \\\n"
-
-    -- normalize noise
-    --cmd = cmd .. " \"CDEF:rel_noise" .. phy .. "_norm=rel_noise" .. phy .. ",0,LT,0,rel_noise" .. phy .. ",IF\" \\\n"
-
-    -- calculate idle = (abs_count - busy_count) * 100 / abs_count
-    --cmd = cmd .. " \"CDEF:rel_idle" .. phy .. "=abs_count" .. phy .. "," 
-     --       .. busy_metric .. phy .. ",-,100,*,abs_count" .. phy .. ",/\" \\\n"
-
-    -- normalize idle
-    --cmd = cmd .. " \"CDEF:rel_idle" .. phy .. "_norm=rel_noise" .. phy 
-    --    .. ",0,LT,rel_idle" .. phy .. ",rel_noise" .. phy .. ",+,rel_idle" .. phy .. ",IF\" \\\n"
-
     
     --cmd = cmd .. " COMMENT:\"relative mac states\\n\" \\\n"
     local out_shape = shape
@@ -199,13 +174,6 @@ function generate_rrdimage ( phy, image, span, width, height, rrd_path,
             end
         end
     end
-    
-
-    --cmd = cmd .. " " .. out_shape .. ":rel_noise" .. phy .. "_norm" .. colors[#metrics+1] .. ":noise" .. phy
-    --cmd = cmd .. rrd_metric_legend ( "noise" .. phy .. "_norm" )
-
-    --cmd = cmd .. " " .. out_shape .. ":rel_idle" .. phy .. "_norm" .. colors[#metrics+2] .. ":idle" .. phy
-    --cmd = cmd .. rrd_metric_legend ( "idle" .. phy .. "_norm" )
 
     -- print highlight for each metric
     if ( shape == 'AREA' and highlight == '1' and 1==2 ) then
@@ -259,8 +227,7 @@ function powquty_render()
     lfs.mkdir ( rrdimg_dir )
 
     local phys = ""
-    local index = 1 --just added for testing purpose
-    --for index, path in ipairs ( regmon_paths ) do
+    local index = 1
     for index=1,3 do
 
 		if ( index == 2) then
@@ -277,7 +244,7 @@ function powquty_render()
         end
         phys = phys .. index-1
 
-        --if ( vars.img == nil or tonumber ( vars.img ) == index-1 ) then
+        if ( vars.img == nil or tonumber ( vars.img ) == index-1 ) then
             generate_rrdimage ( index-1
                               , rrdimg_dir .. "/" .. rrdimg
                               , span
@@ -290,8 +257,7 @@ function powquty_render()
                               , highlight
                               , busy_metric
                               )
-        --end
-    --end
+        end
 	end
 	
     -- deliver the image
