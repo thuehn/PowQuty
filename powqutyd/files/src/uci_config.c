@@ -17,6 +17,13 @@ static int uci_lookup_option_int(struct uci_context *uci, struct uci_section *s,
 	return str == NULL ? -1 : atoi(str);
 }
 
+static long uci_lookup_option_long(struct uci_context *uci,
+				   struct uci_section *s,
+				   const char *name) {
+	const char *str = uci_lookup_option_string(uci, s, name);
+	return str == NULL ? -1 : atol(str);
+}
+
 int uci_config_powquty(struct powquty_conf* conf) {
 	struct uci_context* uci;
 	struct uci_package* p;
@@ -29,6 +36,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 	char default_mqtt_topic[32] = "devices/update";
 	char default_dev_uuid[32] = "BERTUB001";
 	int default_powqutyd_print = 1;
+	long default_max_log_size_kb = 4096;
 
 	uci = uci_alloc_context();
 	if (uci == NULL)
@@ -50,6 +58,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			strcpy(conf->powquty_path, default_powquty_path);
 
 			conf->powqutyd_print = default_powqutyd_print;
+			conf->max_log_size_kb = default_max_log_size_kb;
 
 			str = uci_lookup_option_string(uci, s, "dev_uuid");
 			if (str == NULL)
@@ -100,6 +109,9 @@ int uci_config_powquty(struct powquty_conf* conf) {
 
 			conf->powqutyd_print = uci_lookup_option_int(uci, s,
 					"powqutyd_print");
+
+			conf->max_log_size_kb = uci_lookup_option_long(uci, s,
+					"max_log_size_kb");
 
 		}
 	}

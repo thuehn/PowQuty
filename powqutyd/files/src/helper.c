@@ -15,10 +15,8 @@
 #include "config.h"
 
 #define KB_TO_BYTE 1024
-#define MAX_FILE_SIZE 4096
 #define TIME_STAMP_POSITION 2
 
-off_t max_filesize = MAX_FILE_SIZE;
 int file_is_unchecked = 1;
 long cur_offset;
 
@@ -273,17 +271,17 @@ void set_position(FILE *file, long u_bound, long l_bound, ssize_t char_count) {
 /*
  * For a correct file write all line must have the same number of characters.
  */
-void store_to_file(PQResult pqResult, char *powquty_path) {
+void store_to_file(PQResult pqResult, struct powquty_conf *config) {
 	FILE* pf;
 	ssize_t char_count;
 	long lower_bound, upper_bound;
 
-	if (!has_max_size(powquty_path, max_filesize)) {
-		pf = fopen(powquty_path,"a");
+	if (!has_max_size(config->powquty_path, (off_t)config->max_log_size_kb)) {
+		pf = fopen(config->powquty_path,"a");
 		if (pf == NULL)
 			exit(EXIT_FAILURE);
 	} else {
-		pf = fopen(powquty_path, "r+");
+		pf = fopen(config->powquty_path, "r+");
 		char_count = get_character_count_per_line(pf);
 		fseek(pf, -char_count, SEEK_END);
 		lower_bound = ftell(pf);
