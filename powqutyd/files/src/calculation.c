@@ -27,6 +27,9 @@ PQInfo pqInfo;
 PQResult pqResult;
 PQ_ERROR err = PQ_NO_ERROR;
 
+static pthread_cond_t calc_cond;
+static pthread_mutex_t calc_mtx;
+
 static pthread_t calculation_thread;
 static void *calculation_thread_run(void* param);
 
@@ -40,9 +43,13 @@ static volatile unsigned int buffer_data_start_idx=0;
 static volatile unsigned int stop_calculation_run = 0, data_ready=0;
 float hw_offset= 0.0, hw_scale=0.0;
 
-short block_buffer[BLOCK_BUFFER_SIZE];
-long long timestamp_buffer[TS_BUFFER_SIZE];
-float in[SAMPLES_PER_BLOCK];
+// short block_buffer[BLOCK_BUFFER_SIZE];
+//long long timestamp_buffer[TS_BUFFER_SIZE];
+//float in[SAMPLES_PER_BLOCK];
+short *block_buffer;
+long long *timestamp_buffer;
+float *in;
+
 struct powquty_conf* config;
 
 void load_data_to_in();
@@ -71,22 +78,27 @@ int calculation_load_from_config() {
 int calculation_init(struct powquty_conf* conf) {
 	int res=0;
 
+	//long long timestamp_buffer[TS_BUFFER_SIZE];
+	//float in[SAMPLES_PER_BLOCK];
+	block_buffer = calloc(sizeof(short),BLOCK_BUFFER_SIZE);
+	timestamp_buffer = calloc(sizeof(long long),TS_BUFFER_SIZE);
+	in = calloc(sizeof(float),SAMPLES_PER_BLOCK);
 	config = conf;
-	printf("conf device_tty ==> %s\n", conf->device_tty);
-	printf("config device_tty ==> %s\n", config->device_tty);
+	//printf("conf device_tty ==> %s\n", conf->device_tty);
+	//printf("config device_tty ==> %s\n", config->device_tty);
 	if(is_config_loaded()) {
 		res= calculation_load_from_config();
 	}
 
 	if(!retrieval_init(config->device_tty)) {
-		printf("Retrieval Thread started \n");
+		printf("DEBUG:\t\tRetrieval Thread started \n");
 	} else {
-		printf("couldn't start Retrieval-Thread\n");
+		printf("ERROR:\t\tcouldn't start Retrieval-Thread\n");
 		return -1;
 	}
-	memset(&block_buffer, 0, BLOCK_BUFFER_SIZE * sizeof(short));
-	memset(&timestamp_buffer, 0, TS_BUFFER_SIZE * sizeof(long long));
-	memset(&in, 0, SAMPLES_PER_BLOCK * sizeof(float));
+	memset(block_buffer, 0, BLOCK_BUFFER_SIZE * sizeof(short));
+	memset(timestamp_buffer, 0, TS_BUFFER_SIZE * sizeof(long long));
+	memset(in, 0, SAMPLES_PER_BLOCK * sizeof(float));
 
 	pqConfig.sampleRate = 10240;
 	hw_offset = get_hw_offset();
@@ -96,13 +108,16 @@ int calculation_init(struct powquty_conf* conf) {
 
 	err = createPowerQuality(&pqConfig, &pPQInst, &pqInfo);
 
+	pthread_cond_init(&calc_cond, NULL);
+	pthread_mutex_init(&calc_mtx,NULL);
+
 	if(err == PQ_NO_ERROR) {
 		// start calculation thread
 		res = pthread_create(&calculation_thread,NULL, calculation_thread_run,NULL);
 
 	} else {
 		// TODO see what happend
-		printf("error creating PQ_Instance, errno: %d\n", err);
+		printf("ERROR:\t\terror creating PQ_Instance, errno: %d\n", err);
 		stop_retrieval();
 		return -1;
 	}
@@ -111,7 +126,13 @@ int calculation_init(struct powquty_conf* conf) {
 }
 
 static void *calculation_thread_run(void* param) {
+	printf("DEBUG:\tCalculation Thread has started\n");
 	while(!stop_calculation_run) {
+
+		pthread_mutex_lock(&calc_mtx);
+		pthread_cond_wait(&calc_cond,&calc_mtx);
+		pthread_mutex_unlock(&calc_mtx);
+
 		if(data_ready) {
 			// do the calculation
 			//printf("\n\ncalculating @ idx: %d\n", buffer_data_start_idx );
@@ -134,7 +155,7 @@ static void *calculation_thread_run(void* param) {
 
 			/* exit processing on error */
 			if(err != PQ_NO_ERROR) {
-				printf("Error applying PQ-Lib\n");
+				printf("TODO:\t\tError applying PQ-Lib\n\t\t\t");
 				print_PQ_Error(err);
 				break;
 			}
@@ -149,6 +170,7 @@ static void *calculation_thread_run(void* param) {
 			data_ready=0;
 		}
 	}
+	printf("DEBUG:\tCalculation Thread has ended\n");
 	return NULL;
 }
 
@@ -162,9 +184,13 @@ void do_calculation(unsigned int stored_frame_idx) {
 	 * ===> idx <= (TS_BUFFER_SIZE -32)
 	 */
 	if(stored_frame_idx%32) {
-		printf("Error from retrieval: Stored frame idx given for calculation is not a Multiple of FRAMES_PER_BLOCK \n");
+		printf("ERROR:\t\tError from retrieval: Stored frame idx given for calculation is not a Multiple of FRAMES_PER_BLOCK \n");
 		return;
 	}
+
+	pthread_mutex_lock(&calc_mtx);
+	pthread_cond_signal(&calc_cond);
+	pthread_mutex_unlock(&calc_mtx);
 
 	data_ready = 1;
 	if (stored_frame_idx<32) {
@@ -176,12 +202,23 @@ void do_calculation(unsigned int stored_frame_idx) {
 }
 
 void stop_calculation() {
+	printf("DEBUG:\tStopping Calculation Thread\n");
 	stop_retrieval();
 	// stop calculation
 	stop_calculation_run=1;
-	pthread_join(calculation_thread, NULL);
+	pthread_cond_signal(&calc_cond);
 	// destroy PQInstance
 	destroyPowerQuality(&pPQInst);
+}
+
+
+void join_calculation() {
+	printf("DEBUG:\tJoining Calculation Thread\n");
+	join_retrieval();
+	pthread_cond_destroy(&calc_cond);
+	pthread_mutex_destroy(&calc_mtx);
+	pthread_join(calculation_thread, NULL);
+	printf("DEBUG:\tCalculation Thread Joined \n");
 }
 
 void store_data(unsigned char * buf, unsigned int stored_frame_idx, long long ts){

@@ -273,10 +273,11 @@ void set_position(FILE *file, long u_bound, long l_bound, ssize_t char_count) {
  */
 void store_to_file(PQResult pqResult, struct powquty_conf *config) {
 	FILE* pf;
+	struct powquty_conf *conf = config;
 	ssize_t char_count;
 	long lower_bound, upper_bound;
 
-	if (!has_max_size(config->powquty_path, (off_t)config->max_log_size_kb)) {
+	if (!has_max_size(conf->powquty_path, (off_t)conf->max_log_size_kb)) {
 		pf = fopen(config->powquty_path,"a");
 		if (pf == NULL)
 			exit(EXIT_FAILURE);

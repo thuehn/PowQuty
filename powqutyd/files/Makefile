@@ -1,7 +1,7 @@
 CC:=gcc
 LD=ld
 CFLAGS+=-g -Wall
-CFLAGS+=-I./lib/ -I. -I./include/
+CFLAGS+=-I./lib/ -I. -I./include/ -I/usr/local/include/uci
 
 #CFLAGS+=-DDEBUG_PRINT
 
@@ -50,6 +50,7 @@ OBJS= src/emulator.o \
 	src/mqtt.o \
 	src/retrieval.o \
 	src/calculation.o \
+	src/raw_dump.o \
 	src/main.o
 
 MQTT_OBJS= src/mqtt.o \

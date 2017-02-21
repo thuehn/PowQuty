@@ -7,6 +7,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "PQ_App.h"
 #ifdef MQTT
@@ -25,6 +26,7 @@ void handle_signal()
 	stop_mosquitto();
 #endif
 	stop_calculation();
+	printf("DEBUG:\tThreads should have stopped \n");
 	stop_main = 1;
 #ifdef MQTT
 	publish_device_offline();
@@ -50,7 +52,7 @@ void handle_args (int argc, char **argv) {
 int main (int argc, char *argv[]) {
 	signal(SIGINT, handle_signal);
 	signal(SIGTERM, handle_signal);
-	char* config_file = "/etc/powqutyd/powqutyd.cfg";
+	// char* config_file = "/etc/powqutyd/powqutyd.cfg";
 
 	/*if(load_config(config_file)){
 		printf("Error: could not load some config from %s\n", config_file);
@@ -59,7 +61,7 @@ int main (int argc, char *argv[]) {
 
 	struct powquty_conf conf;
 	uci_config_powquty(&conf);
-	printf("UCI CONFIG FTW!!!");
+	//printf("UCI CONFIG FTW!!!");
 
 	// PQ_ERROR err = PQ_NO_ERROR;
 
@@ -79,11 +81,17 @@ int main (int argc, char *argv[]) {
 #ifdef MQTT
 		publish_device_online();
 #endif
+	} else {
+		stop_mosquitto();
+		exit(EXIT_FAILURE);
 	}
+
 
 	while (!stop_main){
+		join_calculation();
 
 	}
+
 
 	return 0;
 }

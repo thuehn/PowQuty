@@ -17,7 +17,7 @@
 static const char* mqtt_host = "localhost";
 static const char* mqtt_topic = "devices/update";
 static const char* dev_uuid = "BERTUB001";
-static const char* dev_gps = "BERTUB001";
+//static const char* dev_gps = "BERTUB001";
 static const char* dev_FW_ver = "0.1";
 static const char* dev_APP_ver = "0.1";
 static const char* dev_HW_ver = "029";
@@ -35,6 +35,7 @@ struct mosquitto *mosq;
 
 void stop_mosquitto(){
 	mosquitto_thread_stop = 1;
+	printf("DEBUG:\tJoining MQTT Thread\n");
 	pthread_join(mosquitto_thread, NULL);
 }
 
@@ -131,8 +132,9 @@ int mqtt_init (struct powquty_conf* conf) {
 	int res = 0;
 	config = conf;
 	//if(is_config_loaded()) {
-		res = mqtt_load_from_config();
+	res = mqtt_load_from_config();
 	//}
+	printf("DEBUG:\tCreating MQTT Thread\n");
 	res = pthread_create(&mosquitto_thread,NULL, mosquitto_thread_main,NULL);
 	return res;
 }
@@ -201,6 +203,7 @@ int mqtt_publish(struct mosquitto *mosq, const char* msg ) {
 }
 
 static void *mosquitto_thread_main(void* param) {
+	printf("DEBUG:\tMQTT Thread has started\n");
 	char buff[250];
 	char* clientid = "MQTT_Client";
 
@@ -219,7 +222,7 @@ static void *mosquitto_thread_main(void* param) {
 		mosquitto_publish_callback_set(mosq, publish_callback);
 
 		while (!mosquitto_thread_stop) {
-			mosq_loop = mosquitto_loop(mosq, 0, 1);
+			mosq_loop = mosquitto_loop(mosq, -1, 1);
 			if (mosq_loop) {
 				printf("Loop Failed: %d\t", mosq_loop);
 				strerror_r(mosq_loop,buff,250);

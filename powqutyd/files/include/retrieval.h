@@ -9,7 +9,7 @@
 #define RETRIEVAL_H_
 
 
-#define MAX_FRAME_SIZE		160
+#define MAX_FRAME_SIZE		134
 #define SAMPLES_PER_FRAME	64
 #define SAMPLES_PER_BLOCK	2048
 #define FRAMES_PER_BLOCK	(SAMPLES_PER_BLOCK / SAMPLES_PER_FRAME)	// 32
@@ -31,6 +31,8 @@ void set_debug(int i);
  * stop function for the retrieval functionality
  */
 void stop_retrieval();
+
+void join_retrieval();
 
 float get_hw_offset();
 

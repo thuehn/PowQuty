@@ -51,7 +51,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 	{
 		struct uci_section *s = uci_to_section(e);
 		if (strcmp(s->type, "powquty") == 0) {
-
+			strcpy(conf->device_tty, default_device_tty);
 			strcpy(conf->dev_uuid, default_dev_uuid);
 			strcpy(conf->mqtt_host, default_mqtt_host);
 			strcpy(conf->mqtt_topic, default_mqtt_topic);

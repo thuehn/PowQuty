@@ -8,15 +8,19 @@
 #ifndef CALCULATION_H_
 #define CALCULATION_H_
 
+#include "uci_config.h"
+
 /*
  * init function for the calculation functionality
  */
-int calculation_init();
+int calculation_init(struct powquty_conf* conf);
 
 /*
  * stop function for the calculation functionality
  */
 void stop_calculation();
+
+void join_calculation();
 
 void do_calculation(unsigned int stored_frame_idx);
 
