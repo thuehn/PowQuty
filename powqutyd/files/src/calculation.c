@@ -17,6 +17,7 @@
 #include "config.h"
 #include "helper.h"
 #include "uci_config.h"
+#include "main.h"
 
 const char* device_tty;
 
@@ -157,6 +158,7 @@ static void *calculation_thread_run(void* param) {
 			if(err != PQ_NO_ERROR) {
 				printf("TODO:\t\tError applying PQ-Lib\n\t\t\t");
 				print_PQ_Error(err);
+				stop_powqutyd();
 				break;
 			}
 			// print_results();

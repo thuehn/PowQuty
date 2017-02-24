@@ -33,6 +33,10 @@ void handle_signal()
 #endif
 }
 
+void stop_powqutyd() {
+	handle_signal();
+}
+
 void handle_args (int argc, char **argv) {
 	int c;
 	while ((c = getopt (argc, argv, "rd")) != -1) {

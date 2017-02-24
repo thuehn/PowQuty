@@ -224,12 +224,15 @@ static void *mosquitto_thread_main(void* param) {
 		while (!mosquitto_thread_stop) {
 			mosq_loop = mosquitto_loop(mosq, -1, 1);
 			if (mosq_loop) {
-				printf("Loop Failed: %d\t", mosq_loop);
+				printf("WARNING:\tLoop Failed: %d\t", mosq_loop);
 				strerror_r(mosq_loop,buff,250);
 				printf("%s\n",buff);
-				// TODO
-				printf("Do something! like reconnect?\n");
-				break;
+				//printf("Do something! like reconnect?\n");
+				rc = mosquitto_connect(mosq, mqtt_host, mqtt_port, 60);
+				if(rc != MOSQ_ERR_SUCCESS) {
+					printf("Error: mosquitto_connect\n");
+				}
+				//break;
 			} else {
 				if(publish_msg) {
 					pub_res = mqtt_publish(mosq,payload);

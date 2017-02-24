@@ -21,6 +21,7 @@
 #include <sys/select.h>
 #include <sys/time.h>
 #include "raw_dump.h"
+#include "main.h"
 
 static int raw_print = 0;
 static int debug_flag = 0;
@@ -310,8 +311,9 @@ static void *reading_thread_run(void* param) {
 				//exit(EXIT_FAILURE);
 			} else if (offset == 0) {
 				printf("\n\n\nERROR:\t error while reading\toffset = %d\t errno; %s \n\n\n\n",offset,strerror(errno));
-				go_sleep(1000);
-				continue;
+				stop_powqutyd();
+				//go_sleep(1000);
+				break;
 			} else {
 				read_size += offset;
 				if (current_frame[0] != 0x05) {
