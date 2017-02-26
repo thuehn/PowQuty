@@ -147,3 +147,19 @@ Once powqutyd has calculated the RMS Voltage in Volts, the actual Frequency in H
 BERTUB001,1458689327099,3,223.732391,49.973961,0.926936,1.542370,2.207536,1.318457,1.243623,0.722359,2.283980
 ```
 It is a string with the Format: DEV_UUID,Timestamp,3,RMS_Voltag_RMS_Frequency,H3,H5,H7,H9,H11,H13,H15
+
+## Do you want to contribute ?
+Everybody can participate, and any help is highly appreciated.
+Feel free to send pull requests or open a new issue via GitHub.
+- testing PowQuty and its power quality measurements in your power grid environment
+- reviewing patches
+
+### Supporters and Developers
+- Nadmin el Sayed from TU-Berlin
+- Stefan Venz from HFT Berlin
+- Thomas Huehn from TU-Berlin
+
+### How to reference to PowQuty ?
+Just use the following bibtex :
+
+To be added by Nadim
