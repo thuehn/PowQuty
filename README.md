@@ -16,6 +16,12 @@ PowQuty consists of an Ansi C deamon and a luci webinterface extension to perfor
 
 Sustainable energy production and consumption are crucial for a prospering life on earth. Decentralized energy production is one of the next big challenges, which will influence the energy production in the future years. The emerging smart grids include an inherent need for communication for monitoring and control purposes in a more and more dynamic environment. One of the major challenges is monitoring the power quality parameters in a decentralized manner. The Freifunk mesh network is an outstanding example for a decentralized infrastructure that could be augmented with grid related functionalities to cope with future energy challenges. The main goal of this project is to enable power quality measurements on OpenWrt. Voltage samples from the electric socket are retrieved at the router. Next power quality parameters are calculated, and finally made available for retrieval over IP networks.
 
+
+### Example of PowQuty LUCI web interface view
+
+![alt tag](https://cloud.githubusercontent.com/assets/1880886/23344150/98904e36-fc77-11e6-8fc0-ebbea06efe2b.png)
+
+
 ### How to install PowQuty (under Linux LEDE [www.lede-project.org])
 1. Add the following line to your feeds.conf in your LEDE source directory:
 ```
@@ -38,6 +44,7 @@ When successfull the  powqutyd package will create:
 * the binary powqutyd in /usr/sbin
 * the configuration file in /etc/powqutyd/powqutyd.cfg
 
+
 ### How to show PowQutys power quality plots in your local routers web-interface
 
 1. point your Linux LEDE feeds.conf to our PowQuty repository by adding the following line to your feeds.conf:
@@ -49,9 +56,6 @@ src-git powquty https://github.com/thuehn/powquty.git
 4. rebuild your LEDE image
 5. flash a new image or install the luci_app_powquty with the hepl of opkg
 
-### Example of PowQuty LUCI web interface view
-
-![alt tag](https://cloud.githubusercontent.com/assets/1880886/23344150/98904e36-fc77-11e6-8fc0-ebbea06efe2b.png)
 
 ## How to use PowQuty ?
 
