@@ -38,6 +38,18 @@ When successfull the  powqutyd package will create:
 * the binary powqutyd in /usr/sbin
 * the configuration file in /etc/powqutyd/powqutyd.cfg
 
+
+### How to show PowQutys power quality plots in your local routers web-interface
+
+1. point your Linux LEDE feeds.conf to our PowQuty repository by adding the following line to your feeds.conf:
+```
+src-git powquty https://github.com/thuehn/powquty.git
+```
+2. trigger a `feeds update`
+3. select our luci_app_powquty from `make menuconfig` under menu LUCI
+4. rebuild your LEDE image
+5. flash a new image or install the luci_app_powquty with the hepl of opkg
+
 ## How to use PowQuty ?
 
 ### powquty configuration
