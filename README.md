@@ -156,7 +156,7 @@ Feel free to send pull requests or open a new issue via GitHub.
 
 ### Supporters and Developers
 - Nadmin el Sayed from TU-Berlin
-- Stefan Venz from HFT Berlin
+- Stefan Venz from HTW Berlin
 - Thomas Huehn from TU-Berlin
 
 ### How to reference to PowQuty ?
