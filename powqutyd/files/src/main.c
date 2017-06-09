@@ -28,9 +28,6 @@ void handle_signal()
 	stop_calculation();
 	printf("DEBUG:\tThreads should have stopped \n");
 	stop_main = 1;
-#ifdef MQTT
-	publish_device_offline();
-#endif
 }
 
 void stop_powqutyd() {

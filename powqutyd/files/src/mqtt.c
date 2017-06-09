@@ -16,6 +16,8 @@
 
 static const char* mqtt_host = "localhost";
 static const char* mqtt_topic = "devices/update";
+static const char* mqtt_uname = "username";
+static const char* mqtt_pw = "password";
 static const char* dev_uuid = "BERTUB001";
 //static const char* dev_gps = "BERTUB001";
 static const char* dev_FW_ver = "0.1";
@@ -34,6 +36,7 @@ static char payload[MAX_MQTT_MSG_LEN];
 struct mosquitto *mosq;
 
 void stop_mosquitto(){
+	publish_device_offline();
 	mosquitto_thread_stop = 1;
 	printf("DEBUG:\tJoining MQTT Thread\n");
 	pthread_join(mosquitto_thread, NULL);
@@ -89,6 +92,8 @@ int mqtt_load_from_config() {
 
 	mqtt_topic = config->mqtt_topic;
 
+	mqtt_uname = config->mqtt_uname;
+	mqtt_pw = config->mqtt_pw;
 
 /*
 	if(!config_lookup_string(get_cfg_ptr(), "dev_uuid", &dev_uuid)) {
@@ -134,6 +139,9 @@ int mqtt_init (struct powquty_conf* conf) {
 	//if(is_config_loaded()) {
 	res = mqtt_load_from_config();
 	//}
+	int vers [] = {0,0,0};
+	int ret = mosquitto_lib_version(&vers[0], &vers[1], &vers[2]);
+	printf("MQTT_LIB_VERSION: \tRet: %d\tMaj: %d\tMin: %d\tRev: %d\n",ret, vers[0], vers[1], vers[2]);
 	printf("DEBUG:\tCreating MQTT Thread\n");
 	res = pthread_create(&mosquitto_thread,NULL, mosquitto_thread_main,NULL);
 	return res;
@@ -198,14 +206,14 @@ void mqtt_publish_msg(const char* msg) {
 int mqtt_publish(struct mosquitto *mosq, const char* msg ) {
 	int res;
 	unsigned int len = (unsigned int)strlen(msg);
-	res =  mosquitto_publish(mosq, NULL, mqtt_topic,len, (const unsigned char *)msg, 0, false);
+	res =  mosquitto_publish(mosq, NULL, mqtt_topic, len, (const unsigned char *)msg, 0, true);
 	return res;
 }
 
 static void *mosquitto_thread_main(void* param) {
 	printf("DEBUG:\tMQTT Thread has started\n");
 	char buff[250];
-	char* clientid = "MQTT_Client";
+	char* clientid = (char *) dev_uuid;
 
 	int mosq_loop= 0, rc = 0, pub_res = 0;
 	// char payload_msg[250] ="";
@@ -214,6 +222,8 @@ static void *mosquitto_thread_main(void* param) {
 	mosq = mosquitto_new(clientid, true, 0);
 
 	if(mosq){
+		mosquitto_username_pw_set (mosq, mqtt_uname, mqtt_pw);
+		//mosquitto_threaded_set(mosq, true); ==> setting it to true seem to hinder device_offline msg.
 		rc = mosquitto_connect(mosq, mqtt_host, mqtt_port, 60);
 		if(rc != MOSQ_ERR_SUCCESS) {
 			printf("Error: mosquitto_connect\n");
