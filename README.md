@@ -11,50 +11,30 @@
  :         : :  :     :: :  : :     : :  :::  : :  :      :        :     
 ```
 
-# What is PowQuty ?
+### What is PowQuty ?
 PowQuty consists of an Ansi C deamon and a luci webinterface extension to perform power quality measurements with a dedicated USB oszilloscope connected to a wireless routers based on LEDE Linux.
 
 Sustainable energy production and consumption are crucial for a prospering life on earth. Decentralized energy production is one of the next big challenges, which will influence the energy production in the future years. The emerging smart grids include an inherent need for communication for monitoring and control purposes in a more and more dynamic environment. One of the major challenges is monitoring the power quality parameters in a decentralized manner. The Freifunk mesh network is an outstanding example for a decentralized infrastructure that could be augmented with grid related functionalities to cope with future energy challenges. The main goal of this project is to enable power quality measurements on OpenWrt. Voltage samples from the electric socket are retrieved at the router. Next power quality parameters are calculated, and finally made available for retrieval over IP networks.
 
 
-# How to install Powquty ?
-* Add the following line to your feeds.conf in your source directory:
+### Example of PowQuty LUCI web interface view
+
+![alt tag](https://cloud.githubusercontent.com/assets/1880886/23344150/98904e36-fc77-11e6-8fc0-ebbea06efe2b.png)
+
+
+### How to install PowQuty (under Linux LEDE [www.lede-project.org])
+1. Add the following line to your feeds.conf in your LEDE source directory:
 ```
-$vi feeds.conf
 src-git powquty https://github.com/thuehn/powquty.git
 ```
-* Update the your feeds:
-```
-$./scripts/feeds update -a
-```
-* install powqutyd from feed
+2. install powqutyd with:
 ```
 $./scripts/feeds install powqutyd
 ```
-* Include powqutyd in your config
-```
-$make menuconfig
-```
-  * choose powqutyd from: Utilities --> powqutyd
-  * save and exit menuconfig
+3. add powqutyd to your LEDE config within make menuconfig -> Utilities --> powqutyd
+4. rebuild your LEDE image
+5. flash a new image or install the powquty with the hepl of opkg
 
-* Compile and install powqutyd
-  * compile:
-```
-$make package/powqutyd/compile
-```
-  * install
-```
-$make package/powqutyd/install
-```
-At this point you should have the ipk file generated under:
-```
-./bin/packages/<target>/powquty/powqutyd_0.1-1_<target>.ipk
-```
-* scp the ipk file to your router and install it:
-```
-#opkg install powqutyd_0.1-1_<target>.ipk
-```
 Note this package depends on the following libraries/packages, that have to be installed before installing powqutyd:
 * libmosquitto 
 * libconfig
@@ -65,9 +45,21 @@ When successfull the  powqutyd package will create:
 * the configuration file in /etc/powqutyd/powqutyd.cfg
 
 
-# How to use PowQuty ?
+### How to show PowQutys power quality plots in your local routers web-interface
 
-## powquty configuration
+1. point your Linux LEDE feeds.conf to our PowQuty repository by adding the following line to your feeds.conf:
+```
+src-git powquty https://github.com/thuehn/powquty.git
+```
+2. trigger a `feeds update`
+3. select our luci_app_powquty from `make menuconfig` under menu LUCI
+4. rebuild your LEDE image
+5. flash a new image or install the luci_app_powquty with the hepl of opkg
+
+
+## How to use PowQuty ?
+
+### powquty configuration
 Before running powqutyd you need to configure it. 
 
 ### Configure the USB connection settings
@@ -155,3 +147,19 @@ Once powqutyd has calculated the RMS Voltage in Volts, the actual Frequency in H
 BERTUB001,1458689327099,3,223.732391,49.973961,0.926936,1.542370,2.207536,1.318457,1.243623,0.722359,2.283980
 ```
 It is a string with the Format: DEV_UUID,Timestamp,3,RMS_Voltag_RMS_Frequency,H3,H5,H7,H9,H11,H13,H15
+
+## Do you want to contribute ?
+Everybody can participate, and any help is highly appreciated.
+Feel free to send pull requests or open a new issue via GitHub.
+- testing PowQuty and its power quality measurements in your power grid environment
+- reviewing patches
+
+### Supporters and Developers
+- Nadmin el Sayed from TU-Berlin
+- Stefan Venz from HTW Berlin
+- Thomas Huehn from TU-Berlin
+
+### How to reference to PowQuty ?
+Just use the following bibtex :
+
+To be added by Nadim
