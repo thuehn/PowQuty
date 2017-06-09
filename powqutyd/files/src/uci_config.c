@@ -89,6 +89,24 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			strcpy(conf->mqtt_topic, str);
 			printf("looking up mqtt_topic: currently ==> %s\n", conf->mqtt_topic);
 
+			str = uci_lookup_option_string(uci, s, "mqtt_uname");
+			if (str == NULL)
+				continue;
+			if (strlen(str) >= MAX_STR_LEN) {
+				continue;
+			}
+			strcpy(conf->mqtt_uname, str);
+			printf("looking up mqtt_uname: currently ==> %s\n", conf->mqtt_uname);
+
+			str = uci_lookup_option_string(uci, s, "mqtt_pw");
+			if (str == NULL)
+				continue;
+			if (strlen(str) >= MAX_STR_LEN) {
+				continue;
+			}
+			strcpy(conf->mqtt_pw, str);
+			printf("looking up mqtt_pw: currently ==> %s\n", conf->mqtt_pw);
+
 			str = uci_lookup_option_string(uci, s, "device_tty");
 			if (str == NULL)
 				continue;

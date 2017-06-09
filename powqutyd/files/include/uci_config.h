@@ -15,6 +15,8 @@ struct powquty_conf {
 	char device_tty[32];
 	char mqtt_host[32];
 	char mqtt_topic[32];
+	char mqtt_uname[32];
+	char mqtt_pw[32];
 	char dev_uuid[32];
 	char powquty_path[32];
 	int powqutyd_print;
