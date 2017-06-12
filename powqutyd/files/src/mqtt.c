@@ -170,13 +170,14 @@ void publish_device_online() {
 void publish_measurements(PQResult pqResult) {
 	// printf("publish_measurements: \n");
 	payload[0] = '\0';
-	long long ts = get_curr_time_in_milliseconds();
+	//long long ts = get_curr_time_in_milliseconds();
 	long ts_sec = get_curr_time_in_seconds();
 	sprintf(payload,
-			"%s,%ld,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
+			//"%s,%ld,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
+			"%s,%ld3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
 			dev_uuid,
 			ts_sec,
-			ts,
+			//ts,
 			pqResult.PowerVoltageEff_5060T,
 			pqResult.PowerFrequency5060T,
 			pqResult.Harmonics[0],
