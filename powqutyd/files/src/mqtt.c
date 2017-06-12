@@ -174,7 +174,7 @@ void publish_measurements(PQResult pqResult) {
 	long ts_sec = get_curr_time_in_seconds();
 	sprintf(payload,
 			//"%s,%ld,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
-			"%s,%ld3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
+			"%s,%ld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
 			dev_uuid,
 			ts_sec,
 			//ts,
