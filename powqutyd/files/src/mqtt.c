@@ -13,12 +13,15 @@
 #include <pthread.h>
 #include "helper.h"
 #include "uci_config.h"
+#include <sys/time.h>
 
 static const char* mqtt_host = "localhost";
 static const char* mqtt_topic = "devices/update";
 static const char* mqtt_uname = "username";
 static const char* mqtt_pw = "password";
 static const char* dev_uuid = "BERTUB001";
+static const char* dev_lat = "55.0083525";
+static const char* dev_lon = "82.935732";
 //static const char* dev_gps = "BERTUB001";
 static const char* dev_FW_ver = "0.1";
 static const char* dev_APP_ver = "0.1";
@@ -103,6 +106,8 @@ int mqtt_load_from_config() {
 	dev_uuid = config->dev_uuid;
 	printf("dev_uuid: %s\n", dev_uuid);
 
+	dev_lat = config->dev_lat;
+	dev_lon = config->dev_lon;
 
 	/*if(!config_lookup_string(get_cfg_ptr(), "dev_gps", &dev_gps)) {
 		res= -1;
@@ -147,20 +152,31 @@ int mqtt_init (struct powquty_conf* conf) {
 	return res;
 }
 
+void publish_device_gps() {
+	// UUID,TIMESTAMP,2,LATITUDE, LONGITUDE,ACCURANCY,PROVIDER,NETFREQ
+	payload[0] = '\0';
+	struct timeval tv;
+	gettimeofday(&tv,NULL);
+	sprintf(payload,"%s,%lu.%lu,2,%s,%s,0,2,50",dev_uuid,tv.tv_sec, (long int)tv.tv_usec/100, dev_lat, dev_lon);
+	mqtt_publish_payload();
+}
+
 void publish_device_offline() {
 	payload[0] = '\0';
-	long long ts = get_curr_time_in_milliseconds();
-	sprintf(payload,"%s,%lld,0",dev_uuid,ts);
+	struct timeval tv;
+	gettimeofday(&tv,NULL);
+	sprintf(payload,"%s,%lu.%lu,0",dev_uuid,tv.tv_sec, (long int)tv.tv_usec/100);
 	mqtt_publish_payload();
 }
 
 void publish_device_online() {
 	payload[0] = '\0';
-	long long ts = get_curr_time_in_milliseconds();
+	struct timeval tv;
+	gettimeofday(&tv,NULL);
 	sprintf(payload,
-			"%s,%lld,1,%s,%s,%s",
+			"%s,%lu.%lu,1,%s,%s,%s",
 			dev_uuid,
-			ts,
+			tv.tv_sec, (long int)tv.tv_usec/100,
 			dev_FW_ver,
 			dev_APP_ver,
 			dev_HW_ver);
@@ -171,12 +187,14 @@ void publish_measurements(PQResult pqResult) {
 	// printf("publish_measurements: \n");
 	payload[0] = '\0';
 	//long long ts = get_curr_time_in_milliseconds();
-	long ts_sec = get_curr_time_in_seconds();
+	struct timeval tv;
+	gettimeofday(&tv,NULL);
+	//long ts_sec = get_curr_time_in_seconds();
 	sprintf(payload,
 			//"%s,%ld,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
-			"%s,%ld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
+			"%s,%lu.%lu,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
 			dev_uuid,
-			ts_sec,
+			tv.tv_sec, (long int)tv.tv_usec/100,
 			//ts,
 			pqResult.PowerVoltageEff_5060T,
 			pqResult.PowerFrequency5060T,

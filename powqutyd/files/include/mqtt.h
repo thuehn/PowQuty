@@ -22,6 +22,7 @@ void mqtt_publish_msg(const char* msg);
 
 void publish_device_offline();
 void publish_device_online();
+void publish_device_gps();
 void publish_measurements(PQResult pqResult) ;
 
 #endif /* MQTT_H_ */

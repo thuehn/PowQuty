@@ -35,6 +35,8 @@ int uci_config_powquty(struct powquty_conf* conf) {
 	char default_mqtt_host[32] = "localhost";
 	char default_mqtt_topic[32] = "devices/update";
 	char default_dev_uuid[32] = "BERTUB001";
+	char default_dev_lat[32] = "55.0083525";
+	char default_dev_lon[32] = "82.935732";
 	int default_powqutyd_print = 1;
 	long default_max_log_size_kb = 4096;
 
@@ -53,6 +55,8 @@ int uci_config_powquty(struct powquty_conf* conf) {
 		if (strcmp(s->type, "powquty") == 0) {
 			strcpy(conf->device_tty, default_device_tty);
 			strcpy(conf->dev_uuid, default_dev_uuid);
+			strcpy(conf->dev_lat, default_dev_lat);
+			strcpy(conf->dev_lon, default_dev_lon);
 			strcpy(conf->mqtt_host, default_mqtt_host);
 			strcpy(conf->mqtt_topic, default_mqtt_topic);
 			strcpy(conf->powquty_path, default_powquty_path);
@@ -68,6 +72,25 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			}
 			strcpy(conf->dev_uuid, str);
 			printf("looking up dev_uuid: currently ==> %s\n", conf->dev_uuid);
+
+			str = uci_lookup_option_string(uci, s, "dev_lat");
+			if (str == NULL)
+				continue;
+			if (strlen(str) >= MAX_STR_LEN) {
+				continue;
+			}
+			strcpy(conf->dev_lat, str);
+			printf("looking up dev_lat: currently ==> %s\n", conf->dev_lat);
+
+
+			str = uci_lookup_option_string(uci, s, "dev_lon");
+			if (str == NULL)
+				continue;
+			if (strlen(str) >= MAX_STR_LEN) {
+				continue;
+			}
+			strcpy(conf->dev_lon, str);
+			printf("looking up dev_lon: currently ==> %s\n", conf->dev_lon);
 
 
 			str = uci_lookup_option_string(uci, s, "mqtt_host");

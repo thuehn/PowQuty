@@ -81,6 +81,7 @@ int main (int argc, char *argv[]) {
 		printf("Calculation Thread started\n");
 #ifdef MQTT
 		publish_device_online();
+		publish_device_gps();
 #endif
 	} else {
 		stop_mosquitto();
