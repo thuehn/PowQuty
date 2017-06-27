@@ -8,19 +8,19 @@
 #ifndef UCI_CONFIG_H_
 #define UCI_CONFIG_H_
 
-#define MAX_STR_LEN	31
+#define MAX_LENGTH	32
 
 struct powquty_conf {
 
-	char device_tty[32];
-	char mqtt_host[32];
-	char mqtt_topic[32];
-	char mqtt_uname[32];
-	char mqtt_pw[32];
-	char dev_uuid[32];
-	char dev_lat[32];
-	char dev_lon[32];
-	char powquty_path[32];
+	char device_tty[MAX_LENGTH];
+	char mqtt_host[MAX_LENGTH];
+	char mqtt_topic[MAX_LENGTH];
+	char mqtt_uname[MAX_LENGTH];
+	char mqtt_pw[MAX_LENGTH];
+	char dev_uuid[MAX_LENGTH];
+	char dev_lat[MAX_LENGTH];
+	char dev_lon[MAX_LENGTH];
+	char powquty_path[MAX_LENGTH];
 	int powqutyd_print;
 	long max_log_size_kb;
 

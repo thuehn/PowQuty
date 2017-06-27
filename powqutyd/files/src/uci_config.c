@@ -30,13 +30,13 @@ int uci_config_powquty(struct powquty_conf* conf) {
 	struct uci_element* e;
 	const char* str;
 
-	char default_device_tty[32] = "/dev/ttyACM0";
-	char default_powquty_path[32] = "/tmp/powquty.log";
-	char default_mqtt_host[32] = "localhost";
-	char default_mqtt_topic[32] = "devices/update";
-	char default_dev_uuid[32] = "BERTUB001";
-	char default_dev_lat[32] = "55.0083525";
-	char default_dev_lon[32] = "82.935732";
+	char default_device_tty[MAX_LENGTH] = "/dev/ttyACM0";
+	char default_powquty_path[MAX_LENGTH] = "/tmp/powquty.log";
+	char default_mqtt_host[MAX_LENGTH] = "localhost";
+	char default_mqtt_topic[MAX_LENGTH] = "devices/update";
+	char default_dev_uuid[MAX_LENGTH] = "BERTUB001";
+	char default_dev_lat[MAX_LENGTH] = "55.0083525";
+	char default_dev_lon[MAX_LENGTH] = "82.935732";
 	int default_powqutyd_print = 1;
 	long default_max_log_size_kb = 4096;
 
@@ -67,7 +67,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			str = uci_lookup_option_string(uci, s, "dev_uuid");
 			if (str == NULL)
 				continue;
-			if (strlen(str) >= MAX_STR_LEN) {
+			if (strlen(str) > MAX_LENGTH) {
 				continue;
 			}
 			strcpy(conf->dev_uuid, str);
@@ -76,7 +76,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			str = uci_lookup_option_string(uci, s, "dev_lat");
 			if (str == NULL)
 				continue;
-			if (strlen(str) >= MAX_STR_LEN) {
+			if (strlen(str) >= MAX_LENGTH - 1) {
 				continue;
 			}
 			strcpy(conf->dev_lat, str);
@@ -86,7 +86,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			str = uci_lookup_option_string(uci, s, "dev_lon");
 			if (str == NULL)
 				continue;
-			if (strlen(str) >= MAX_STR_LEN) {
+			if (strlen(str) >= MAX_LENGTH - 1) {
 				continue;
 			}
 			strcpy(conf->dev_lon, str);
@@ -96,7 +96,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			str = uci_lookup_option_string(uci, s, "mqtt_host");
 			if (str == NULL)
 				continue;
-			if (strlen(str) >= MAX_STR_LEN) {
+			if (strlen(str) >= MAX_LENGTH - 1) {
 				continue;
 			}
 			strcpy(conf->mqtt_host, str);
@@ -106,7 +106,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			str = uci_lookup_option_string(uci, s, "mqtt_topic");
 			if (str == NULL)
 				continue;
-			if (strlen(str) >= MAX_STR_LEN) {
+			if (strlen(str) >= MAX_LENGTH - 1) {
 				continue;
 			}
 			strcpy(conf->mqtt_topic, str);
@@ -115,7 +115,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			str = uci_lookup_option_string(uci, s, "mqtt_uname");
 			if (str == NULL)
 				continue;
-			if (strlen(str) >= MAX_STR_LEN) {
+			if (strlen(str) >= MAX_LENGTH - 1) {
 				continue;
 			}
 			strcpy(conf->mqtt_uname, str);
@@ -124,7 +124,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			str = uci_lookup_option_string(uci, s, "mqtt_pw");
 			if (str == NULL)
 				continue;
-			if (strlen(str) >= MAX_STR_LEN) {
+			if (strlen(str) >= MAX_LENGTH - 1) {
 				continue;
 			}
 			strcpy(conf->mqtt_pw, str);
@@ -133,7 +133,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			str = uci_lookup_option_string(uci, s, "device_tty");
 			if (str == NULL)
 				continue;
-			if (strlen(str) >= MAX_STR_LEN) {
+			if (strlen(str) >= MAX_LENGTH - 1) {
 				continue;
 			}
 			strcpy(conf->device_tty, str);
@@ -142,7 +142,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			str = uci_lookup_option_string(uci, s, "powquty_path");
 			if (str == NULL)
 				continue;
-			if (strlen(str) >= MAX_STR_LEN) {
+			if (strlen(str) >= MAX_LENGTH - 1) {
 				continue;
 			}
 			strcpy(conf->powquty_path, str);
