@@ -8,7 +8,7 @@
 #ifndef CALCULATION_H_
 #define CALCULATION_H_
 
-#include "uci_config.h"
+#include "event_handling.h"
 
 /*
  * init function for the calculation functionality

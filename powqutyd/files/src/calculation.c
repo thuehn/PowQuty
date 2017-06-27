@@ -7,7 +7,6 @@
 
 #include "calculation.h"
 #include "retrieval.h"
-#include "PQ_App.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <pthread.h>
@@ -16,7 +15,6 @@
 #include "mqtt.h"
 #include "config.h"
 #include "helper.h"
-#include "uci_config.h"
 #include "main.h"
 
 const char* device_tty;
@@ -162,6 +160,10 @@ static void *calculation_thread_run(void* param) {
 				break;
 			}
 			// print_results();
+
+			/* EN50160 event detected */
+			if (pqResult.nmbPqEvents > 0)
+				handle_event(pqResult, config);
 
 			if(pqResult.HarmonicsExist) {
 				store_to_file(pqResult, config);

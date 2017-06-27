@@ -47,6 +47,7 @@ OBJS= src/emulator.o \
 	src/helper.o \
 	src/config.o \
 	src/uci_config.o \
+	src/event_handling.o \
 	src/mqtt.o \
 	src/retrieval.o \
 	src/calculation.o \
