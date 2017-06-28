@@ -203,7 +203,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			str = uci_lookup_option_string(uci, s, "slack_webhook");
 			if (str == NULL)
 				continue;
-			if (strlen(str) >= MAX_LENGTH - 1)
+			if (strlen(str) >= MAX_WEBHOOK_LENGTH - 1)
 				continue;
 			strcpy(conf->slack_webhook, str);
 			printf("looking up slack_webhook: currently ==> %s\n",

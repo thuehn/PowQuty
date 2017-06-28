@@ -9,6 +9,7 @@
 #define UCI_CONFIG_H_
 
 #define MAX_LENGTH	32
+#define MAX_WEBHOOK_LENGTH 512
 
 struct powquty_conf {
 	/* general */
@@ -27,7 +28,7 @@ struct powquty_conf {
 	char mqtt_pw[MAX_LENGTH];
 
 	/* slack */
-	char slack_webhook[MAX_LENGTH];
+	char slack_webhook[MAX_WEBHOOK_LENGTH];
 	char slack_channel[MAX_LENGTH];
 	char slack_user[MAX_LENGTH];
 	int slack_notification;
