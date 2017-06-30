@@ -33,6 +33,7 @@ void send_event(PQEvent pqe, struct powquty_conf *conf) {
 		default:
 			break;
 	}
+
 	/* prepare msg to send */
 	snprintf(msg, MAX_MSG_LENGTH, "%s", event);
 
