@@ -112,11 +112,16 @@ void handle_data_message(int read_size) {
 	if (last_frame_idx != curr_idx) {
 		if(debug_flag) {
 			if ((last_frame_idx+1)%65536 != curr_idx%65536) {
-				printf("WARNING - Frame Got Missing:\tlast_Frame_idx: %d,\tcurr_Frame_idx: %d\n", last_frame_idx, curr_idx);
+				printf("WARNING - Frame Got Missing:\t"
+					"last_Frame_idx: %d,\t"
+					"curr_Frame_idx: %d\n",
+					last_frame_idx, curr_idx);
 			}
 			// Check the frame Length at Bytes [2-3]
 			if(130 != get_unsigned_short_val(current_frame+2)) {
-				printf("WARNING - Packet with unexpected Data-Length: \tLEN: %d\n", get_unsigned_short_val(current_frame+2));
+				printf("WARNING - Packet with unexpected"
+					"Data-Length: \tLEN: %d\n",
+					get_unsigned_short_val(current_frame+2));
 			}
 		}
 		// new Frame
@@ -162,7 +167,6 @@ int calibrate_device() {
 	// printf("Done!\n");
 
 	return res;
-
 }
 
 int start_sampling() {
@@ -187,7 +191,6 @@ int stop_sampling() {
 	return res;
 }
 
-
 void print_data(unsigned char* buf){
 	int i = 0;
 	while(i<128) {
@@ -196,7 +199,6 @@ void print_data(unsigned char* buf){
 	}
 	printf("\n");
 }
-
 
 int serial_port_open(const char* device) {
 	int bits;
@@ -235,36 +237,39 @@ int serial_port_open(const char* device) {
 int retrieval_init(const char* tty_device) {
 	int res = 0;
 
-	// open fd
-	retrieval_fd = serial_port_open(tty_device);
-	if(retrieval_fd<0) {
-		printf("\ncannot open %s\n",tty_device);
-		return retrieval_fd;
-	}
+	if (!get_input_file_state()) {
+		// open fd
+		retrieval_fd = serial_port_open(tty_device);
+		if(retrieval_fd<0) {
+			printf("\ncannot open %s\n",tty_device);
+			return retrieval_fd;
+		}
 
-	// initialize Buffers, ring_buffer etc.
-	memset(current_frame,0,MAX_FRAME_SIZE);
+		// initialize Buffers, ring_buffer etc.
+		memset(current_frame,0,MAX_FRAME_SIZE);
 
-	if (raw_print) {
-		if(!raw_dump_init()) {
-			printf("DEBUG:\tDump Thread Created\n");
-			//stop_sampling();
+		if (raw_print) {
+			if(!raw_dump_init()) {
+				printf("DEBUG:\tDump Thread Created\n");
+				//stop_sampling();
+			}
 		}
 	}
-
 	// start reading thread
 	printf("DEBUG:\tCreating Retrieval Thread\n");
 	res = pthread_create(&reading_thread,NULL, reading_thread_run,NULL);
 
-	// send command get Hardware parameters
-	// Blocking call until we get resp see calibrate_device()
-	if (calibrate_device() <= 0) {
-		// failed to calibrate device
-		res = -1;
-	}
+	if (!get_input_file_state()) {
+		// send command get Hardware parameters
+		// Blocking call until we get resp see calibrate_device()
+		if (calibrate_device() <= 0) {
+			// failed to calibrate device
+			res = -1;
+		}
 
-	if (start_sampling() <= 0){
-		res = -1;
+		if (start_sampling() <= 0){
+			res = -1;
+		}
 	}
 
 	return res;
@@ -297,20 +302,31 @@ static void *reading_thread_run(void* param) {
 	// fd[0].events = POLLIN | POLLRDNORM | POLLRDBAND | POLLPRI;
 
 	while (!stop_reading) {
+
+		if (get_input_file_state()) {
+			do_calculation(32);
+			continue;
+		}
+
 		// poll(fd,1,poll_time_out_ms);
 		offset = 0;
 		read_size = 0;
 		done_reading = 0;
 		do {
 			// poll(fd,1,poll_time_out_ms);
-			offset = read(retrieval_fd, current_frame+read_size, MAX_FRAME_SIZE-read_size);
+			offset = read(retrieval_fd, current_frame+read_size,
+					MAX_FRAME_SIZE-read_size);
 			if(offset < 0) {
-				printf("\n\n\nERROR:\t error while reading\toffset = %d\t errno; %s \n\n\n\n",offset,strerror(errno));
+				printf("\n\n\nERROR:\t error while reading"
+					"\toffset = %d\t errno; %s \n\n\n\n",
+					offset,strerror(errno));
 				go_sleep(1000);
 				continue;
 				//exit(EXIT_FAILURE);
 			} else if (offset == 0) {
-				printf("\n\n\nERROR:\t error while reading\toffset = %d\t errno; %s \n\n\n\n",offset,strerror(errno));
+				printf("\n\n\nERROR:\t error while reading\t"
+					"offset = %d\t errno; %s \n\n\n\n",
+					offset,strerror(errno));
 				stop_powqutyd();
 				//go_sleep(1000);
 				break;
