@@ -90,7 +90,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			str = uci_lookup_option_string(uci, s, "dev_uuid");
 			if (str == NULL)
 				continue;
-			if (strlen(str) > MAX_LENGTH) {
+			if (strlen(str) >= MAX_LENGTH - 1) {
 				continue;
 			}
 			strcpy(conf->dev_uuid, str);
