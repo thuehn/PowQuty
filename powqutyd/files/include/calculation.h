@@ -9,8 +9,6 @@
 #define CALCULATION_H_
 
 #include "event_handling.h"
-<<<<<<< add_slack_notifications
-=======
 
 /*
  * use file instead of usb oscilloscope for data input
@@ -24,7 +22,6 @@ int set_file_read(const char* path);
  * returns: 1 if file is used, else 0
  */
 int get_input_file_state();
->>>>>>> master
 
 /*
  * init function for the calculation functionality
