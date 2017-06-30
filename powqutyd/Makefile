@@ -38,7 +38,8 @@ define Package/powqutyd
 	SECTION:=utils
 	CATEGORY:=Utilities
 	DEPENDS:=+libconfig +kmod-usb-acm \
-		 +!POWQUTYD_NO_MQTT:libmosquitto +libuci \
+		 +libuci \
+		 +!POWQUTYD_NO_MQTT:libmosquitto \
 		 +!POWQUTYD_NO_SLACK:libcurl
 	MAINTAINER:=El Sayed
 	TITLE:=Power quality measurement and analyzer toolset
