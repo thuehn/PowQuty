@@ -5,6 +5,7 @@
  *  	Author: ikstream
  */
 #ifndef _EVENT_HANDLING_H_
+#define _EVENT_HANDLING_H_
 
 #include "PQ_App.h"
 #include "uci_config.h"
