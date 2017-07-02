@@ -36,6 +36,18 @@ mqtt_topic = s:taboption("mqtt", Value, "mqtt_topic", "mqtt_topic", "The topic u
 mqtt_topic.datatype = "string"
 mqtt_topic.default = "devices/update"
 
+mqtt_event_host = s:taboption("mqtt", Value, "mqtt_event_host", "mqtt_event_host", "IP-address or URL to the MQTT broker who receives the publish message of powquty events")
+mqtt_event_host.datatype = "string"
+mqtt_event_host.default = "localhost"
+
+mqtt_event_topic = s:taboption("mqtt", Value, "mqtt_event_topic", "mqtt_event_topic", "The topic under which powquty will publish EN50160 events")
+mqtt_event_topic.datatype = "string"
+mqtt_event_topic.default = "device/en50160-event"
+
+mqtt_event_flag = s:taboption("mqtt", Flag, "mqtt_event_flag", "mqtt_event_flag", "If activated powquty will send notifications via mqtt on EN50160 events")
+mqtt_event_flag.rmempty = false
+mqtt_event_flag.default = false
+
 -- slack
 slack_webhook = s:taboption("slack", Value, "slack_webhook", "slack_webhook", "Set webhook to use with slack")
 slack_webhook.datatype = "string"
