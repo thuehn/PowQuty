@@ -35,6 +35,12 @@ else
   LD_LIBS+=-lmosquitto
 endif
 
+ifeq ($(NO_SLACK),y)
+else
+  CFLAGS+=-lcurl -DSLACK
+  LD_LIBS+=-lcurl
+endif
+
 LD_LIBS+=-lpthread
 #LD_LIBS+=-lusb
 #LD_LIBS+=-lusb-1.0
@@ -49,6 +55,7 @@ OBJS= src/emulator.o \
 	src/uci_config.o \
 	src/event_handling.o \
 	src/mqtt.o \
+	src/libwebslack.o \
 	src/retrieval.o \
 	src/calculation.o \
 	src/raw_dump.o \
