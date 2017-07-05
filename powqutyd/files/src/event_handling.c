@@ -14,7 +14,16 @@
 
 void send_event(PQEvent pqe, struct powquty_conf *conf) {
 	char *msg = malloc(sizeof(char) * MAX_MSG_LENGTH);
+	if (msg == NULL) {
+		printf("Could not allocate memory for msg in %s\n", __func__);
+		return;
+	}
+
 	char *event = malloc(sizeof(char) * MAX_EVENT_LENGTH);
+	if (event == NULL) {
+		printf("Could not allocate memory for event in %s\n", __func__);
+		return;
+	}
 
 	switch (pqe.type) {
 		case (int)PQ_EVENT_TYPE_DIP:
@@ -33,6 +42,10 @@ void send_event(PQEvent pqe, struct powquty_conf *conf) {
 		default:
 			break;
 	}
+
+	/* free allocated stuff */
+	free(msg);
+	free(event);
 
 	/* prepare msg to send */
 	snprintf(msg, MAX_MSG_LENGTH, "%s", event);
