@@ -76,10 +76,6 @@ void send_event(PQEvent pqe, struct powquty_conf *conf) {
 	/* prepare msg to send */
 	snprintf(msg, MAX_MSG_LENGTH, "%s started: %s", event, local_time);
 
-	/* free allocated stuff */
-	free(msg);
-	free(event);
-
 #ifdef SLACK
 	if (conf->slack_notification) {
 		struct team_info *ti = malloc(sizeof(struct team_info));
@@ -108,6 +104,10 @@ void send_event(PQEvent pqe, struct powquty_conf *conf) {
 		}
 	}
 #endif /* Slack */
+
+	/* free allocated stuff */
+	free(msg);
+	free(event);
 	free(local_time);
 }
 
