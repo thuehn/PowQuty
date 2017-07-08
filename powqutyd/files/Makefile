@@ -31,7 +31,7 @@ LD_LIBS+=-luci
 
 ifeq ($(NO_MQTT),y)
 else
-  CFLAGS+=-DMQTT 		
+  CFLAGS+=-DMQTT
   LD_LIBS+=-lmosquitto
 endif
 
