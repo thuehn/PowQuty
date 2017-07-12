@@ -44,7 +44,7 @@ mqtt_event_topic = s:taboption("mqtt", Value, "mqtt_event_topic", "mqtt_event_to
 mqtt_event_topic.datatype = "string"
 mqtt_event_topic.default = "device/en50160-event"
 
-mqtt_event_flag = s:taboption("mqtt", Flag, "mqtt_event_flag", "mqtt_event_flag", "If activated powquty will send notifications via mqtt on EN50160 events")
+mqtt_event_flag = s:taboption("mqtt", Flag, "mqtt_event_flag", "mqtt_event_flag", "If activated powquty will send notifications via mqtt about EN50160 events")
 mqtt_event_flag.rmempty = false
 mqtt_event_flag.default = false
 
@@ -61,7 +61,7 @@ slack_user = s:taboption("slack", Value, "slack_user", "slack_user", "Set Slack 
 slack_user.datatype = "string"
 slack_user.default = "PowQutyEvent"
 
-slack_notification = s:taboption("slack", Flag, "slack_notification", "slack_notification", "Enable to send slack notifications on EN50160 event")
+slack_notification = s:taboption("slack", Flag, "slack_notification", "slack_notification", "Enable to send slack notifications about EN50160 event")
 slack_notification.rmempty = false
 slack_notification.default = false
 
