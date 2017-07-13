@@ -18,20 +18,23 @@ struct powquty_conf {
 	char dev_lat[MAX_LENGTH];
 	char dev_lon[MAX_LENGTH];
 	char powquty_path[MAX_LENGTH];
-	int powqutyd_print;
 	long max_log_size_kb;
+	int  powqutyd_print;
 
 	/* mqtt */
 	char mqtt_host[MAX_LENGTH];
 	char mqtt_topic[MAX_LENGTH];
 	char mqtt_uname[MAX_LENGTH];
 	char mqtt_pw[MAX_LENGTH];
+	char mqtt_event_host[MAX_LENGTH];
+	char mqtt_event_topic[MAX_LENGTH];
+	int  mqtt_event_flag;
 
 	/* slack */
 	char slack_webhook[MAX_WEBHOOK_LENGTH];
 	char slack_channel[MAX_LENGTH];
 	char slack_user[MAX_LENGTH];
-	int slack_notification;
+	int  slack_notification;
 
 /*	option device_tty '/dev/ttyACM0'
 		option mqtt_host 'localhost'

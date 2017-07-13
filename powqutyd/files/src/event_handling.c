@@ -11,6 +11,7 @@
 
 #include "event_handling.h"
 #include "libwebslack.h"
+#include "mqtt.h"
 
 #define MAX_MSG_LENGTH		1024
 #define MAX_EVENT_LENGTH	64
@@ -104,6 +105,10 @@ void send_event(PQEvent pqe, struct powquty_conf *conf) {
 		}
 	}
 #endif /* Slack */
+
+#ifdef MQTT
+	publish_event(event);
+#endif
 
 	/* free allocated stuff */
 	free(msg);
