@@ -78,7 +78,7 @@ int set_emoji(struct team_info *team_info, const char *emoji);
 
 /*
  * send message to team
- * @param param: team_info team info struct
+ * @param team_info: team info struct
  * @param return: 0 on success, else 1
  */
 int send_message(struct team_info *team_info);
