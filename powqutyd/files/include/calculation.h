@@ -9,7 +9,6 @@
 #define CALCULATION_H_
 
 #include "event_handling.h"
-
 /*
  * use file instead of usb oscilloscope for data input
  * @param path: file to use as input
