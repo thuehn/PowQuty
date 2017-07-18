@@ -62,23 +62,22 @@ void send_event(PQEvent pqe, struct powquty_conf *conf,
 	/* set event type */
 	switch (pqe.type) {
 		case (int)PQ_EVENT_TYPE_DIP:
-			snprintf(event, MAX_EVENT_LENGTH, "Voltage dip >= 10%%");
+			snprintf(event, MAX_EVENT_LENGTH, "DIP");
 			volt_event = 1;
 			en_event->dip_dur += pqe.length;
 			break;
 		case (int)PQ_EVENT_TYPE_SWELL:
-			snprintf(event, MAX_EVENT_LENGTH, "Voltage above 110%%");
+			snprintf(event, MAX_EVENT_LENGTH, "SWELL");
 			volt_event = 1;
 			en_event->swell_dur += pqe.length;
 			break;
 		case (int)PQ_EVENT_TYPE_INTERRUPT:
-			snprintf(event, MAX_EVENT_LENGTH, "Voltage dip < 10%%");
+			snprintf(event, MAX_EVENT_LENGTH, "INTERRUPT");
 			volt_event = 1;
 			en_event->interrupt_dur += pqe.length;
 			break;
 		case (int)PQ_EVENT_TYPE_HARMONIC:
-			snprintf(event, MAX_EVENT_LENGTH, "Harmonic off more"
-				 "than 5%% of the time");
+			snprintf(event, MAX_EVENT_LENGTH, "HARMONIC");
 			harm_event = 1;
 			en_event->harmonic_dur += pqe.length;
 			break;
