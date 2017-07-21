@@ -13,14 +13,16 @@ function index()
 	entry({"admin", "services", "powquty"}, cbi("powquty/powquty"), _("PowQuty"))
 
     -- entry for menu node
-    entry ( { "admin", "statistics", "powquty" }, firstchild (), "PowQuty", 60 ).dependent=false
+    entry ( { "admin", "statistics", "powquty" }, firstchild(), "PowQuty", 60 ).dependent=false
 
     -- entry and route for the graph page
-    entry ( { "admin", "statistics", "powquty", "graph" }, template ( "powquty/graph" ), "Graph", 1)  
+    entry ( { "admin", "statistics", "powquty", "graph" }, template ( "powquty/graph" ), "Graph", 1)
+
+    entry ( { "admin", "statistics", "powquty", "event" }, template ( "powquty/event" ), "EN50160 Event Log", 2)
 
     -- route of the image
     local vars = luci.http.formvalue(nil, true)
-	local span = vars.timespan or nil
+    local span = vars.timespan or nil
     local phys = vars.phys or "1"
     local img = vars.img or nil
 	entry ( { "admin", "statistics", "powquty", "graph" }, 
@@ -159,7 +161,7 @@ function generate_rrdimage ( phy, image, span, width, height, rrd_path,
     for i, metric in ipairs ( metrics ) do
         cmd = cmd .. rrd_metric_defs ( phy, metric, rrd_path, file_prefix, rrd_suffix, column_name )
     end
-    
+
     --cmd = cmd .. " COMMENT:\"relative mac states\\n\" \\\n"
     local out_shape = shape
     -- print shapes and legends for each metric
@@ -282,5 +284,4 @@ function powquty_render()
             phys             = phys
 	} )
     end
-
 end
