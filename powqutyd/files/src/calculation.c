@@ -131,7 +131,6 @@ int calculation_init(struct powquty_conf* conf) {
 	block_buffer = calloc(sizeof(short),BLOCK_BUFFER_SIZE);
 	timestamp_buffer = calloc(sizeof(long long),TS_BUFFER_SIZE);
 	in = calloc(sizeof(float),SAMPLES_PER_BLOCK);
-	event = malloc(sizeof(struct en50160_event));
 	config = conf;
 	//printf("conf device_tty ==> %s\n", conf->device_tty);
 	//printf("config device_tty ==> %s\n", config->device_tty);
@@ -238,7 +237,7 @@ static void *calculation_thread_run(void* param) {
 
 			/* EN50160 event detected */
 			if (pqResult.nmbPqEvents > 0)
-				handle_event(pqResult, config, event);
+				handle_event(pqResult, config);
 
 			if(pqResult.HarmonicsExist) {
 				store_to_file(pqResult, config);

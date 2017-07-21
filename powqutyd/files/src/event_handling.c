@@ -20,8 +20,7 @@
 #define MAX_TIME_LENGTH		64
 #define MAX_HOSTNAME_LENGTH 255
 
-void send_event(PQEvent pqe, struct powquty_conf *conf,
-		struct en50160_event *en_event) {
+void send_event(PQEvent pqe, struct powquty_conf *conf) {
 	FILE *file;
 	time_t timer;
 	struct tm *tmi;
@@ -64,22 +63,18 @@ void send_event(PQEvent pqe, struct powquty_conf *conf,
 		case (int)PQ_EVENT_TYPE_DIP:
 			snprintf(event, MAX_EVENT_LENGTH, "DIP");
 			volt_event = 1;
-			en_event->dip_dur += pqe.length;
 			break;
 		case (int)PQ_EVENT_TYPE_SWELL:
 			snprintf(event, MAX_EVENT_LENGTH, "SWELL");
 			volt_event = 1;
-			en_event->swell_dur += pqe.length;
 			break;
 		case (int)PQ_EVENT_TYPE_INTERRUPT:
 			snprintf(event, MAX_EVENT_LENGTH, "INTERRUPT");
 			volt_event = 1;
-			en_event->interrupt_dur += pqe.length;
 			break;
 		case (int)PQ_EVENT_TYPE_HARMONIC:
 			snprintf(event, MAX_EVENT_LENGTH, "HARMONIC");
 			harm_event = 1;
-			en_event->harmonic_dur += pqe.length;
 			break;
 		default:
 			break;
@@ -172,10 +167,9 @@ void send_event(PQEvent pqe, struct powquty_conf *conf,
 	free(hostname);
 }
 
-void handle_event(PQResult pqResult, struct powquty_conf *conf,
-		  struct en50160_event *en_event) {
+void handle_event(PQResult pqResult, struct powquty_conf *conf) {
 	int i;
 
 	for (i = 0; i < pqResult.nmbPqEvents; i++)
-		send_event(pqResult.pqEvents[i], conf, en_event);
+		send_event(pqResult.pqEvents[i], conf);
 }
