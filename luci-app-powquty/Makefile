@@ -39,6 +39,7 @@ define Package/luci-app-powquty/install
 		$(INSTALL_BIN) ./root/usr/bin/powquty-genconfig $(1)/usr/bin/powquty-genconfig
 		$(INSTALL_DATA) ./luasrc/model/cbi/powquty/powquty.lua $(1)/usr/lib/lua/luci/model/cbi/powquty/powquty.lua
 		$(INSTALL_DATA) ./luasrc/view/powquty/graph.htm $(1)/usr/lib/lua/luci/view/powquty/graph.htm
+		$(INSTALL_DATA) ./luasrc/view/powquty/event.htm $(1)/usr/lib/lua/luci/view/powquty/event.htm
 		$(INSTALL_DATA) ./luasrc/controller/powquty/powquty.lua $(1)/usr/lib/lua/luci/controller/powquty/powquty.lua
 		$(INSTALL_BIN) ./root/etc/uci-defaults/40_luci-powquty $(1)/etc/uci-defaults/40_luci-powquty
 endef

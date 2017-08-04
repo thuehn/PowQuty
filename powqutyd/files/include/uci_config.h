@@ -8,8 +8,9 @@
 #ifndef UCI_CONFIG_H_
 #define UCI_CONFIG_H_
 
-#define MAX_LENGTH	32
-#define MAX_WEBHOOK_LENGTH 512
+#define MAX_LENGTH		32
+#define PATH_LENGTH		512
+#define MAX_WEBHOOK_LENGTH	512
 
 struct powquty_conf {
 	/* general */
@@ -18,6 +19,7 @@ struct powquty_conf {
 	char dev_lat[MAX_LENGTH];
 	char dev_lon[MAX_LENGTH];
 	char powquty_path[MAX_LENGTH];
+	char powquty_event_path[PATH_LENGTH];
 	long max_log_size_kb;
 	int  powqutyd_print;
 

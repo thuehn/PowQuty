@@ -83,7 +83,7 @@ int send_message(struct team_info *ti) {
 		 " \"%s\", \"text\": \"%s\", \"icon_emoji\": \"%s\"}\"",
 		 ti->channel,ti->username, ti->text, ti->emoji);
 	if ((ret < 0) || ((uint32_t)ret > final_len)) {
-		printf("something went wrong creating the payload\n");
+		printf("\nsomething went wrong creating the payload\n");
 #if DEBUG
 		printf("ret: %d final_len: %d\n, str: %s\n strlen: %d\n",
 			ret, final_len, str, strlen(str));
@@ -99,6 +99,7 @@ int send_message(struct team_info *ti) {
 		res = curl_easy_perform(curl);
 		curl_easy_cleanup(curl);
 	}
+	printf("\n");
 	curl_global_cleanup();
 	free(str);
 	str = NULL;

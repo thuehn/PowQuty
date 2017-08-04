@@ -56,6 +56,8 @@ float *in;
 
 struct powquty_conf* config;
 
+struct en50160_event *event;
+
 void load_data_to_in();
 void print_from_buffer();
 void print_in_signal();

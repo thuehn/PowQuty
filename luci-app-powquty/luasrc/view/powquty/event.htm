@@ -1,0 +1,42 @@
+<%+header%>
+<!DOCTYPE html>
+<% local event_path = uci.get("powquty", "powquty", "powquty_event_path") or "/tmp/powquty_event.log" %>
+
+<html>
+	<body>
+		<h2>Powquty Event Live Log</h2>
+		<button onclick="myFunction()">Reload page</button>
+
+		<script>
+			function myFunction() {
+				location.reload();
+			}
+		</script>
+		<div style="height:400px;width:700px;overflow:auto;background-color:lightgray;color:black;scrollbar-base-color:gray;font-family:sans-serif;padding:10px;">
+			<ul style="list-style-type:none" id="event_list"></ul>
+		</div>
+		<script>
+	//	window.onload = function() {
+			function print_list() {
+				var list = document.getElementById('event_list');
+				var entry;
+<% local file = io.open(event_path, "r") %>
+<% if file ~= nil then %>
+	<% io.close(file) %>
+	<% for line in io.lines(event_path) do %>
+				entry = document.createElement('li');
+				entry.appendChild(document.createTextNode("<% write (line) %>"));
+				list.appendChild(entry);
+	<% end %>
+<% else %>
+				entry = document.createElement('li');
+				entry.appendChild(document.createTextNode("No log file found"));
+				list.appendChild(entry);
+<% end %>
+			}
+			window.onload = print_list;
+		</script>
+
+	</body>
+</html>
+<%+footer%>

@@ -7,20 +7,22 @@ require ("lfs")
 -- Routing and menu index for the luci dispatcher.
 function index()
 
- 	if not nixio.fs.access("/etc/config/powquty") then
+	if not nixio.fs.access("/etc/config/powquty") then
       return
-   	end
-   	entry({"admin", "services", "powquty"}, cbi("powquty/powquty"), _("PowQuty"))
-   	
+	end
+	entry({"admin", "services", "powquty"}, cbi("powquty/powquty"), _("PowQuty"))
+
     -- entry for menu node
-    entry ( { "admin", "statistics", "powquty" }, firstchild (), "PowQuty", 60 ).dependent=false
-    
+    entry ( { "admin", "statistics", "powquty" }, firstchild(), "PowQuty", 60 ).dependent=false
+
     -- entry and route for the graph page
-    entry ( { "admin", "statistics", "powquty", "graph" }, template ( "powquty/graph" ), "Graph", 1)  
+    entry ( { "admin", "statistics", "powquty", "graph" }, template ( "powquty/graph" ), "Graph", 1)
+
+    entry ( { "admin", "statistics", "powquty", "event" }, template ( "powquty/event" ), "EN50160 Event Log", 2)
 
     -- route of the image
     local vars = luci.http.formvalue(nil, true)
-	local span = vars.timespan or nil
+    local span = vars.timespan or nil
     local phys = vars.phys or "1"
     local img = vars.img or nil
 	entry ( { "admin", "statistics", "powquty", "graph" }, 
@@ -45,17 +47,17 @@ function rrd_metric_legend ( metric, phy )
     --local var = "rel_" .. metric
     local var = metric
     local unit
-    
+
     if (phy == 0) then
-    	unit = "V"
+	unit = "V"
     else
-    	unit = "Hz"
+	unit = "Hz"
     end
-    
+
     return " \"GPRINT:" .. var .. ":MIN:\t\tmin\\: %8.2lf%s "..unit.."\" \\\n"
              .. " \"GPRINT:" .. var .. ":AVERAGE:\tavg\\: %8.2lf%s "..unit.."\" \\\n"
              .. " \"GPRINT:" .. var .. ":MAX:\tmax\\: %8.2lf%s "..unit.."\\n\" \\\n"
-    
+
 end
 
 
@@ -131,14 +133,14 @@ function generate_rrdimage ( phy, image, span, width, height, rrd_path,
         lower_limit = 49
         vertical_label = "Frequency [Hz]"
     elseif (phy == 2) then
-      	upper_limit = 16
-      	lower_limit = 0
-      	vertical_label = "Harmonics [V]"
+	upper_limit = 16
+	lower_limit = 0
+	vertical_label = "Harmonics [V]"
     end
-    
+
     cmd = cmd .. " --upper-limit " .. upper_limit .. " --lower-limit " .. lower_limit .. " --alt-autoscale-max"
-    
-    
+
+
     cmd = cmd .. " --vertical-label \"" .. vertical_label .. "\""
     cmd = cmd .. " --width " .. width
     cmd = cmd .. " --height " .. height .. " \\\n"
@@ -159,7 +161,7 @@ function generate_rrdimage ( phy, image, span, width, height, rrd_path,
     for i, metric in ipairs ( metrics ) do
         cmd = cmd .. rrd_metric_defs ( phy, metric, rrd_path, file_prefix, rrd_suffix, column_name )
     end
-    
+
     --cmd = cmd .. " COMMENT:\"relative mac states\\n\" \\\n"
     local out_shape = shape
     -- print shapes and legends for each metric
@@ -170,7 +172,7 @@ function generate_rrdimage ( phy, image, span, width, height, rrd_path,
             end
             cmd = cmd .. rrd_metric_shape ( phy, metric, stacked, out_shape, colors[i] )
             if (phy == 0 or phy == 1) then
-            	cmd = cmd .. rrd_metric_legend ( metric .. "0", phy )
+		cmd = cmd .. rrd_metric_legend ( metric .. "0", phy )
             end
         end
     end
@@ -209,7 +211,7 @@ function powquty_render()
     local vars  = luci.http.formvalue()
     --local spans = luci.util.split( uci.get( "luci_statistics", "collectd_rrdtool", "RRATimespans" ), "%s+", nil, true )
     local spans = luci.util.split( "10min 1hour 1day 1week 1month 1year", "%s+", nil, true )
-   	local span  = vars.timespan or uci.get( "luci_statistics", "rrdtool", "default_timespan" ) or spans[1]
+	local span  = vars.timespan or uci.get( "luci_statistics", "rrdtool", "default_timespan" ) or spans[1]
 
     local powquty_paths = uci.get("powquty", "powquty", "powquty_path") or "/tmp/powquty.log"
     local metrics = {"voltage"}
@@ -233,12 +235,12 @@ function powquty_render()
 		if ( index == 2) then
             metrics = {"frequency"}
         elseif (index == 3) then
-        	metrics = {"h3","h5","h7","h9","h11"}   
+	metrics = {"h3","h5","h7","h9","h11"}
         end
         local rrdimg = "powquty" .. (index-1) .. ".png"
         --local tailcsv_dir = "tail_csv-powquty" .. (index-1)
         local tailcsv_dir = "tail_csv-powquty0"
-        
+
         if ( index ~= 1) then
             phys = phys .. " "
         end
@@ -261,17 +263,17 @@ function powquty_render()
 	end
 	
     -- deliver the image
-  	if vars.img then
-   		local l12 = require "luci.ltn12"
-   		local png = io.open(rrdimg_dir .. "/" .. "powquty" .. (vars.img) .. ".png", "r")
-    	if png then
-	    	luci.http.prepare_content("image/png")
+	if vars.img then
+		local l12 = require "luci.ltn12"
+		local png = io.open(rrdimg_dir .. "/" .. "powquty" .. (vars.img) .. ".png", "r")
+	if png then
+		luci.http.prepare_content("image/png")
 		    l12.pump.all(l12.source.file(png), luci.http.write)
-   		end
+		end
         local err = dbfiles
         l12.source.error(err)
-    	return
-   	end
+	return
+	end
 
     -- render page
     if (vars.img == nil) then
@@ -280,7 +282,6 @@ function powquty_render()
             current_timespan = span,
             metrics          = metrics,
             phys             = phys
-    	} )
+	} )
     end
-
 end

@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <uci.h>
+
 #include "uci_config.h"
 
 #define OFF 0
@@ -34,13 +35,14 @@ int uci_config_powquty(struct powquty_conf* conf) {
 	const char* str;
 
 	/* general configuration */
+	char default_powquty_path[PATH_LENGTH] = "/tmp/powquty.log";
+	char default_event_path[PATH_LENGTH] = "/tmp/powquty_event.log";
 	char default_device_tty[MAX_LENGTH] = "/dev/ttyACM0";
-	char default_powquty_path[MAX_LENGTH] = "/tmp/powquty.log";
 	char default_dev_uuid[MAX_LENGTH] = "BERTUB001";
 	char default_dev_lat[MAX_LENGTH] = "55.0083525";
 	char default_dev_lon[MAX_LENGTH] = "82.935732";
-	int default_powqutyd_print = ON;
 	long default_max_log_size_kb = 4096;
+	int default_powqutyd_print = ON;
 
 	/* mqtt config */
 	char default_mqtt_host[MAX_LENGTH] = "localhost";
@@ -74,6 +76,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			strcpy(conf->dev_lat, default_dev_lat);
 			strcpy(conf->dev_lon, default_dev_lon);
 			strcpy(conf->powquty_path, default_powquty_path);
+			strcpy(conf->powquty_event_path, default_event_path);
 
 			conf->powqutyd_print = default_powqutyd_print;
 			conf->max_log_size_kb = default_max_log_size_kb;
@@ -133,19 +136,30 @@ int uci_config_powquty(struct powquty_conf* conf) {
 				continue;
 			}
 			strcpy(conf->device_tty, str);
-			printf("looking up device_tty currently ==> %s\n",
+			printf("looking up device_tty: currently ==> %s\n",
 				conf->device_tty);
 
 			/* logfile path */
 			str = uci_lookup_option_string(uci, s, "powquty_path");
 			if (str == NULL)
 				continue;
-			if (strlen(str) >= MAX_LENGTH - 1) {
+			if (strlen(str) >= PATH_LENGTH - 1) {
 				continue;
 			}
 			strcpy(conf->powquty_path, str);
-			printf("looking up powquty_path currently ==> %s\n",
+			printf("looking up powquty_path: currently ==> %s\n",
 				conf->powquty_path);
+
+			/* event log file */
+			str = uci_lookup_option_string(uci, s,
+						       "powquty_event_path");
+			if (str == NULL)
+				continue;
+			if (strlen(str) >= PATH_LENGTH - 1)
+				continue;
+			strcpy(conf->powquty_event_path, str);
+			printf("looking up powquty_event_path: currently ==>"
+				"%s\n", conf->powquty_event_path);
 
 			/* print_print */
 			conf->powqutyd_print = uci_lookup_option_int(uci, s,
