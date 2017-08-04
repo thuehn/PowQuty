@@ -170,13 +170,15 @@ int calculation_init(struct powquty_conf* conf) {
 }
 
 static void *calculation_thread_run(void* param) {
-	FILE *file = fopen(input_file, "r");
-
+	FILE *file;
 	printf("DEBUG:\tCalculation Thread has started\n");
 
-	if (file == NULL) {
-		printf("ERROR:\tCould not open file %s\n", input_file);
-		return NULL;
+	if (input_file) {
+		file = fopen(input_file, "r");
+		if (file == NULL) {
+			printf("ERROR:\tCould not open file %s\n", input_file);
+			return NULL;
+		}
 	}
 
 	while(!stop_calculation_run) {
