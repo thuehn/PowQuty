@@ -360,6 +360,7 @@ function calc_time()
                                         event_spec2 = event_spec2
                                     }
     end
+    file:close()
 
     if next(events) == nil then
         status = status .. " events empty"
@@ -377,7 +378,7 @@ function calc_time()
             status = status .. " SWELL found"
         elseif (event.etype == "INTERRUPT") then
             interrupt_time = tostring(interrupt_time + math.abs(event.duration))
-        elseif (event.etype == "HARMONICS") then
+        elseif (event.etype == "HARMONIC") then
             harmonics_time = tostring(harmonics_time + math.abs(event.duration))
         end
     end
