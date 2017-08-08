@@ -120,7 +120,7 @@ void send_event(PQEvent pqe, struct powquty_conf *conf) {
 			pqe.startTime,
 			pqe.length);
 	if (volt_event)
-		fprintf(file, ",%9.6f\n", pqe.minMax);
+		fprintf(file, ",%9.6f,-\n", pqe.minMax);
 	else if (harm_event)
 		fprintf(file, ",%d,%d\n", pqe.harmonic_number,
 					  pqe.fail_percentage);
