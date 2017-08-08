@@ -360,7 +360,6 @@ function calc_time()
                                         event_spec2 = event_spec2
                                     }
     end
-    file:close()
 
     if next(events) == nil then
         status = status .. " events empty"
@@ -369,7 +368,6 @@ function calc_time()
     status = status .. " events ok"
 
     for _, event in ipairs(events) do
-        status = status .. event.etype
         if (event.etype == "DIP") then
             status = status .. " DIP found"
             dip_time =tostring( dip_time + math.abs(event.duration))
@@ -382,6 +380,8 @@ function calc_time()
             harmonics_time = tostring(harmonics_time + math.abs(event.duration))
         end
     end
+    file:close()
+
     return dip_time, swell_time, interrupt_time, harmonics_time
 end
 
