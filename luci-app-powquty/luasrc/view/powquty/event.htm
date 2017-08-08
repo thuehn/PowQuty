@@ -1,16 +1,48 @@
-<%+header%>
 <!DOCTYPE html>
+<%+header%>
 <% local event_path = uci.get("powquty", "powquty", "powquty_event_path") or "/tmp/powquty_event.log" %>
+
+<% interrupt_status = "green" %>
+<% harmonics_status = "green" %>
 
 <html>
 	<body>
 		<h2>Powquty Event Live Log</h2>
-		<button onclick="myFunction()">Reload page</button>
-
+		<h3>Status: <% write (status) %></h3>
+		<table style="width:500px">
+			<tr>
+				<th align="left">Type</th>
+				<th align="left">Time</th>
+				<th align="left">Status</th>
+			</tr>
+			<tr>
+				<td> DIP </td>
+				<td><% write (dip_time) %></td>
+				<td><input type="text" disabled="true" style="width:50px;background-color:<% write (dip_status) %>;"></td>
+			</tr>
+			<tr>
+				<td>SWELL</td>
+				<td><% write (swell_time) %></td>
+				<td><input type="text" disabled="true" style="width:50px;background-color:<% write (swell_status) %>;"></td>
+			</tr>
+			<tr>
+				<td>INTERRUPT</td>
+				<td><% write (interrupt_time) %></td>
+				<td><input type="text" disabled="true" style="width:50px;background-color:<% write (interrupt_status) %>;"></td>
+			</tr>
+			<tr>
+				<td>HARMONICS</td>
+				<td><% write (harmonics_time) %></td>
+				<td><input type="text" disabled="true" style="width:50px;background-color:<% write (harmonics_status) %>;"></td>
+			</tr>
+		</table>
+		<button class="cbi-button cbi-button-apply" onclick="refresh(xhr)">Reload page</button>
 		<script>
-			function myFunction() {
+			function refresh(x) {
 				location.reload();
 			}
+			XHR.poll (30, "<% write (REQUEST_URI) %>?dip_status=<%=dip_status%>&swell_status=<%=swell_status%>&interrupt_time=<%=interrupt_time%>&harmonics_time=<%=harmonics_time%>&swell_time=<%=swell_time%>&dip_time=<%=dip_time%>",
+						  null, function (xhr, json) {refresh(xhr) } )
 		</script>
 		<div style="height:400px;width:700px;overflow:auto;background-color:lightgray;color:black;scrollbar-base-color:gray;font-family:sans-serif;padding:10px;">
 			<ul style="list-style-type:none" id="event_list"></ul>

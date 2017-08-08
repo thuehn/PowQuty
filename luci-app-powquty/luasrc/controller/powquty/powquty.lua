@@ -3,6 +3,14 @@ module("luci.controller.powquty.powquty", package.seeall)
 
 require ("lfs")
 -- require("luci.i18n")
+local dip_status = "green"
+local swell_status = "red"
+local dip_time = tostring(0)
+local swell_time = tostring(0)
+local interrupt_time = tostring(0)
+local harmonics_time = tostring(0)
+local nr_lines = 0
+local status = "new"
 
 -- Routing and menu index for the luci dispatcher.
 function index()
@@ -30,6 +38,17 @@ function index()
                                                                , phys = phys 
                                                                , img = img
                                                                }
+    entry ( { "admin", "statistics", "powquty", "event" },
+            call ( "event_render" ), "EN50160 Event Log", 4 ).query =
+                {
+                    dip_status = dip_status,
+                    swell_status = swell_status,
+                    dip_time = dip_time,
+                    swell_time = swell_time,
+                    interrupt_time = interrupt_time,
+                    harmonics_time = harmonics_time,
+                    status = status
+                }
 end
 
 
@@ -284,4 +303,101 @@ function powquty_render()
             phys             = phys
 	} )
     end
+end
+
+function read_events()
+    local events = {}
+    status = status .. " file ok"
+    for line in file:lines() do
+        table.insert(events, line)
+        nr_lines = nr_lines + 1
+    end
+ --[[
+a
+--]]
+    file:close()
+    return events, status
+end
+
+function calc_time()
+    local dip_time = tostring(0)
+    local swell_time = tostring(0)
+    local interrupt_time = tostring(0)
+    local harmonics_time = tostring(0)
+    local event
+    local events = {}
+    local open = io.open
+    local event_path = uci.get("powquty", "powquty", "powquty_event_path") or "/tmp/powquty_event.log"
+    local file = open(event_path, "r")
+
+    if file == nil then
+        status = "file nil"
+        return dip_time, swell_time, interrupt_time, harmonics_time
+    end
+
+    for line in io.lines(event_path) do
+        local   hostname,
+                uuid,
+                etype,
+                lat,
+                long,
+                timestamp,
+                usec,
+                start_time,
+                duration,
+                event_spec1,
+                event_spec2 = line:match("([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*)")
+                events[#events+1] = {   hostname = hostname,
+                                        uuid = uuid,
+                                        etype = etype,
+                                        lat = lat,
+                                        long = long,
+                                        timestamp = tonumber(timestamp),
+                                        usec = usec,
+                                        start_time = start_time,
+                                        duration = tonumber(duration),
+                                        event_spec1 = event_spec1,
+                                        event_spec2 = event_spec2
+                                    }
+    end
+
+    if next(events) == nil then
+        status = status .. " events empty"
+        return dip_time, swell_time, interrupt_time, harmonics_time
+    end
+    status = status .. " events ok"
+
+    for _, event in ipairs(events) do
+        status = status .. event.etype
+        if (event.etype == "DIP") then
+            status = status .. " DIP found"
+            dip_time =tostring( dip_time + math.abs(event.duration))
+        elseif (event.etype == "SWELL") then
+            swell_time = tostring(swell_time + math.abs(event.duration))
+            status = status .. " SWELL found"
+        elseif (event.etype == "INTERRUPT") then
+            interrupt_time = tostring(interrupt_time + math.abs(event.duration))
+        elseif (event.etype == "HARMONICS") then
+            harmonics_time = tostring(harmonics_time + math.abs(event.duration))
+        end
+    end
+    return dip_time, swell_time, interrupt_time, harmonics_time
+end
+
+function event_render()
+    local swell_status = "green"
+    dip_time,
+    swell_time,
+    interrupt_time,
+    harmonics_time = calc_time()
+
+    luci.template.render( "powquty/event", {
+        dip_status = dip_status,
+        swell_status = swell_status,
+        dip_time = dip_time,
+        swell_time = swell_time,
+        interrupt_time = interrupt_time,
+        harmonics_time = harmonics_time,
+        status = status
+    } )
 end
