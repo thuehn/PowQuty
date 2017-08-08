@@ -160,11 +160,12 @@ void send_event(PQEvent pqe, struct powquty_conf *conf) {
 	publish_event(event);
 #endif
 
-	/* free allocated stuff */
+	/* free allocated stuff and close file*/
 	free(msg);
 	free(event);
 	free(local_time);
 	free(hostname);
+	fclose(file);
 }
 
 void handle_event(PQResult pqResult, struct powquty_conf *conf) {
