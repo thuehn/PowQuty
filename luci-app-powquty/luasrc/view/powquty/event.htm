@@ -9,9 +9,11 @@
 	<body>
 		<h2>Powquty Event Live Log</h2>
 		<h3>Status: <% write (status) %></h3>
-		<table style="width:700px">
-			<col width="140">
-			<col width="500">
+		<h3>Time: <% write (epoch) %></h3>
+		<h3>last week: <% write (week) %></h3>
+		<table style="width:800px">
+			<col width="190">
+			<col width="550">
 			<col width="60">
 			<tr>
 				<th align="left">Type</th>
@@ -47,7 +49,7 @@
 			XHR.poll (30, "<% write (REQUEST_URI) %>?dip_status=<%=dip_status%>&swell_status=<%=swell_status%>&interrupt_time=<%=interrupt_time%>&harmonics_time=<%=harmonics_time%>&swell_time=<%=swell_time%>&dip_time=<%=dip_time%>",
 						  null, function (xhr, json) {refresh(xhr) } )
 		</script>
-		<div style="height:400px;width:700px;overflow:auto;background-color:lightgray;color:black;scrollbar-base-color:gray;font-family:sans-serif;padding:10px;">
+		<div style="height:400px;width:800px;overflow:auto;background-color:lightgray;color:black;scrollbar-base-color:gray;font-family:sans-serif;padding:10px;">
 			<ul style="list-style-type:none" id="event_list"></ul>
 		</div>
 		<script>
