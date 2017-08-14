@@ -4,7 +4,7 @@ require ("lfs")
 -- require("luci.i18n")
 local epoch = tonumber(os.time())
 local dip_status = "green"
-local swell_status = "red"
+local swell_status = "green"
 local dip_time = tostring(0)
 local swell_time = tostring(0)
 local interrupt_time = tostring(0)
@@ -328,7 +328,7 @@ function calc_time()
     local interrupt_time = tostring(0)
     local harmonics_time = tostring(0)
     local seconds_in_day = 60 * 60 * 24
-    local seconds_in_week = seconds_in_day * 7
+    local seconds_in_week =  seconds_in_day * 7
     local voltage_per_week = math.floor(seconds_in_week * 0.1)
     local event
     local events = {}
@@ -373,6 +373,7 @@ function calc_time()
     end
     status = status .. " events ok"
 
+    -- TODO: timestamp is in ms epoch in s
     for _, event in ipairs(events) do
         if (event.etype == "DIP") then
             if event.timestamp > (epoch - seconds_in_week) then
@@ -394,19 +395,22 @@ function calc_time()
             end
         end
     end
-    local volt_time = math.ceil((dip_time + swell_time + interrupt_time) / 1000)
+    local volt_time = math.ceil((tonumber(dip_time) + tonumber(swell_time) + tonumber(interrupt_time)) / 1000)
     if volt_time > math.ceil(voltage_per_week * 0.8) then
         dip_status = "yellow"
-    elseif volt_time >= voltage_per_week then
-        dip_status = "red"
+        swell_status = "yellow"
     end
+    if volt_time > voltage_per_week then
+        dip_status = "red"
+        swell_status = "red"
+    end
+    week = tostring(volt_time)
     file:close()
 
     return dip_time, swell_time, interrupt_time, harmonics_time
 end
 
 function event_render()
-    local swell_status = "green"
     dip_time,
     swell_time,
     interrupt_time,
@@ -421,7 +425,7 @@ function event_render()
         interrupt_time = interrupt_time,
         harmonics_time = harmonics_time,
         epoch = tostring(epoch),
-        week = tostring(epoch - seconds_in_week),
+        week = week,
         status = status
     } )
 end

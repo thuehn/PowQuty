@@ -46,7 +46,7 @@
 			function refresh(x) {
 				location.reload();
 			}
-			XHR.poll (30, "<% write (REQUEST_URI) %>?dip_status=<%=dip_status%>&swell_status=<%=swell_status%>&interrupt_time=<%=interrupt_time%>&harmonics_time=<%=harmonics_time%>&swell_time=<%=swell_time%>&dip_time=<%=dip_time%>",
+			XHR.poll (90, "<% write (REQUEST_URI) %>?dip_status=<%=dip_status%>&swell_status=<%=swell_status%>&interrupt_time=<%=interrupt_time%>&harmonics_time=<%=harmonics_time%>&swell_time=<%=swell_time%>&dip_time=<%=dip_time%>",
 						  null, function (xhr, json) {refresh(xhr) } )
 		</script>
 		<div style="height:400px;width:800px;overflow:auto;background-color:lightgray;color:black;scrollbar-base-color:gray;font-family:sans-serif;padding:10px;">
