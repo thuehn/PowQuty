@@ -8,6 +8,8 @@
 #ifndef POWQUTYD_FILES_INCLUDE_MAIN_H_
 #define POWQUTYD_FILES_INCLUDE_MAIN_H_
 
+void stop_powqutyd_file_read();
+
 void stop_powqutyd();
 
 #endif /* POWQUTYD_FILES_INCLUDE_MAIN_H_ */

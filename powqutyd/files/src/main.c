@@ -26,7 +26,7 @@ void handle_signal()
 	stop_mosquitto();
 #endif
 	stop_calculation();
-	printf("DEBUG:\tThreads should have stopped \n");
+	printf("DEBUG:\tThreads should have stopped\n");
 	stop_main = 1;
 }
 
@@ -34,18 +34,24 @@ void stop_powqutyd() {
 	handle_signal();
 }
 
+void stop_powqutyd_file_read() {
+#ifdef MQTT
+	stop_mosquitto();
+#endif
+//	stop_file_read();
+	printf("DEBUG:\tThreads should have stopped\n");
+	stop_main = 1;
+}
+
 void handle_args (int argc, char **argv) {
 	int c;
-	while ((c = getopt (argc, argv, "rdf:")) != -1) {
+	while ((c = getopt (argc, argv, "rd")) != -1) {
 		switch (c) {
 			case 'r':
 				set_raw_print(1);
 				break;
 			case 'd':
 				set_debug(1);
-				break;
-			case 'f':
-				set_file_read(optarg);
 				break;
 			default:
 				break;
