@@ -14,6 +14,7 @@
 #include "mqtt.h"
 #endif
 #include "calculation.h"
+#include "file_handling.h"
 #include "retrieval.h"
 #include "config.h"
 #include "uci_config.h"
@@ -38,20 +39,23 @@ void stop_powqutyd_file_read() {
 #ifdef MQTT
 	stop_mosquitto();
 #endif
-//	stop_file_read();
+	stop_file_read();
 	printf("DEBUG:\tThreads should have stopped\n");
 	stop_main = 1;
 }
 
 void handle_args (int argc, char **argv) {
 	int c;
-	while ((c = getopt (argc, argv, "rd")) != -1) {
+	while ((c = getopt (argc, argv, "rdf:")) != -1) {
 		switch (c) {
 			case 'r':
 				set_raw_print(1);
 				break;
 			case 'd':
 				set_debug(1);
+				break;
+			case 'f':
+				set_file_read(optarg);
 				break;
 			default:
 				break;
@@ -86,6 +90,22 @@ int main (int argc, char *argv[]) {
 #endif
 	handle_args(argc, argv);
 
+	printf("arguments handled\n");
+	if (get_input_file_state()) {
+		printf("use input file\n");
+//		sleep(10);
+		if (!file_read_init(&conf)) {
+#ifdef MQTT
+			publish_device_online();
+			publish_device_gps();
+#endif
+		}
+		while (!stop_main) {
+			join_file_read();
+		}
+		return 0;
+	}
+	printf("not input_file\n");
 	if(!calculation_init(&conf)) {
 		printf("Calculation Thread started\n");
 #ifdef MQTT
@@ -93,7 +113,9 @@ int main (int argc, char *argv[]) {
 		publish_device_gps();
 #endif
 	} else {
+#ifdef MQTT
 		stop_mosquitto();
+#endif
 		exit(EXIT_FAILURE);
 	}
 
