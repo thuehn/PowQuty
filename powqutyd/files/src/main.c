@@ -87,7 +87,9 @@ int main (int argc, char *argv[]) {
 		publish_device_gps();
 #endif
 	} else {
+#ifdef MQTT
 		stop_mosquitto();
+#endif
 		exit(EXIT_FAILURE);
 	}
 
