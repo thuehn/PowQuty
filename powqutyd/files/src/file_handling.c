@@ -38,6 +38,8 @@ PQInfo frpqInfo;
 PQResult frpqResult;
 
 static char *input_file = NULL;
+long long timestamp = 0;
+unsigned int counter = -1;
 
 int set_file_read(const char *path) {
 	if (path == NULL)
@@ -80,24 +82,23 @@ void stop_file_read() {
  * @return: index of time stamp buffer
  */
 int set_time_stamp() {
-	static unsigned int counter = 1;
-	static int timestamp = 0;
-
-	if (counter > 1)
-		printf("timestamp: %d, counter: %d, timestamp_buffer[%d]: %lld\n", timestamp, counter, counter - 2, timestamp_buffer[counter -2]);
-
-	if (!(counter % 4)) {
-		timestamp += 7;
-		timestamp_buffer[counter] = timestamp;
+	int i;
+	for (i = 0; i < FRAMES_PER_BLOCK; i++) {
 		counter++;
-		return (counter - 1);
-	}
+		if (!(counter % 4)) {
+			timestamp += 7;
+			timestamp_buffer[counter] = timestamp;
+			continue;
+		}
 
-	timestamp += 6;
-	timestamp_buffer[counter] = timestamp;
-	counter++;
-	printf("timestamp: %d, counter: %d, timestamp_buffer[%d]: %lld\n", timestamp, counter, counter - 1, timestamp_buffer[counter -1]);
-	return (counter - 1);
+		timestamp += 6;
+		timestamp_buffer[counter] = timestamp;
+		if (((counter + 1) % 160) == 0) {
+			printf("max size\n");
+			counter = -1;
+		}
+	}
+	return counter;
 }
 
 
@@ -111,39 +112,34 @@ int file_read_init(struct powquty_conf *conf) {
 	memset(block_buffer, 0, BLOCK_BUFFER_SIZE * sizeof(short));
 	memset(timestamp_buffer, 0, TS_BUFFER_SIZE * sizeof(long long));
 	memset(fr_in, 0, SAMPLES_PER_BLOCK * sizeof(float));
-	printf("allocated\n");
 	frpqConfig.sampleRate = SAMPLE_FREQUENCY;
 	frpqConfig.HW_offset = FILE_READ_OFFSET;
 	frpqConfig.HW_scale = FILE_READ_SCALE;
 
-	printf("set offset etc\n");
 	frerr = createPowerQuality(&frpqConfig, &frpPQInst, &frpqInfo);
 	printf("frerr: %d\n", frerr);
 	if(frerr == PQ_NO_ERROR) {
 		// start calculation thread
-		printf("should start thread\n");
 		res = pthread_create(&file_read_thread, NULL,
 				     file_read_thread_run, NULL);
-		printf("pthread_create returned: %d %s\n", res, strerror(errno));
 	} else {
 		// TODO see what happend
 		printf("ERROR:\t\terror creating PQ_Instance, errno: %d\n", frerr);
 		return -1;
 	}
-	printf("done\n");
 	return res;
 }
 
 void *file_read_thread_run(void *param) {
 	printf("DEBUG:\tFile read thread has started\n");
 	int offset = 0;
+	int i = 0;
 	FILE *file = fopen(input_file, "r");
 	if (file == NULL) {
 		printf("ERROR:\tCould not open file %s: %s\n", input_file,
 			strerror(errno));
 		return NULL;
 	}
-	printf("before while\n");
 	while (!stop_file_read_run) {
 		if (!feof(file)) {
 			fread(fr_in, sizeof(float), MAX_FRAMESIZE, file);
@@ -160,7 +156,6 @@ void *file_read_thread_run(void *param) {
 
 		set_time_stamp();
 
-		printf("set timestamp\n");
 		frerr = applyPowerQuality(
 				frpPQInst,
 				fr_in,
@@ -169,11 +164,11 @@ void *file_read_thread_run(void *param) {
 				timestamp_buffer + offset,
 				FRAMES_PER_BLOCK);
 
-		printf("power applied\n");
-		if (!(offset % 128))
-			offset += 32;
+		offset = i * 32;
+		if (i == 4)
+			i = 0;
 		else
-			offset = 0;
+			i++;
 
 		/* exit processing on error */
 		if(frerr != PQ_NO_ERROR) {
@@ -188,16 +183,11 @@ void *file_read_thread_run(void *param) {
 			handle_event(frpqResult, config);
 
 		if(frpqResult.HarmonicsExist) {
-			printf("store_to_file\n");
 			store_to_file(frpqResult, config);
 #ifdef MQTT
-			printf("publish_measurements\n");
 			publish_measurements(frpqResult);
-			printf("published\n");
 #endif
 		}
-		printf("done in while\n");
-	
 	}
 	fclose(file);
 	printf("DEBUG:\tFile read thread has ended\n");
