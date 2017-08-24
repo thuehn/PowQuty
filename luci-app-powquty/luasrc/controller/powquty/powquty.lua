@@ -5,6 +5,8 @@ require ("lfs")
 local epoch = tonumber(os.time())
 local dip_status = "green"
 local swell_status = "green"
+local interrupt_status = "green"
+local harm_status = "green"
 local dip_time = tostring(0)
 local swell_time = tostring(0)
 local interrupt_time = tostring(0)
@@ -44,13 +46,12 @@ function index()
                 {
                     dip_status = dip_status,
                     swell_status = swell_status,
+                    interrupt_status = interrupt_status,
+                    harm_status = harm_status,
                     dip_time = dip_time,
                     swell_time = swell_time,
                     interrupt_time = interrupt_time,
                     harmonics_time = harmonics_time,
-                    epoch = tostring(epoch),
-                    week = week ,
-                    status = status
                 }
 end
 
@@ -329,7 +330,7 @@ function calc_time()
     local harmonics_time = tostring(0)
     local seconds_in_day = 60 * 60 * 24
     local seconds_in_week =  seconds_in_day * 7
-    local voltage_per_week = math.floor(seconds_in_week * 0.1)
+    local voltage_per_week = math.floor(seconds_in_week * 0.05)
     local event
     local events = {}
     local open = io.open
@@ -373,38 +374,41 @@ function calc_time()
     end
     status = status .. " events ok"
 
-    -- TODO: timestamp is in ms epoch in s
     for _, event in ipairs(events) do
         if (event.etype == "DIP") then
             if event.timestamp > (epoch - seconds_in_week) then
                 status = status .. " DIP found"
-                dip_time =tostring(dip_time + math.abs(event.duration))
+                dip_time =tostring(dip_time + event.duration)
             end
         elseif (event.etype == "SWELL") then
             if event.timestamp > (epoch - seconds_in_week) then
-                swell_time = tostring(swell_time + math.abs(event.duration))
+                swell_time = tostring(swell_time + event.duration)
                 status = status .. " SWELL found"
             end
         elseif (event.etype == "INTERRUPT") then
             if event.timestamp > (epoch - seconds_in_week) then
-                interrupt_time = tostring(interrupt_time + math.abs(event.duration))
+                interrupt_time = tostring(interrupt_time + event.duration)
             end
         elseif (event.etype == "HARMONIC") then
             if event.timestamp > (epoch - seconds_in_week) then
-                harmonics_time = tostring(harmonics_time + math.abs(event.duration))
+                harmonics_time = tostring(harmonics_time + event.duration)
             end
         end
     end
     local volt_time = math.ceil((tonumber(dip_time) + tonumber(swell_time) + tonumber(interrupt_time)) / 1000)
     if volt_time > math.ceil(voltage_per_week * 0.8) then
         dip_status = "yellow"
-        swell_status = "yellow"
     end
     if volt_time > voltage_per_week then
         dip_status = "red"
-        swell_status = "red"
     end
-    week = tostring(volt_time)
+    local harm_time = math.ceil(tonumber(harmonics_time) / 1000)
+    if harm_time > math.ceil(voltage_per_week * 8) then
+        harm_status = "yellow"
+    end
+    if harm_time > voltage_per_week then
+        harm_status = "red"
+    end
     file:close()
 
     return dip_time, swell_time, interrupt_time, harmonics_time
@@ -419,13 +423,12 @@ function event_render()
 
     luci.template.render( "powquty/event", {
         dip_status = dip_status,
-        swell_status = swell_status,
+        swell_status = dip_status,
+        interrupt_status = dip_status,
+        harm_status = harm_status,
         dip_time = dip_time,
         swell_time = swell_time,
         interrupt_time = interrupt_time,
         harmonics_time = harmonics_time,
-        epoch = tostring(epoch),
-        week = week,
-        status = status
     } )
 end
