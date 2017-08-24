@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "event_handling.h"
 #include "file_handling.h"
@@ -141,6 +142,7 @@ void *file_read_thread_run(void *param) {
 		return NULL;
 	}
 	while (!stop_file_read_run) {
+		sleep(1);
 		if (!feof(file)) {
 			fread(fr_in, sizeof(float), MAX_FRAMESIZE, file);
 		} else {
