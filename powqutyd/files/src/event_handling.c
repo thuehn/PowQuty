@@ -171,6 +171,8 @@ void send_event(PQEvent pqe, struct powquty_conf *conf) {
 void handle_event(PQResult pqResult, struct powquty_conf *conf) {
 	int i;
 
-	for (i = 0; i < pqResult.nmbPqEvents; i++)
+	for (i = 0; i < pqResult.nmbPqEvents; i++) {
 		send_event(pqResult.pqEvents[i], conf);
+		usleep(50000);
+	}
 }
