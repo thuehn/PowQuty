@@ -19,9 +19,6 @@
 
 const char* device_tty;
 
-#define FILE_READ_OFFSET 0.f
-#define FILE_READ_SCALE 1.f
-#define MAX_PATH_LENGTH 512
 #define SAMPLE_FREQUENCY 10240
 pPQInstance pPQInst = NULL;
 PQConfig pqConfig;
@@ -34,8 +31,6 @@ static pthread_mutex_t calc_mtx;
 
 static pthread_t calculation_thread;
 static void *calculation_thread_run(void* param);
-
-char *input_file = NULL;
 
 /*
  * It is the index of the first frame of the block.
@@ -81,48 +76,6 @@ int calculation_load_from_config() {
 	return res;
 }
 
-int set_file_read(const char *path) {
-	if (path == NULL)
-		return EXIT_FAILURE;
-
-	if (strlen(path) >= MAX_PATH_LENGTH)
-		return EXIT_FAILURE;
-
-	input_file = malloc(sizeof(char) * MAX_PATH_LENGTH);
-	if (input_file == NULL) {
-		printf("ERROR:\t\t error allocacting memory in %s\n", __func__);
-		return EXIT_FAILURE;
-	} else {
-		strcpy(input_file, path);
-		return EXIT_SUCCESS;
-	}
-}
-
-int get_input_file_state() {
-	if (input_file)
-		return 1;
-	else
-		return 0;
-}
-
-void set_read_offset() {
-	if (input_file) {
-		pqConfig.HW_offset = FILE_READ_OFFSET;
-	} else {
-		hw_offset = get_hw_offset();
-		pqConfig.HW_offset = hw_offset;
-	}
-}
-
-void set_read_scale() {
-	if (input_file) {
-		pqConfig.HW_scale = FILE_READ_SCALE;
-	} else {
-		hw_scale = get_hw_scaling();
-		pqConfig.HW_scale = hw_scale;
-	}
-}
-
 int calculation_init(struct powquty_conf* conf) {
 	int res=0;
 
@@ -134,11 +87,11 @@ int calculation_init(struct powquty_conf* conf) {
 	config = conf;
 	//printf("conf device_tty ==> %s\n", conf->device_tty);
 	//printf("config device_tty ==> %s\n", config->device_tty);
-	if(is_config_loaded()) {
+	if (is_config_loaded()) {
 		res= calculation_load_from_config();
 	}
 
-	if(!retrieval_init(config->device_tty)) {
+	if (!retrieval_init(config->device_tty)) {
 		printf("DEBUG:\t\tRetrieval Thread started \n");
 	} else {
 		printf("ERROR:\t\tcouldn't start Retrieval-Thread\n");
@@ -149,15 +102,19 @@ int calculation_init(struct powquty_conf* conf) {
 	memset(in, 0, SAMPLES_PER_BLOCK * sizeof(float));
 
 	pqConfig.sampleRate = SAMPLE_FREQUENCY;
-	set_read_offset();
-	set_read_scale();
+
+	hw_offset = get_hw_offset();
+	pqConfig.HW_offset = hw_offset;
+
+	hw_scale = get_hw_scaling();
+	pqConfig.HW_scale = hw_scale;
 
 	err = createPowerQuality(&pqConfig, &pPQInst, &pqInfo);
 
 	pthread_cond_init(&calc_cond, NULL);
 	pthread_mutex_init(&calc_mtx,NULL);
 
-	if(err == PQ_NO_ERROR) {
+	if (err == PQ_NO_ERROR) {
 		// start calculation thread
 		res = pthread_create(&calculation_thread,NULL, calculation_thread_run,NULL);
 
@@ -172,41 +129,15 @@ int calculation_init(struct powquty_conf* conf) {
 }
 
 static void *calculation_thread_run(void* param) {
-	FILE *file;
 	printf("DEBUG:\tCalculation Thread has started\n");
 
-	if (input_file) {
-		file = fopen(input_file, "r");
-		if (file == NULL) {
-			printf("ERROR:\tCould not open file %s\n", input_file);
-			return NULL;
-		}
-	}
-
-	while(!stop_calculation_run) {
+	while (!stop_calculation_run) {
 
 		pthread_mutex_lock(&calc_mtx);
 		pthread_cond_wait(&calc_cond,&calc_mtx);
 		pthread_mutex_unlock(&calc_mtx);
 
-		/* read from file if it is set */
-		if (input_file) {
-			if(!feof(file)) {
-				fread(in, sizeof(float), MAX_FRAMESIZE, file);
-				data_ready = 1;
-			} else {
-				printf("DEBUG:\tReached end of file\n");
-				break;
-			}
-
-			if (ferror(file)) {
-				printf("ERROR:\tAn error occurred during "
-					"file read\n");
-				break;
-			}
-		}
-
-		if(data_ready) {
+		if (data_ready) {
 			// do the calculation
 			//printf("\n\ncalculating @ idx: %d\n", buffer_data_start_idx );
 			//print_from_buffer();
@@ -214,8 +145,7 @@ static void *calculation_thread_run(void* param) {
 
 			// load data into in while converting them to float
 			/* data is already in in if read from file */
-			if (!input_file)
-				load_data_to_in();
+			load_data_to_in();
 			// print_in_signal();
 			// calculate the idx of timestamps (attention with this)
 
@@ -229,7 +159,7 @@ static void *calculation_thread_run(void* param) {
 					FRAMES_PER_BLOCK);
 
 			/* exit processing on error */
-			if(err != PQ_NO_ERROR) {
+			if (err != PQ_NO_ERROR) {
 				printf("TODO:\t\tError applying PQ-Lib\n\t\t\t");
 				print_PQ_Error(err);
 				stop_powqutyd();
@@ -241,7 +171,7 @@ static void *calculation_thread_run(void* param) {
 			if (pqResult.nmbPqEvents > 0)
 				handle_event(pqResult, config);
 
-			if(pqResult.HarmonicsExist) {
+			if (pqResult.HarmonicsExist) {
 				store_to_file(pqResult, config);
 #ifdef MQTT
 				publish_measurements(pqResult);
@@ -251,11 +181,6 @@ static void *calculation_thread_run(void* param) {
 		}
 	}
 	printf("DEBUG:\tCalculation Thread has ended\n");
-	if (input_file) {
-		fclose(file);
-		stop_powqutyd();
-	}
-
 	return NULL;
 }
 
@@ -268,7 +193,7 @@ void do_calculation(unsigned int stored_frame_idx) {
 	 * ===> idx % 32 = 0 !
 	 * ===> idx <= (TS_BUFFER_SIZE -32)
 	 */
-	if(stored_frame_idx%32) {
+	if (stored_frame_idx%32) {
 		printf("ERROR:\t\tError from retrieval: Stored frame idx given "
 		       "for calculation is not a Multiple of FRAMES_PER_BLOCK"
 		       "\n");
@@ -280,9 +205,6 @@ void do_calculation(unsigned int stored_frame_idx) {
 	pthread_mutex_unlock(&calc_mtx);
 
 	data_ready = 1;
-
-	if (input_file)
-		return;
 
 	if (stored_frame_idx<32) {
 		buffer_data_start_idx = (stored_frame_idx + 128);

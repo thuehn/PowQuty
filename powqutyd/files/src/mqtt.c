@@ -16,6 +16,8 @@
 #include <sys/time.h>
 #include <stdlib.h>
 
+#define MAX_EVENT_LENGTH 39 // MAX_LENGTH + _event + 1
+
 static const char* mqtt_host = "localhost";
 static const char* mqtt_topic = "devices/update";
 static const char* mqtt_uname = "username";
@@ -111,7 +113,6 @@ int mqtt_load_from_config() {
 	}*/
 
 	dev_uuid = config->dev_uuid;
-	printf("dev_uuid: %s\n", dev_uuid);
 
 	dev_lat = config->dev_lat;
 	dev_lon = config->dev_lon;
@@ -142,7 +143,6 @@ int mqtt_load_from_config() {
 	mqtt_event_flag = config->mqtt_event_flag;
 
 	powqutyd_print = config->powqutyd_print;
-	printf("powqutyd_print: %d\n", powqutyd_print);
 
 	return res;
 }
@@ -264,17 +264,18 @@ static void *mosquitto_thread_main(void* param) {
 	printf("DEBUG:\tMQTT Thread has started\n");
 	char buff[250];
 	char* clientid = (char *) dev_uuid;
-	char *event_id = malloc(strlen(clientid) + strlen("_event") + 1);
-	strcat(event_id, clientid);
-	strcat(event_id, "_event");
+	char *event_id = malloc(sizeof(char) * MAX_EVENT_LENGTH);
+	snprintf(event_id, MAX_EVENT_LENGTH, "%s_event", (char *)dev_uuid);
+
 
 	int mosq_loop= 0, rc = 0, pub_res = 0;
 	// char payload_msg[250] ="";
 
 	mosquitto_lib_init();
 	mosq = mosquitto_new(clientid, true, 0);
-	if (mqtt_event_flag)
+	if (mqtt_event_flag) {
 		event_mosq = mosquitto_new(event_id, true, 0);
+	}
 
 	if(mosq){
 		mosquitto_username_pw_set (mosq, mqtt_uname, mqtt_pw);
@@ -290,12 +291,11 @@ static void *mosquitto_thread_main(void* param) {
 				printf("Error: mosquitto_connect event\n");
 
 			mosquitto_connect_callback_set(event_mosq, connect_callback);
-			mosquitto_connect_callback_set(event_mosq, publish_callback);
+			mosquitto_publish_callback_set(event_mosq, publish_callback);
 		}
 
 		mosquitto_connect_callback_set(mosq, connect_callback);
 		mosquitto_publish_callback_set(mosq, publish_callback);
-
 		while (!mosquitto_thread_stop) {
 			mosq_loop = mosquitto_loop(mosq, -1, 1);
 			if (mosq_loop) {
@@ -307,7 +307,6 @@ static void *mosquitto_thread_main(void* param) {
 				if(rc != MOSQ_ERR_SUCCESS) {
 					printf("Error: mosquitto_connect\n");
 				}
-
 				if (mqtt_event_flag) {
 					rc = mosquitto_connect(event_mosq,
 						mqtt_event_host, mqtt_port, 60);
@@ -329,7 +328,6 @@ static void *mosquitto_thread_main(void* param) {
 							       mqtt_event_topic);
 					if (pub_res != MOSQ_ERR_SUCCESS)
 						printf("Error: publishing event\n");
-					publish_powquty_event = 0;
 				}
 			}
 		}

@@ -56,6 +56,7 @@ OBJS= src/emulator.o \
 	src/event_handling.o \
 	src/mqtt.o \
 	src/libwebslack.o \
+	src/file_handling.o \
 	src/retrieval.o \
 	src/calculation.o \
 	src/raw_dump.o \
