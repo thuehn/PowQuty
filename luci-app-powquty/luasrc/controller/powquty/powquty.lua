@@ -1,8 +1,19 @@
 module("luci.controller.powquty.powquty", package.seeall)
 
-
 require ("lfs")
 -- require("luci.i18n")
+local epoch = tonumber(os.time())
+local dip_status = "green"
+local swell_status = "green"
+local interrupt_status = "green"
+local harm_status = "green"
+local dip_time = tostring(0)
+local swell_time = tostring(0)
+local interrupt_time = tostring(0)
+local harmonics_time = tostring(0)
+local nr_lines = 0
+local status = "new"
+local week = tostring(epoch - (60 * 60 * 24 * 7))
 
 -- Routing and menu index for the luci dispatcher.
 function index()
@@ -30,6 +41,18 @@ function index()
                                                                , phys = phys 
                                                                , img = img
                                                                }
+    entry ( { "admin", "statistics", "powquty", "event" },
+            call ( "event_render" ), "EN50160 Event Log", 4 ).query =
+                {
+                    dip_status = dip_status,
+                    swell_status = swell_status,
+                    interrupt_status = interrupt_status,
+                    harm_status = harm_status,
+                    dip_time = dip_time,
+                    swell_time = swell_time,
+                    interrupt_time = interrupt_time,
+                    harmonics_time = harmonics_time,
+                }
 end
 
 
@@ -284,4 +307,128 @@ function powquty_render()
             phys             = phys
 	} )
     end
+end
+
+function read_events()
+    local events = {}
+    status = status .. " file ok"
+    for line in file:lines() do
+        table.insert(events, line)
+        nr_lines = nr_lines + 1
+    end
+ --[[
+a
+--]]
+    file:close()
+    return events, status
+end
+
+function calc_time()
+    local dip_time = tostring(0)
+    local swell_time = tostring(0)
+    local interrupt_time = tostring(0)
+    local harmonics_time = tostring(0)
+    local seconds_in_day = 60 * 60 * 24
+    local seconds_in_week =  seconds_in_day * 7
+    local voltage_per_week = math.floor(seconds_in_week * 0.05)
+    local event
+    local events = {}
+    local open = io.open
+    local event_path = uci.get("powquty", "powquty", "powquty_event_path") or "/tmp/powquty_event.log"
+    local file = open(event_path, "r")
+
+    if file == nil then
+        status = "file nil"
+        return dip_time, swell_time, interrupt_time, harmonics_time
+    end
+
+    for line in io.lines(event_path) do
+        local   hostname,
+                uuid,
+                etype,
+                lat,
+                long,
+                timestamp,
+                usec,
+                start_time,
+                duration,
+                event_spec1,
+                event_spec2 = line:match("([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*)")
+                events[#events+1] = {   hostname = hostname,
+                                        uuid = uuid,
+                                        etype = etype,
+                                        lat = lat,
+                                        long = long,
+                                        timestamp = tonumber(timestamp),
+                                        usec = usec,
+                                        start_time = start_time,
+                                        duration = tonumber(duration),
+                                        event_spec1 = event_spec1,
+                                        event_spec2 = event_spec2
+                                    }
+    end
+
+    if next(events) == nil then
+        status = status .. " events empty"
+        return dip_time, swell_time, interrupt_time, harmonics_time
+    end
+    status = status .. " events ok"
+
+    for _, event in ipairs(events) do
+        if (event.etype == "DIP") then
+            if event.timestamp > (epoch - seconds_in_week) then
+                status = status .. " DIP found"
+                dip_time =tostring(dip_time + event.duration)
+            end
+        elseif (event.etype == "SWELL") then
+            if event.timestamp > (epoch - seconds_in_week) then
+                swell_time = tostring(swell_time + event.duration)
+                status = status .. " SWELL found"
+            end
+        elseif (event.etype == "INTERRUPT") then
+            if event.timestamp > (epoch - seconds_in_week) then
+                interrupt_time = tostring(interrupt_time + event.duration)
+            end
+        elseif (event.etype == "HARMONIC") then
+            if event.timestamp > (epoch - seconds_in_week) then
+                harmonics_time = tostring(harmonics_time + event.duration)
+            end
+        end
+    end
+    local volt_time = math.ceil((tonumber(dip_time) + tonumber(swell_time) + tonumber(interrupt_time)) / 1000)
+    if volt_time > math.ceil(voltage_per_week * 0.8) then
+        dip_status = "yellow"
+    end
+    if volt_time > voltage_per_week then
+        dip_status = "red"
+    end
+    local harm_time = math.ceil(tonumber(harmonics_time) / 1000)
+    if harm_time > math.ceil(voltage_per_week * 8) then
+        harm_status = "yellow"
+    end
+    if harm_time > voltage_per_week then
+        harm_status = "red"
+    end
+    file:close()
+
+    return dip_time, swell_time, interrupt_time, harmonics_time
+end
+
+function event_render()
+    dip_time,
+    swell_time,
+    interrupt_time,
+    harmonics_time = calc_time()
+    local seconds_in_week = 60 * 60 * 24 * 7
+
+    luci.template.render( "powquty/event", {
+        dip_status = dip_status,
+        swell_status = dip_status,
+        interrupt_status = dip_status,
+        harm_status = harm_status,
+        dip_time = dip_time,
+        swell_time = swell_time,
+        interrupt_time = interrupt_time,
+        harmonics_time = harmonics_time,
+    } )
 end

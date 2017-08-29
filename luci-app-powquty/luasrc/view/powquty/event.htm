@@ -1,18 +1,49 @@
-<%+header%>
 <!DOCTYPE html>
+<%+header%>
 <% local event_path = uci.get("powquty", "powquty", "powquty_event_path") or "/tmp/powquty_event.log" %>
 
 <html>
 	<body>
 		<h2>Powquty Event Live Log</h2>
-		<button onclick="myFunction()">Reload page</button>
-
+		<table style="width:800px">
+			<col width="190">
+			<col width="550">
+			<col width="60">
+			<tr>
+				<th align="left">Type</th>
+				<th align="left">Time in us</th>
+				<th align="left">Status</th>
+			</tr>
+			<tr>
+				<td> DIP </td>
+				<td><% write (dip_time) %></td>
+				<td><input type="text" disabled="true" style="width:50px;background-color:<% write (dip_status) %>;"></td>
+			</tr>
+			<tr>
+				<td>SWELL</td>
+				<td><% write (swell_time) %></td>
+				<td><input type="text" disabled="true" style="width:50px;background-color:<% write (swell_status) %>;"></td>
+			</tr>
+			<tr>
+				<td>INTERRUPT</td>
+				<td><% write (interrupt_time) %></td>
+				<td><input type="text" disabled="true" style="width:50px;background-color:<% write (interrupt_status) %>;"></td>
+			</tr>
+			<tr>
+				<td>HARMONICS</td>
+				<td><% write (harmonics_time) %></td>
+				<td><input type="text" disabled="true" style="width:50px;background-color:<% write (harm_status) %>;"></td>
+			</tr>
+		</table>
+		<button class="cbi-button cbi-button-apply" onclick="refresh(xhr)">Reload page</button>
 		<script>
-			function myFunction() {
+			function refresh(x) {
 				location.reload();
 			}
+			XHR.poll (90, "<% write (REQUEST_URI) %>?dip_status=<%=dip_status%>&swell_status=<%=swell_status%>&interrupt_status=<%=interrupt_status%>&harm_status=<%=harm_status%>&interrupt_time=<%=interrupt_time%>&harmonics_time=<%=harmonics_time%>&swell_time=<%=swell_time%>&dip_time=<%=dip_time%>",
+						  null, function (xhr, json) {refresh(xhr) } )
 		</script>
-		<div style="height:400px;width:700px;overflow:auto;background-color:lightgray;color:black;scrollbar-base-color:gray;font-family:sans-serif;padding:10px;">
+		<div style="height:400px;width:800px;overflow:auto;background-color:lightgray;color:black;scrollbar-base-color:gray;font-family:sans-serif;padding:10px;">
 			<ul style="list-style-type:none" id="event_list"></ul>
 		</div>
 		<script>
@@ -30,7 +61,7 @@
 	<% end %>
 <% else %>
 				entry = document.createElement('li');
-				entry.appendChild(document.createTextNode("No log file found"));
+				entry.appendChild(document.createTextNode("No Events so far"));
 				list.appendChild(entry);
 <% end %>
 			}
