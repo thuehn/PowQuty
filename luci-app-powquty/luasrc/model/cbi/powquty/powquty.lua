@@ -28,6 +28,14 @@ max_log_size_kb.datatype = "string"
 max_log_size_kb.default = "4096"
 
 -- mqtt
+mqtt_uname = s:taboption("mqtt", Value, "mqtt_uname", "mqtt_uname", "Username for MQTT server")
+mqtt_uname.datatype = "string"
+mqtt_uname.default = "username"
+
+mqtt_pw = s:taboption("mqtt", Value, "mqtt_pw", "mqtt_pw", "Password for MQTT Server")
+mqtt_pw.datatype = "string"
+mqtt.default = "password"
+
 mqtt_host = s:taboption("mqtt", Value, "mqtt_host", "mqtt_host", "IP-address or URL to the MQTT broker who receives the publish messages of powqutd")
 mqtt_host.datatype = "string"
 mqtt_host.default = "localhost"
