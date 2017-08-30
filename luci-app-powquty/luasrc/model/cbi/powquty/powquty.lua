@@ -42,7 +42,7 @@ mqtt_uname.default = "username"
 
 mqtt_pw = s:taboption("mqtt", Value, "mqtt_pw", "mqtt_pw", "Password for MQTT Server")
 mqtt_pw.datatype = "string"
-mqtt.default = "password"
+mqtt_pw.default = "password"
 
 mqtt_host = s:taboption("mqtt", Value, "mqtt_host", "mqtt_host", "IP-address or URL to the MQTT broker who receives the publish messages of powqutd")
 mqtt_host.datatype = "string"
