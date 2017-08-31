@@ -27,7 +27,23 @@ max_log_size_kb = s:taboption("general", Value, "max_log_size_kb", "max_log_size
 max_log_size_kb.datatype = "string"
 max_log_size_kb.default = "4096"
 
+dev_lat = s:taboption("general", Value, "dev_lat", "dev_lat", "Device Lattitude")
+dev_lat.datatype = "string"
+dev_lat.default = "55.0083525"
+
+dev_lon = s:taboption("general", Value, "dev_lon", "dev_lon", "Device Longitude")
+dev_lon.datatype = "string"
+dev_lon.default = "82.935732"
+
 -- mqtt
+mqtt_uname = s:taboption("mqtt", Value, "mqtt_uname", "mqtt_uname", "Username for MQTT server")
+mqtt_uname.datatype = "string"
+mqtt_uname.default = "username"
+
+mqtt_pw = s:taboption("mqtt", Value, "mqtt_pw", "mqtt_pw", "Password for MQTT Server")
+mqtt_pw.datatype = "string"
+mqtt_pw.default = "password"
+
 mqtt_host = s:taboption("mqtt", Value, "mqtt_host", "mqtt_host", "IP-address or URL to the MQTT broker who receives the publish messages of powqutd")
 mqtt_host.datatype = "string"
 mqtt_host.default = "localhost"
