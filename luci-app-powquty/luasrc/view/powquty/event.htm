@@ -12,25 +12,25 @@
 			<tr>
 				<th align="left">Type of event</th>
 				<th align="left">Sum of event duration[us] since last week</th>
-				<th align="left">Status</th>
+				<th align="left" title="Green indicates, that an event occured less then 80% of its allowed time, yellow 80% or more. Red indicates a violation of the EN50160 norm">Status</th>
 			</tr>
 			<tr>
-				<td> DIP </td>
+				<td title="Event indicating a voltage dip of 10% - 90% of the reference voltage on the measurment signal."> DIP </td>
 				<td><% write (dip_time) %></td>
 				<td><input type="text" disabled="true" style="width:50px;background-color:<% write (dip_status) %>;"></td>
 			</tr>
 			<tr>
-				<td>SWELL</td>
+				<td title="Event indicating a voltage swell > 110% of the reference voltage on the measurment signal.">SWELL</td>
 				<td><% write (swell_time) %></td>
 				<td><input type="text" disabled="true" style="width:50px;background-color:<% write (swell_status) %>;"></td>
 			</tr>
 			<tr>
-				<td>INTERRUPT</td>
+				<td title="Event indicating a voltage dip < 10% of the reference voltage on the measurment signal.">INTERRUPT</td>
 				<td><% write (interrupt_time) %></td>
 				<td><input type="text" disabled="true" style="width:50px;background-color:<% write (interrupt_status) %>;"></td>
 			</tr>
 			<tr>
-				<td>HARMONICS</td>
+				<td title="Event indicating that > 5% of the measured values of one specific harmonic are over the defined threshold.">HARMONICS</td>
 				<td><% write (harmonics_time) %></td>
 				<td><input type="text" disabled="true" style="width:50px;background-color:<% write (harm_status) %>;"></td>
 			</tr>
