@@ -47,7 +47,7 @@
 			<ul style="list-style-type:none" id="event_list"></ul>
 		</div>
 		<script>
-	//	window.onload = function() {
+		//	window.onload = function() {
 			function print_list() {
 				var list = document.getElementById('event_list');
 				var entry;
@@ -55,8 +55,10 @@
 <% if file ~= nil then %>
 	<% io.close(file) %>
 	<% for line in io.lines(event_path) do %>
+		<% local hostname, uuid, type, lat, lon, ts, usec, start, dur = line:match("([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*)") %>
+		<% local time = os.date("%Y-%B-%d %H:%M:%S", ts) %>
 				entry = document.createElement('li');
-				entry.appendChild(document.createTextNode("<% write (line) %>"));
+				entry.appendChild(document.createTextNode("<% write(time) %> " + "Type: <% write(type) %> " + " Duration: <% write(dur) %>"));
 				list.appendChild(entry);
 	<% end %>
 <% else %>
