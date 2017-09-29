@@ -2,6 +2,7 @@ module("luci.controller.powquty.powquty", package.seeall)
 
 require ("lfs")
 -- require("luci.i18n")
+local event_path = uci.get("powquty", "powquty", "powquty_event_path") or "/tmp/powquty_event.log"
 local epoch = tonumber(os.time())
 local dip_status = "green"
 local swell_status = "green"
@@ -14,6 +15,23 @@ local harmonics_time = tostring(0)
 local nr_lines = 0
 local status = "new"
 local week = tostring(epoch - (60 * 60 * 24 * 7))
+local event_arr = "empty"
+
+function list_events()
+    local event_counter = 0
+    local file = io.open(event_path, "r")
+    local time = os.date("%Y-%B-%d_%H:%M:%S", ts)
+
+    if file ~= nil then
+        event_arr = ""
+        io.close(file)
+        for line in io.lines(event_path) do
+            local hostname, uuid, e_type, lat, lon, ts, usec, start, dur = line:match("([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*)")
+            event_arr = event_arr .. tostring(time) .. "_Type:_" .. tostring(e_type) .. "_Duration:_" .. tostring(dur) .. ";"
+            event_counter = event_counter + 1
+        end
+    end
+end
 
 -- Routing and menu index for the luci dispatcher.
 function index()
@@ -52,6 +70,7 @@ function index()
                     swell_time = swell_time,
                     interrupt_time = interrupt_time,
                     harmonics_time = harmonics_time,
+                    event_arr = event_arr
                 }
 end
 
@@ -334,7 +353,6 @@ function calc_time()
     local event
     local events = {}
     local open = io.open
-    local event_path = uci.get("powquty", "powquty", "powquty_event_path") or "/tmp/powquty_event.log"
     local file = open(event_path, "r")
 
     if file == nil then
@@ -420,6 +438,7 @@ function event_render()
     interrupt_time,
     harmonics_time = calc_time()
     local seconds_in_week = 60 * 60 * 24 * 7
+    list_events()
 
     luci.template.render( "powquty/event", {
         dip_status = dip_status,
@@ -430,5 +449,6 @@ function event_render()
         swell_time = swell_time,
         interrupt_time = interrupt_time,
         harmonics_time = harmonics_time,
+        event_arr = event_arr
     } )
 end
