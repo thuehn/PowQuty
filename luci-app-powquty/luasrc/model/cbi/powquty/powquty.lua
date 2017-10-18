@@ -19,6 +19,10 @@ powquty_path = s:taboption("general", Value, "powquty_path", "powquty_path", "Th
 powquty_path.datatype = "string"
 powquty_path.default = "/tmp/powquty.log"
 
+powquty_event_path = s:taboption("general", Value, "powquty_event_path", "powquty_event_path", "The path of the event output logfile")
+powquty_event_path = "string"
+powquty_event_path = "/tmp/powqutyy_event.log"
+
 powqutyd_print = s:taboption("general", Flag, "powqutyd_print", "powqutyd_print", "If activated, will print the results published to the MQTT broker to stdout")
 powqutyd_print.rmempty = false
 powqutyd_print.default = true
