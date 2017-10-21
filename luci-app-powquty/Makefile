@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-powquty
-PKG_VERSION:=0.1
+PKG_VERSION:=0.2
 PKG_RELEASE:=1
 PKG_MAINTAINER:=Tobias Ilte <Email ?>
 PKG_LICENSE:=GPL-3.0+
