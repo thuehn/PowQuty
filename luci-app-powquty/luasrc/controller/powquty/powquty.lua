@@ -165,8 +165,8 @@ function generate_rrdimage ( phy, image, span, width, height, rrd_path,
 
     cmd = cmd .. " --end now" .. " --start end-" .. span_seconds .. "s"
     
-    local upper_limit = 240
-    local lower_limit = 220
+    local upper_limit = 253
+    local lower_limit = 194
     local vertical_label = "RMS(Voltage) [V]"
     
     if (phy == 0) then
