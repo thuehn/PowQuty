@@ -6,7 +6,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=powqutyd
-PKG_VERSION:=0.1
+PKG_VERSION:=0.2
 PKG_RELEASE:=1
 PKG_MAINTAINER:=Neez <neez.el.sayed@gmail.com>
 PKG_LICENSE:=GPL-3.0+
