@@ -5,6 +5,10 @@ CFLAGS+=-I./lib/ -I. -I./include/ -I/usr/local/include/uci
 
 #CFLAGS+=-DDEBUG_PRINT
 
+ifeq ($(ARCH),aarch64)
+LD_LIBS+= ./lib/libpqlib_aarch64_cortex-a53.a
+endif
+
 ifeq ($(ARCH),i386)
 LD_LIBS+= ./lib/libpqlib_i386_pentium4.a
 endif
@@ -19,7 +23,11 @@ LD_LIBS+= ./lib/libpqlib_powerpc_8540.a
 endif
 
 ifeq ($(ARCH),mips)
-LD_LIBS+= ./lib/libpqlib_mips_34kc.a
+  ifeq ($(CC_TYPE),"24kc")
+    LD_LIBS+= ./lib/libpqlib_mips_24kc.a
+  else ifeq ($(CC_TYPE),"34kc")
+    LD_LIBS+= ./lib/libpqlib_mips_34kc.a
+  endif
 endif
 
 
