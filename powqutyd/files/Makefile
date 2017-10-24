@@ -19,7 +19,11 @@ LD_LIBS+= ./lib/libpqlib_powerpc_8540.a
 endif
 
 ifeq ($(ARCH),mips)
-LD_LIBS+= ./lib/libpqlib_mips_34kc.a
+  ifeq ($(CC_TYPE),"24kc")
+    LD_LIBS+= ./lib/libpqlib_mips_24kc.a
+  else ifeq ($(CC_TYPE),"34kc")
+    LD_LIBS+= ./lib/libpqlib_mips_34kc.a
+  endif
 endif
 
 

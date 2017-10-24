@@ -77,6 +77,9 @@ else
   export NO_SLACK
  endif
 
+CC_TYPE= $(CONFIG_CPU_TYPE)
+export CC_TYPE
+
 define Build/Prepare
 #	@echo ""
 #	@echo ""
