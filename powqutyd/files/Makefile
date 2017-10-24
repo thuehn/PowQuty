@@ -5,6 +5,10 @@ CFLAGS+=-I./lib/ -I. -I./include/ -I/usr/local/include/uci
 
 #CFLAGS+=-DDEBUG_PRINT
 
+ifeq ($(ARCH),aarch64)
+LD_LIBS+= ./lib/libpqlib_aarch64_cortex-a53.a
+endif
+
 ifeq ($(ARCH),i386)
 LD_LIBS+= ./lib/libpqlib_i386_pentium4.a
 endif
