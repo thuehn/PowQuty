@@ -26,7 +26,7 @@ function list_events()
         event_arr = ""
         io.close(file)
         for line in io.lines(event_path) do
-            local hostname, uuid, e_type, lat, lon, ts, usec, start, dur = line:match("([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*)")
+            local hostname, uuid, e_type, lat, lon, ts, msec, start, dur = line:match("([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*)")
             event_arr = event_arr .. tostring(time) .. "_Type:_" .. tostring(e_type) .. "_Duration:_" .. tostring(dur) .. ";"
             event_counter = event_counter + 1
         end
@@ -367,7 +367,7 @@ function calc_time()
                 lat,
                 long,
                 timestamp,
-                usec,
+                msec,
                 start_time,
                 duration,
                 event_spec1,
@@ -378,7 +378,7 @@ function calc_time()
                                         lat = lat,
                                         long = long,
                                         timestamp = tonumber(timestamp),
-                                        usec = usec,
+                                        msec = msec,
                                         start_time = start_time,
                                         duration = tonumber(duration),
                                         event_spec1 = event_spec1,
