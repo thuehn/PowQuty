@@ -87,18 +87,29 @@ end
 -- Returns a legend declaration for a metric
 function rrd_metric_legend ( metric, phy ) 
     --local var = "rel_" .. metric
-    local var = metric
+    
+    local var = metric    
+
+    local space                                                                           
+    if (metric == "h30" or metric == "h50" or metric == "h70" or metric == "h90") then    
+        space = " "                                                                        
+    else                                                                                  
+        space = ""                                                                         
+    end
+
     local unit
 
     if (phy == 0) then
-	unit = "V"
-    else
-	unit = "Hz"
+	    unit = "V"
+    elseif (phy == 1) then
+	    unit = "Hz"
+	elseif (phy == 2) then
+	    unit = "V"
     end
 
-    return " \"GPRINT:" .. var .. ":MIN:\t\tmin\\: %8.2lf%s "..unit.."\" \\\n"
-             .. " \"GPRINT:" .. var .. ":AVERAGE:\tavg\\: %8.2lf%s "..unit.."\" \\\n"
-             .. " \"GPRINT:" .. var .. ":MAX:\tmax\\: %8.2lf%s "..unit.."\\n\" \\\n"
+    return " \"GPRINT:" .. var .. ":MIN:\t\t\t"..space.."min\\:%6.2lf%s "..unit.."\" \\\n"
+             .. " \"GPRINT:" .. var .. ":AVERAGE:\t\tavg\\: %6.2lf%s "..unit.."\" \\\n"   
+             .. " \"GPRINT:" .. var .. ":MAX:\t\tmax\\: %6.2lf%s "..unit.."\\n\" \\\n"
 
 end
 
@@ -213,7 +224,7 @@ function generate_rrdimage ( phy, image, span, width, height, rrd_path,
                 out_shape = "STACK"
             end
             cmd = cmd .. rrd_metric_shape ( phy, metric, stacked, out_shape, colors[i] )
-            if (phy == 0 or phy == 1) then
+            if (phy == 0 or phy == 1 or phy == 2) then
 		cmd = cmd .. rrd_metric_legend ( metric .. "0", phy )
             end
         end
