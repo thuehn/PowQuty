@@ -59,12 +59,24 @@ nixio.stdout:write("\t\tInstance \"h110\"\n")
 nixio.stdout:write("\t\tValueFrom 10\n")
 nixio.stdout:write("\t</Metric>\n")
 
+nixio.stdout:write("\t<Metric \"h130\">\n")
+nixio.stdout:write("\t\tType \"gauge\"\n")
+nixio.stdout:write("\t\tInstance \"h130\"\n")
+nixio.stdout:write("\t\tValueFrom 11\n")
+nixio.stdout:write("\t</Metric>\n")
+
+nixio.stdout:write("\t<Metric \"h150\">\n")
+nixio.stdout:write("\t\tType \"gauge\"\n")
+nixio.stdout:write("\t\tInstance \"h150\"\n")
+nixio.stdout:write("\t\tValueFrom 12\n")
+nixio.stdout:write("\t</Metric>\n")
+
 nixio.stdout:write("\n")
 
 nixio.stdout:write("\t<File \"" .. powquty_path .. "\">\n")
 nixio.stdout:write("\t\tInstance \"powquty0\"\n")
 nixio.stdout:write("\t\tInterval 5\n")
-nixio.stdout:write("\t\tCollect \"voltage0\" \"frequency0\" \"h30\" \"h50\" \"h70\" \"h90\" \"h110\"\n")
+nixio.stdout:write("\t\tCollect \"voltage0\" \"frequency0\" \"h30\" \"h50\" \"h70\" \"h90\" \"h110\" \"h130\" \"h150\"\n")
 nixio.stdout:write("\t\tTimeFrom 1\n")
 nixio.stdout:write("\t</File>\n")
 

@@ -196,7 +196,7 @@ function generate_rrdimage ( phy, image, span, width, height, rrd_path,
         cmd = cmd .. " --x-grid MINUTE:5:SECOND:30:MINUTE:5:0:\%X"
     end
 
-    local colors = { "#FF5555", "#55FF55", "#5555FF", "#FF55FF", "#55FFFF", "#FFFF55" }
+    local colors = { "#FF5555", "#55FF55", "#5555FF", "#FF55FF", "#55FFFF", "#FFFF55", "#AA0000" }
     local colors2 = { "#AA0000", "#00AA00", "#0000AA", "#AA00AA", "#00AAAA", "#AAAA00" }
 
     -- print defs for each metric
@@ -277,7 +277,7 @@ function powquty_render()
 		if ( index == 2) then
             metrics = {"frequency"}
         elseif (index == 3) then
-	metrics = {"h3","h5","h7","h9","h11"}
+	metrics = {"h3","h5","h7","h9","h11","h13","h15"}
         end
         local rrdimg = "powquty" .. (index-1) .. ".png"
         --local tailcsv_dir = "tail_csv-powquty" .. (index-1)
