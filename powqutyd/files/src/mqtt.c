@@ -219,12 +219,23 @@ void publish_measurements(PQResult pqResult) {
 	//long long ts = get_curr_time_in_milliseconds();
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
+
+	time_t nowtime;
+	struct tm *nowtm;
+	char tmbuf[64];
+	nowtime = tv.tv_sec;
+	nowtm = gmtime(&nowtime);
+	strftime(tmbuf, sizeof tmbuf, "%Y-%m-%d %H:%M:%S", nowtm);
+
 	//long ts_sec = get_curr_time_in_seconds();
 	sprintf(payload,
 			//"%s,%ld,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
-			"%s,%lu.%lu,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
+			// "%s,%lu.%lu,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
+			"{\"id\":\"%s\", \"utc\":\"%s.%lu\", \"pkg\":\"0\", \"lat\":\"%s\", \"lng\":\"%s\", \"acc\":\"0.0\", \"data\": { \"u\":\"%.6f\", \"f\":\"%.6f\", \"h3\":\"%.6f\", \"h5\":\"%.6f\", \"h7\":\"%.6f\", \"h9\":\"%.6f\", \"h11\":\"%.6f\", \"h13\":\"%.6f\", \"h15\":\"%.6f\" } }",
 			dev_uuid,
-			tv.tv_sec, (long int)tv.tv_usec/100,
+			tmbuf, (long int)tv.tv_usec/1000,
+			dev_lat,
+			dev_lon,
 			//ts,
 			pqResult.PowerVoltageEff_5060T,
 			pqResult.PowerFrequency5060T,
