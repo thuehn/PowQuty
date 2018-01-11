@@ -162,23 +162,28 @@ int mqtt_init (struct powquty_conf* conf) {
 }
 
 void publish_device_gps() {
+	/*
 	// UUID,TIMESTAMP,2,LATITUDE, LONGITUDE,ACCURANCY,PROVIDER,NETFREQ
 	payload[0] = '\0';
 	struct timeval tv;
 	gettimeofday(&tv,NULL);
 	sprintf(payload,"%s,%lu.%lu,2,%s,%s,0,2,50",dev_uuid,tv.tv_sec, (long int)tv.tv_usec/100, dev_lat, dev_lon);
 	mqtt_publish_payload();
+	*/
 }
 
 void publish_device_offline() {
+	/*
 	payload[0] = '\0';
 	struct timeval tv;
 	gettimeofday(&tv,NULL);
 	sprintf(payload,"%s,%lu.%lu,0",dev_uuid,tv.tv_sec, (long int)tv.tv_usec/100);
 	mqtt_publish_payload();
+	*/
 }
 
 void publish_device_online() {
+	/*
 	payload[0] = '\0';
 	struct timeval tv;
 	gettimeofday(&tv,NULL);
@@ -190,6 +195,7 @@ void publish_device_online() {
 			dev_APP_ver,
 			dev_HW_ver);
 	mqtt_publish_payload();
+	*/
 }
 
 void mqtt_publish_event() {
