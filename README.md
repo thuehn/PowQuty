@@ -12,7 +12,7 @@
 ```
 
 ### What is PowQuty ?
-PowQuty consists of an Ansi C deamon and a luci webinterface extension to perform power quality measurements with a dedicated USB oszilloscope connected to a wireless routers based on LEDE Linux.
+PowQuty consists of an Ansi C daemon and a luci webinterface extension to perform power quality measurements with a dedicated USB oszilloscope connected to a wireless routers based on OpenWrt Linux.
 
 Sustainable energy production and consumption are crucial for a prospering life on earth. Decentralized energy production is one of the next big challenges, which will influence the energy production in the future years. The emerging smart grids include an inherent need for communication for monitoring and control purposes in a more and more dynamic environment. One of the major challenges is monitoring the power quality parameters in a decentralized manner. The Freifunk mesh network is an outstanding example for a decentralized infrastructure that could be augmented with grid related functionalities to cope with future energy challenges. The main goal of this project is to enable power quality measurements on OpenWrt. Voltage samples from the electric socket are retrieved at the router. Next power quality parameters are calculated, and finally made available for retrieval over IP networks.
 
@@ -22,8 +22,8 @@ Sustainable energy production and consumption are crucial for a prospering life 
 ![alt tag](https://cloud.githubusercontent.com/assets/1880886/23344150/98904e36-fc77-11e6-8fc0-ebbea06efe2b.png)
 
 
-### How to install PowQuty (under Linux LEDE [www.lede-project.org])
-1. Add the following line to your feeds.conf in your LEDE source directory:
+### How to install PowQuty (under Linux OpenWrt [www.lede-project.org])
+1. Add the following line to your feeds.conf in your OpenWrt source directory:
 ```
 src-git powquty https://github.com/thuehn/powquty.git
 ```
@@ -31,9 +31,9 @@ src-git powquty https://github.com/thuehn/powquty.git
 ```
 $./scripts/feeds install powqutyd
 ```
-3. add powqutyd to your LEDE config within make menuconfig -> Utilities --> powqutyd
-4. rebuild your LEDE image
-5. flash a new image or install the powquty with the hepl of opkg
+3. add powqutyd to your OpenWrt config within make menuconfig -> Utilities --> powqutyd
+4. rebuild your OpenWrt image
+5. flash a new image or install the powquty with the help of opkg
 
 Note this package depends on the following libraries/packages, that have to be installed before installing powqutyd:
 * libmosquitto 
@@ -45,16 +45,16 @@ When successfull the  powqutyd package will create:
 * the configuration file in /etc/powqutyd/powqutyd.cfg
 
 
-### How to show PowQutys power quality plots in your local routers web-interface
+### How to show PowQuty's power quality plots in your local routers web-interface
 
-1. point your Linux LEDE feeds.conf to our PowQuty repository by adding the following line to your feeds.conf:
+1. point your Linux OpenWrt feeds.conf to our PowQuty repository by adding the following line to your feeds.conf:
 ```
 src-git powquty https://github.com/thuehn/powquty.git
 ```
 2. trigger a `feeds update`
 3. select our luci_app_powquty from `make menuconfig` under menu LUCI
-4. rebuild your LEDE image
-5. flash a new image or install the luci_app_powquty with the hepl of opkg
+4. rebuild your OpenWrt image
+5. flash a new image or install the luci_app_powquty with the help of opkg
 
 
 ## How to use PowQuty ?
@@ -65,7 +65,7 @@ Before running powqutyd you need to configure it.
 ### Configure the USB connection settings
 #### TTY-Device configuration
 Powqutyd needs to read the measurement samples from the USB oscilloscope. The USB oscilloscope has to be plugged to the router before running powqutyd.
-The USB oscilloscope implements the USB Communication Device Class (CDC) device specification. This means that the kernel module kmod-usb-acm will recognize the USB oscilliscope once plugged and will create a tty device probably under /dev/ttyACM0. Depending on your setup this could be different. Check your system logs after plugging the USB oscilloscope to find out the actual path of the tty-device on your setup and adjust the path in the config file of powqutyd (/etc/powqutyd/powqutyd.cfg) accordingly.
+The USB oscilloscope implements the USB Communication Device Class (CDC) device specification. This means that the kernel module kmod-usb-acm will recognize the USB oscilloscope once plugged and will create a tty device probably under /dev/ttyACM0. Depending on your setup this could be different. Check your system logs after plugging the USB oscilloscope to find out the actual path of the tty-device on your setup and adjust the path in the config file of powqutyd (/etc/powqutyd/powqutyd.cfg) accordingly.
 Note: if the tty-device is not set right the powqutyd will not start!
 
 ```
@@ -80,7 +80,7 @@ Powqutyd will send the calculated power quality parameters using MQTT-protocol t
 Of course this is given if you set up an MQTT broker on your router itself, but this is not a requirement, as long as the router has an IP connectivity to an MQTT-broker. 
 For testing purposes we used mosquitto on the router as MQTT-broker. Depending on your setup you need to adjust the mqtt_host config option in your /etc/powqutyd/powqutyd.cfg accordingly. 
 The mqtt_host config option is a string that could contain either the IP-address of the Fully Qualified Domain Name (FQDN) of the MQTT-broker.
-Note: at the current state, the MQTT-client implemeted by powqutyd uses the port 1883 with no SSL support. 
+Note: at the current state, the MQTT-client implemented by powqutyd uses the port 1883 with no SSL support. 
 
 ```
 // the mqtt_host is the IP-address or URL to the MQTT broker who receives the publish messages of powqutd
@@ -101,7 +101,7 @@ Powqutyd sends three types of messages to the MQTT-broker:
  * msg_device_data
  * msg_device_offline
 
-These messages are explained below, yet all of them use a common setting which is a (universally) unique id for the devices that communicate with the same MQTT-Broker. This way the MQTT-broker can differenciate between the messages it receives. This device-unique-id is set by the config option dev_uuid
+These messages are explained below, yet all of them use a common setting which is a (universally) unique id for the devices that communicate with the same MQTT-Broker. This way the MQTT-broker can differentiate between the messages it receives. This device-unique-id is set by the config option dev_uuid
 ```
 // the dev_uuid sets the device name used in the MQTT-publish messages
 // dev_uuid = "BERTUB001"
