@@ -3,7 +3,7 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=luci-app-powquty
 PKG_VERSION:=0.3
 PKG_RELEASE:=1
-PKG_MAINTAINER:=Tobias Ilte <Email ?>
+PKG_MAINTAINER:=Tobias Ilte <tobias.ilte@campus.tu-berlin.de>
 PKG_LICENSE:=GPL-3.0+
 PKG_LICENSE_FILES:=LICENSE
 
