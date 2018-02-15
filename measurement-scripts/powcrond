@@ -1,20 +1,23 @@
 #!/bin/ash
 
-TIMEOUT=${1:-30}						# seconds
+TIMEOUT=${1:-60}						# seconds
+LOGFILE=${2:-/dev/null}
 
 DAEMON='powqutyd'
 PID=`pidof ${DAEMON}`
 DIR_OUTPUT="/mnt/sdcard/"
 PACKER="/usr/bin/bzip2"
-PACKER="/usr/bin/bzip2"
+
 OUTPUT_FILE_BASENAME="powquty_raw"
 OUTPUT_FILE_ON="$(uname -n)-$(date +%Y_%m_%d)"
 OUTPUT_FILE_EXT=".bz2"
 OUTPUT_FILE="${DIR_OUTPUT}${OUTPUT_FILE_ON}-${OUTPUT_FILE_BASENAME}.log${OUTPUT_FILE_EXT}"
-OFFSET_FILE="/tmp/powcrond.timer"
+
+OFFSET_FILE="/var/run/powcrond.timer"
 OFFSET_MIN=60							# seconds
 OFFSET_MAX=3600							# seconds
-DEBUG=0
+
+STDOUT=0
 
 random_int()
 {
@@ -31,7 +34,6 @@ random_int()
 	randomresult=$(( start + random ))
 	echo "${randomresult:-$start}"
 }
-
 
 not_modified_for() {
 	[[ -f "$1" ]] || { echo "0"; return;  }
@@ -65,8 +67,11 @@ on_new_day() {
 	if [[ ! -f "${OFFSET_FILE}" ]]; then
 		OFFSET=$(random_int ${OFFSET_MIN} ${OFFSET_MAX})
 		OFFSET_TOTAL=$(date -d @$(($(date +%s) + $OFFSET)) +%s)
-		echod "new day, created new offset timer with offset $OFFSET, total $OFFSET_TOTAL"
+		#echod "new day, created new offset timer with offset $OFFSET, total $OFFSET_TOTAL"
 		echo "${OFFSET_TOTAL}" > ${OFFSET_FILE}
+
+		RESTART_AT=$(date -d @"$OFFSET_TOTAL")	# human readable
+		echod "new day, restart pending at ${RESTART_AT}"
 	fi
 	OFFSET_TOTAL=`cat ${OFFSET_FILE}`
 	local OFFSET_DIFF=$(( $OFFSET_TOTAL - $(date +%s) ))
@@ -82,14 +87,13 @@ on_new_day() {
 
 		# write to new file
 		restart
-	else
-		RESTART_AT=$(date -d @"$OFFSET_TOTAL")
-		echod "new day, restart pending at ${RESTART_AT}"
 	fi
 }
 
 echod() {
-	[[ $DEBUG -ne 0 ]] && echo "$@"
+	local TEXT="[$(date +'%d.%m.%Y %H:%M:%S')] $@"
+	[[ $STDOUT -ne 0 ]] && echo "$TEXT"
+	echo "${TEXT}" >> "${LOGFILE}"
 }
 
 check
@@ -101,6 +105,5 @@ MSG=""
 
 [[ $RES -eq 1 ]] && on_new_day && exit 0			# if restart is because of a new day,
 								# don't try to trigger a normal restart
-								# because of a missing output file
+								# because of a "missing" output file
 [[ $RES -ne 0 ]] && echod "restarting${MSG}" && restart
-
