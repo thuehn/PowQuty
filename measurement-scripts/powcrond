@@ -107,4 +107,3 @@ MSG=""
 								# don't try to trigger a normal restart
 								# because of a "missing" output file
 [[ $RES -ne 0 ]] && echod "restarting${MSG}" && restart
-
