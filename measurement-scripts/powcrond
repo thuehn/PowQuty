@@ -18,6 +18,7 @@ OFFSET_MIN=60							# seconds
 OFFSET_MAX=3600							# seconds
 
 STDOUT=0
+MQTT="10.10.4.5"
 
 random_int()
 {
@@ -67,16 +68,16 @@ on_new_day() {
 	if [[ ! -f "${OFFSET_FILE}" ]]; then
 		OFFSET=$(random_int ${OFFSET_MIN} ${OFFSET_MAX})
 		OFFSET_TOTAL=$(date -d @$(($(date +%s) + $OFFSET)) +%s)
-		#echod "new day, created new offset timer with offset $OFFSET, total $OFFSET_TOTAL"
+		#echod "new day - created new offset timer with offset $OFFSET (total $OFFSET_TOTAL)"
 		echo "${OFFSET_TOTAL}" > ${OFFSET_FILE}
 
 		RESTART_AT=$(date -d @"$OFFSET_TOTAL")	# human readable
-		echod "new day, restart pending at ${RESTART_AT}"
+		echod "new day - restart pending at ${RESTART_AT}"
 	fi
 	OFFSET_TOTAL=`cat ${OFFSET_FILE}`
 	local OFFSET_DIFF=$(( $OFFSET_TOTAL - $(date +%s) ))
 	if [ ${OFFSET_DIFF} -le 0 ]; then
-		echod "new day, restarting now"
+		echod "new day - restarting now"
 		rm "${OFFSET_FILE}" 2>/dev/null
 
 		# copy log file
@@ -91,19 +92,23 @@ on_new_day() {
 }
 
 echod() {
+	local MSG_TS="$(date +%s)"
+	local MSG_DATE="$(date +'%d.%m.%Y %H:%M:%S')"
+	local MSG_HOST="$(uname -n)"
 	local TEXT="[$(date +'%d.%m.%Y %H:%M:%S')] $@"
 	[[ $STDOUT -ne 0 ]] && echo "$TEXT"
 	echo "${TEXT}" >> "${LOGFILE}"
+	[[ -n "$MQTT" ]] && mosquitto_pub -t 'measurement/powcrond' -q 0 --quiet -h "${MQTT}" -m "${MSG_TS},${MSG_DATE},${MSG_HOST},$@"
 }
 
 check
 RES=$?
 MSG=""
-[[ $(( $RES & 1 )) -eq 1 ]] && MSG="${MSG}, output file missing"
-[[ $(( $RES & 2 )) -eq 2 ]] && MSG="${MSG}, daemon not running"
-[[ $(( $RES & 4 )) -eq 4 ]] && MSG="${MSG}, output timeout"
+[[ $(( $RES & 1 )) -eq 1 ]] && MSG="${MSG} [output file missing]"
+[[ $(( $RES & 2 )) -eq 2 ]] && MSG="${MSG} [daemon not running]"
+[[ $(( $RES & 4 )) -eq 4 ]] && MSG="${MSG} [output timeout]"
 
 [[ $RES -eq 1 ]] && on_new_day && exit 0			# if restart is because of a new day,
 								# don't try to trigger a normal restart
 								# because of a "missing" output file
-[[ $RES -ne 0 ]] && echod "restarting${MSG}" && restart
+[[ $RES -ne 0 ]] && echod "restarting:${MSG}" && restart
