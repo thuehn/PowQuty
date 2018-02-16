@@ -15,6 +15,7 @@
 #include "uci_config.h"
 #include <sys/time.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #define MAX_EVENT_LENGTH 39 // MAX_LENGTH + _event + 1
 
@@ -45,6 +46,56 @@ static char event_payload[MAX_MQTT_MSG_LEN];
 
 struct mosquitto *mosq;
 struct mosquitto *event_mosq;
+
+void mosq_str_err(int mosq_errno) {
+	switch (mosq_errno) {
+	case MOSQ_ERR_NOMEM:
+		printf("MOSQ_ERR_NOMEM:\tout of memory condition occurred.");
+		break;
+	case MOSQ_ERR_PROTOCOL:
+		printf("MOSQ_ERR_PROTOCOL:\tthere is a protocol error communicating with the broker.");
+		break;
+	case MOSQ_ERR_INVAL:
+		printf("MOSQ_ERR_INVAL:\tInput parameters were invalid.");
+		break;
+	case MOSQ_ERR_NO_CONN:
+		printf("MOSQ_ERR_NO_CONN:\tthe client isn't connected to a broker.");
+		break;
+	case MOSQ_ERR_CONN_REFUSED:
+		printf("MOSQ_ERR_CONN_REFUSED:\t.");
+		break;
+	case MOSQ_ERR_NOT_FOUND:
+		printf("MOSQ_ERR_NOT_FOUND:\t.");
+		break;
+	case MOSQ_ERR_CONN_LOST:
+		printf("MOSQ_ERR_CONN_LOST:\tthe connection to the broker was lost.");
+		break;
+	case MOSQ_ERR_TLS:
+		printf("MOSQ_ERR_TLS:\t.");
+		break;
+	case MOSQ_ERR_PAYLOAD_SIZE:
+		printf("MOSQ_ERR_PAYLOAD_SIZE:\t.");
+		break;
+	case MOSQ_ERR_NOT_SUPPORTED:
+		printf("MOSQ_ERR_NOT_SUPPORTED:\t.");
+		break;
+	case MOSQ_ERR_AUTH:
+		printf("MOSQ_ERR_AUTH:\t.");
+		break;
+	case MOSQ_ERR_ACL_DENIED:
+		printf("MOSQ_ERR_ACL_DENIED:\t.");
+		break;
+	case MOSQ_ERR_UNKNOWN:
+		printf("MOSQ_ERR_UNKNOWN:\t.");
+		break;
+	case MOSQ_ERR_ERRNO:
+		printf("MOSQ_ERR_ERRNO:\tSystem call returned an error.");
+		printf("\t\t-> ERROR:\t %s\n", strerror(errno));
+		break;
+	default:
+			break;
+	}
+}
 
 void stop_mosquitto(){
 	publish_device_offline();
@@ -278,7 +329,7 @@ int mqtt_publish(struct mosquitto *m, const char *msg, const char *topic) {
 }
 
 static void *mosquitto_thread_main(void* param) {
-	printf("DEBUG:\tMQTT Thread has started\n");
+	printf("DEBUG:\tMQTT Thread has started \t mqtt_host:%s\n",mqtt_host);
 	char buff[250];
 	char* clientid = (char *) dev_uuid;
 	char *event_id = malloc(sizeof(char) * MAX_EVENT_LENGTH);
@@ -299,7 +350,10 @@ static void *mosquitto_thread_main(void* param) {
 		//mosquitto_threaded_set(mosq, true); ==> setting it to true seem to hinder device_offline msg.
 		rc = mosquitto_connect(mosq, mqtt_host, mqtt_port, 60);
 		if(rc != MOSQ_ERR_SUCCESS) {
-			printf("Error: mosquitto_connect\n");
+			printf("Error: mosquitto_connect while first connecting to host:\t%s,at port\t%d\n",mqtt_host,mqtt_port);
+			printf("\t\t\t");
+			mosq_str_err(rc);
+			printf("\n");
 		}
 
 		if (mqtt_event_flag) {
@@ -317,12 +371,15 @@ static void *mosquitto_thread_main(void* param) {
 			mosq_loop = mosquitto_loop(mosq, -1, 1);
 			if (mosq_loop) {
 				printf("WARNING:\tLoop Failed: %d\t", mosq_loop);
-				strerror_r(mosq_loop,buff,250);
+				mosq_str_err(mosq_loop);
+				//strerror_r(mosq_loop,buff,250);
 				printf("%s\n",buff);
-				//printf("Do something! like reconnect?\n");
+				printf("\t\t\t--> reconnecting to host:\t%s,at port\t%d\n",mqtt_host,mqtt_port);
 				rc = mosquitto_connect(mosq, mqtt_host, mqtt_port, 60);
 				if(rc != MOSQ_ERR_SUCCESS) {
-					printf("Error: mosquitto_connect\n");
+					printf("\t\t\t");
+					mosq_str_err(rc);
+					printf(" Error: mosquitto_connect\n");
 				}
 				if (mqtt_event_flag) {
 					rc = mosquitto_connect(event_mosq,

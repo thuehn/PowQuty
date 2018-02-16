@@ -75,7 +75,7 @@ void dump_raw_packet(unsigned char* frame, int read_size, char mode) {
 }
 
 void* raw_dump_run(void* args) {
-	printf("DEBUG:\tDump Thread has started\n");
+	printf("DEBUG:\tDump Thread has started with Thread Id: %ld\n", pthread_self());
 	while(!stop_raw_dump_run) {
 		pthread_mutex_lock(&dump_mtx);
 		pthread_cond_wait(&dump_cond,&dump_mtx);
@@ -134,8 +134,8 @@ void dump_to_string(short idx) {
 
 void raw_dump_join() {
 	printf("DEBUG:\tJoining Dump Thread \n");
+	pthread_join(raw_dump_thread, NULL);
 	pthread_cond_destroy(&dump_cond);
 	pthread_mutex_destroy(&dump_mtx);
-	pthread_join(raw_dump_thread, NULL);
 	printf("DEBUG:\tDump Thread Joined \n");
 }

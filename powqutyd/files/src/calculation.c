@@ -168,8 +168,9 @@ static void *calculation_thread_run(void* param) {
 			// print_results();
 
 			/* EN50160 event detected */
-			if (pqResult.nmbPqEvents > 0)
+			if (pqResult.nmbPqEvents > 0) {
 				handle_event(pqResult, config);
+			}
 
 			if (pqResult.HarmonicsExist) {
 				store_to_file(pqResult, config);
@@ -230,9 +231,9 @@ void join_calculation() {
 
 	join_retrieval();
 
+	pthread_join(calculation_thread, NULL);
 	pthread_cond_destroy(&calc_cond);
 	pthread_mutex_destroy(&calc_mtx);
-	pthread_join(calculation_thread, NULL);
 	printf("DEBUG:\tCalculation Thread Joined \n");
 }
 

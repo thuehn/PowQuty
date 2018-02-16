@@ -74,8 +74,8 @@ int main (int argc, char *argv[]) {
 	}*/
 
 	struct powquty_conf conf;
-	uci_config_powquty(&conf);
-	//printf("UCI CONFIG FTW!!!");
+	int	conf_res = uci_config_powquty(&conf);
+	printf("UCI CONFIG returned %d\n",conf_res);
 
 	// PQ_ERROR err = PQ_NO_ERROR;
 
