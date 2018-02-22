@@ -14,6 +14,8 @@ PKG_LICENSE_FILES:=LICENSE
 
 PKG_CONFIG_DEPENDS:= CONFIG_POWQUTYD_NO_MQTT
 
+TARGET_CFLAGS += -ggdb3
+
 include $(INCLUDE_DIR)/package.mk
 
 define Package/powqutyd/config
