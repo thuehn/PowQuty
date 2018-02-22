@@ -9,9 +9,7 @@
 #define CALCULATION_H_
 
 #include "event_handling.h"
-#include <pthread.h>
 
-static pthread_t calculation_thread;
 
 /*
  * init function for the calculation functionality

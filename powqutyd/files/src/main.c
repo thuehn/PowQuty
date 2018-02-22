@@ -121,7 +121,7 @@ int main (int argc, char *argv[]) {
 
 
 	while (!stop_main){
-		pthread_join(calculation_thread, NULL);
+		join_calculation();
 
 
 	}

@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include "mqtt.h"
 #include "config.h"
 #include "helper.h"
@@ -24,6 +25,7 @@ PQConfig pqConfig;
 PQInfo pqInfo;
 PQResult pqResult;
 PQ_ERROR err = PQ_NO_ERROR;
+static pthread_t calculation_thread;
 
 static pthread_cond_t calc_cond;
 static pthread_mutex_t calc_mtx;
