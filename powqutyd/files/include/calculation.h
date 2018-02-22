@@ -9,6 +9,10 @@
 #define CALCULATION_H_
 
 #include "event_handling.h"
+#include <pthread.h>
+
+static pthread_t calculation_thread;
+
 /*
  * init function for the calculation functionality
  */
@@ -20,11 +24,5 @@ int calculation_init(struct powquty_conf* conf);
 void stop_calculation();
 
 void join_calculation();
-
-void join_calculation_only();
-
-void do_calculation(unsigned int stored_frame_idx);
-
-void store_data(unsigned char * buf, unsigned int stored_frame_idx, long long ts);
 
 #endif /* CALCULATION_H_ */

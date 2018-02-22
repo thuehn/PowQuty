@@ -15,7 +15,6 @@
 #include <string.h>
 #include <pthread.h>
 #include <stdlib.h>
-#include "calculation.h"
 #include "helper.h"
 #include <poll.h>
 #include <sys/select.h>

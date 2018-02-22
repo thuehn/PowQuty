@@ -9,7 +9,6 @@
 #include "retrieval.h"
 #include <unistd.h>
 #include <stdio.h>
-#include <pthread.h>
 #include <string.h>
 #include <stdlib.h>
 #include "mqtt.h"
@@ -29,7 +28,6 @@ PQ_ERROR err = PQ_NO_ERROR;
 static pthread_cond_t calc_cond;
 static pthread_mutex_t calc_mtx;
 
-static pthread_t calculation_thread;
 static void *calculation_thread_run(void* param);
 
 /*
@@ -224,10 +222,6 @@ void stop_calculation() {
 	join_calculation();		// TODO: solve segfault on sigint
 	// destroy PQInstance
 	destroyPowerQuality(&pPQInst);
-}
-
-void join_calculation_only() {
-	pthread_join(calculation_thread, NULL);
 }
 
 void join_calculation() {
