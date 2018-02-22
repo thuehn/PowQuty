@@ -121,7 +121,7 @@ int main (int argc, char *argv[]) {
 
 
 	while (!stop_main){
-		join_calculation();
+		sleep(2);
 
 
 	}
