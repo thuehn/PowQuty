@@ -1,6 +1,6 @@
 CC:=gcc
 LD=ld
-CFLAGS+=-pg -Wall
+CFLAGS+=-g -Wall
 CFLAGS+=-I./lib/ -I. -I./include/ -I/usr/local/include/uci
 
 #CFLAGS+=-DDEBUG_PRINT
