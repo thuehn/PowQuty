@@ -226,6 +226,9 @@ void stop_calculation() {
 	destroyPowerQuality(&pPQInst);
 }
 
+void join_calculation_only() {
+	pthread_join(calculation_thread, NULL);
+}
 
 void join_calculation() {
 	printf("DEBUG:\tJoining Calculation Thread\n");

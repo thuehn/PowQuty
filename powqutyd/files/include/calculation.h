@@ -21,6 +21,8 @@ void stop_calculation();
 
 void join_calculation();
 
+void join_calculation_only();
+
 void do_calculation(unsigned int stored_frame_idx);
 
 void store_data(unsigned char * buf, unsigned int stored_frame_idx, long long ts);
