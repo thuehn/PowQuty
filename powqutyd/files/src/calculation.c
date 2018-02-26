@@ -20,15 +20,17 @@
 const char* device_tty;
 
 #define SAMPLE_FREQUENCY 10240
+
+static pthread_t calculation_thread;
+
+static pthread_cond_t calc_cond;
+static pthread_mutex_t calc_mtx;
+
 pPQInstance pPQInst = NULL;
 PQConfig pqConfig;
 PQInfo pqInfo;
 PQResult pqResult;
 PQ_ERROR err = PQ_NO_ERROR;
-static pthread_t calculation_thread;
-
-static pthread_cond_t calc_cond;
-static pthread_mutex_t calc_mtx;
 
 static void *calculation_thread_run(void* param);
 
@@ -133,11 +135,12 @@ static void *calculation_thread_run(void* param) {
 
 	while (!stop_calculation_run) {
 
+		// printf("DEBUG:\tWaiting for Data .....\n");
 		pthread_mutex_lock(&calc_mtx);
-		pthread_cond_wait(&calc_cond,&calc_mtx);
-		pthread_mutex_unlock(&calc_mtx);
+		while (data_ready<=0)
+			pthread_cond_wait(&calc_cond,&calc_mtx);
 
-		if (data_ready) {
+		if (data_ready==1) {
 			// do the calculation
 			//printf("\n\ncalculating @ idx: %d\n", buffer_data_start_idx );
 			//print_from_buffer();
@@ -149,36 +152,47 @@ static void *calculation_thread_run(void* param) {
 			// print_in_signal();
 			// calculate the idx of timestamps (attention with this)
 
-			// apply the PQ_lib
-			err = applyPowerQuality(
-					pPQInst,
-					in,
-					&pqResult,
-					NULL,
-					timestamp_buffer+buffer_data_start_idx,
-					FRAMES_PER_BLOCK);
+			data_ready--;
+			pthread_mutex_unlock(&calc_mtx);
+		} else if (data_ready <= NUMBER_OF_BLOCKS_IN_BUFFER) {
+			// printf("WARNING:\t\t\t Processing is slower then Data received!\t %d Blocks late \n", data_ready-1);
+			load_data_to_in();
+                        data_ready--;
+			pthread_mutex_unlock(&calc_mtx);
+		} else {
+			printf("ERROR:\t\t\t\tBLOCK_BUFFER_OVERFLOW! %d Blocks late\n\t\t\t\tProcessing is much slower then Data arriving\n", data_ready-1);
+			pthread_mutex_unlock(&calc_mtx);
+			exit(EXIT_FAILURE);
+		}
+		// printf("INFO:\t\t\t\t Processing now!\t %d Blocks late \n", data_ready);
 
-			/* exit processing on error */
-			if (err != PQ_NO_ERROR) {
-				printf("TODO:\t\tError applying PQ-Lib\n\t\t\t");
-				print_PQ_Error(err);
-				stop_powqutyd();
-				break;
-			}
-			// print_results();
+		// apply the PQ_lib
+		err = applyPowerQuality(
+				pPQInst,
+				in,
+				&pqResult,
+				NULL,
+				timestamp_buffer+buffer_data_start_idx,
+				FRAMES_PER_BLOCK);
 
-			/* EN50160 event detected */
-			if (pqResult.nmbPqEvents > 0) {
-				handle_event(pqResult, config);
-			}
+		/* exit processing on error */
+		if (err != PQ_NO_ERROR) {
+			printf("TODO:\t\tError applying PQ-Lib\n\t\t\t");
+			print_PQ_Error(err);
+			stop_powqutyd();
+			break;
+		}
+		// print_results();
+		/* EN50160 event detected */
+		if (pqResult.nmbPqEvents > 0) {
+			handle_event(pqResult, config);
+		}
 
-			if (pqResult.HarmonicsExist) {
-				store_to_file(pqResult, config);
+		if (pqResult.HarmonicsExist) {
+			store_to_file(pqResult, config);
 #ifdef MQTT
-				publish_measurements(pqResult);
+			publish_measurements(pqResult);
 #endif
-			}
-			data_ready=0;
 		}
 	}
 	printf("DEBUG:\tCalculation Thread has ended\n");
@@ -202,17 +216,20 @@ void do_calculation(unsigned int stored_frame_idx) {
 	}
 
 	pthread_mutex_lock(&calc_mtx);
-	pthread_cond_signal(&calc_cond);
-	pthread_mutex_unlock(&calc_mtx);
+	data_ready++;
 
-	data_ready = 1;
-
+	/*
 	if (stored_frame_idx<32) {
 		buffer_data_start_idx = (stored_frame_idx + 128);
 	} else  {
 		buffer_data_start_idx = (stored_frame_idx - 32);
 	}
-	buffer_data_start_idx %=TS_BUFFER_SIZE;
+	*/
+	buffer_data_start_idx = stored_frame_idx - FRAMES_PER_BLOCK;
+	buffer_data_start_idx %= TS_BUFFER_SIZE;
+
+	pthread_cond_signal(&calc_cond);
+	pthread_mutex_unlock(&calc_mtx);
 }
 
 void stop_calculation() {

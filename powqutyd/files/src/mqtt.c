@@ -389,6 +389,7 @@ static void *mosquitto_thread_main(void* param) {
 				}
 				//break;
 			} else {
+				// printf("DEBUG:\tMQTT-Loop: %d\t\n", mosq_loop);
 				if(publish_msg) {
 					pub_res = mqtt_publish(mosq, payload,
 							mqtt_topic);

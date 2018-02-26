@@ -54,7 +54,8 @@ static volatile float device_offset= 0.0, device_scaling_factor=0.0;
 
 static volatile int stop_reading = 0,
 		got_calib_resp = 0,
-		got_status_resp = 0;
+		got_status_resp = 0,
+		read_size = 0;
 
 static volatile unsigned short last_frame_idx = 0;
 
@@ -74,7 +75,7 @@ float get_hw_scaling() {return device_scaling_factor;}
 
 void handle_other_message(int read_size) {
 	// currently irrelevant
-	// print_received_buffer(current_frame, read_size);
+	print_received_buffer(current_frame, read_size);
 }
 
 void handle_calib_message(int read_size) {
@@ -143,7 +144,9 @@ void handle_data_message(int read_size) {
 
 		if(stored_frame_idx%FRAMES_PER_BLOCK == 0) {
 			// apply PQ-lib
-			// printf("\n--->%d\n", stored_frame_idx);
+			if (debug_flag) {
+				printf("DEBUG: Retrieval stored block ---> %d\n", stored_frame_idx);
+			}
 			do_calculation(stored_frame_idx);
 		}
 	}
@@ -161,6 +164,7 @@ int calibrate_device() {
 	}
 
 	// active waiting until we get a response
+	// TODO: avoid aggressive waiting ! 
 	// printf("Wating for device parameters .... \t");
 	while(!got_calib_resp) {}
 	// printf("Done!\n");
@@ -260,11 +264,11 @@ int retrieval_init(const char* tty_device) {
 	// Blocking call until we get resp see calibrate_device()
 	if (calibrate_device() <= 0) {
 		// failed to calibrate device
-		res = -1;
+		return -1;
 	}
 
 	if (start_sampling() <= 0){
-		res = -1;
+		return -1;
 	}
 
 	return res;
@@ -291,72 +295,79 @@ void join_retrieval() {
 static void *reading_thread_run(void* param) {
 	printf("DEBUG:\tRetrieval Thread has started\n");
 	// int read_size = 0, poll_time_out_ms = 10, offset = 0, done_reading = 0;
-	int read_size = 0, offset = 0, done_reading = 0;
-	// struct pollfd fd[1];
-	// fd[0].fd = retrieval_fd;
-	// fd[0].events = POLLIN | POLLRDNORM | POLLRDBAND | POLLPRI;
+	int offset = 0, done_reading = 0, poll_time_out_ms = 2000, poll_result;
+	struct pollfd fd[1];
+	fd[0].fd = retrieval_fd;
+	fd[0].events = POLLIN | POLLRDNORM | POLLRDBAND | POLLPRI;
 
 	while (!stop_reading) {
-		// poll(fd,1,poll_time_out_ms);
+		poll_result= poll(fd,1,poll_time_out_ms);
 		offset = 0;
 		read_size = 0;
 		done_reading = 0;
-		do {
-			// poll(fd,1,poll_time_out_ms);
-			offset = read(retrieval_fd, current_frame+read_size,
-					MAX_FRAME_SIZE-read_size);
-			if(offset < 0) {
-				printf("\n\n\nERROR:\t error while reading"
-					"\toffset = %d\t errno; %s \n\n\n\n",
-					offset,strerror(errno));
-				go_sleep(1000);
-				continue;
-				//exit(EXIT_FAILURE);
-			} else if (offset == 0) {
-				printf("\n\n\nERROR:\t error while reading\t"
-					"offset = %d\t errno; %s \n\n\n\n",
-					offset,strerror(errno));
-				stop_powqutyd();
-				//go_sleep(1000);
-				break;
-			} else {
-				read_size += offset;
-				if (current_frame[0] != 0x05) {
-					done_reading = 1;
+		if (poll_result <= 0) {
+			if (poll_result == 0) {
+				printf("ERROR: \t\t%lld:\tRead timed out.\n", get_curr_time_in_milliseconds());
+				exit(EXIT_FAILURE);
+			}
+		} else {
+			do {
+				// poll(fd,1,poll_time_out_ms);
+				offset = read(retrieval_fd, current_frame+read_size,
+						MAX_FRAME_SIZE-read_size);
+				if(offset < 0) {
+					printf("\n\n\nERROR:\t error while reading"
+						"\toffset = %d\t errno; %s \n\n\n\n",
+						offset,strerror(errno));
+					go_sleep(1000);
+					continue;
+					//exit(EXIT_FAILURE);
+				} else if (offset == 0) {
+					printf("\n\n\nERROR:\t error while reading\t"
+						"offset = %d\t errno; %s \n\n\n\n",
+						offset,strerror(errno));
+					stop_powqutyd();
+					//go_sleep(1000);
+					break;
+				} else {
+					read_size += offset;
+					if (current_frame[0] != 0x05) {
+						done_reading = 1;
+					}
 				}
+			}while(read_size < MAX_FRAME_SIZE && !done_reading);
+			// read_size = read(retrieval_fd, current_frame, MAX_FRAME_SIZE);
+			if(raw_print) {
+				dump_raw_packet(current_frame,read_size,'r');
 			}
-		}while(read_size < MAX_FRAME_SIZE && !done_reading);
-		// read_size = read(retrieval_fd, current_frame, MAX_FRAME_SIZE);
-		if(raw_print) {
-			dump_raw_packet(current_frame,read_size,'r');
-		}
-		if(read_size > 0) {
-			switch (current_frame[0]) {
-			// Calibraton Message
-			case 0x02:
-			{
-				handle_calib_message(read_size);
-			}
-			break;
-			// Mode Message
-			case 0x03:
-			{
-				handle_status_message(read_size);
-			}
-			break;
-			// Data Message
-			case 0x05:
-			{
-				handle_data_message(read_size);
-			}
-			break;
+			if(read_size > 0) {
+				switch (current_frame[0]) {
+				// Calibraton Message
+				case 0x02:
+				{
+					handle_calib_message(read_size);
+				}
+				break;
+				// Mode Message
+				case 0x03:
+				{
+					handle_status_message(read_size);
+				}
+				break;
+				// Data Message
+				case 0x05:
+				{
+					handle_data_message(read_size);
+				}
+				break;
 
-			// Other Message
-			default:
-			{
-				handle_other_message(read_size);
-			}
-			break;
+				// Other Message
+				default:
+				{
+					handle_other_message(read_size);
+				}
+				break;
+				}
 			}
 		}
 		memset(current_frame,0,MAX_FRAME_SIZE);
