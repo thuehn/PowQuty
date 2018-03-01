@@ -28,9 +28,6 @@ struct powquty_conf {
 	char mqtt_topic[MAX_LENGTH];
 	char mqtt_uname[MAX_LENGTH];
 	char mqtt_pw[MAX_LENGTH];
-	char mqtt_event_host[MAX_LENGTH];
-	char mqtt_event_topic[MAX_LENGTH];
-	int  mqtt_event_flag;
 
 	/* slack */
 	char slack_webhook[MAX_WEBHOOK_LENGTH];

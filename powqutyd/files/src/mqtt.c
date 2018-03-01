@@ -17,8 +17,6 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#define MAX_EVENT_LENGTH 39 // MAX_LENGTH + _event + 1
-
 static const char* mqtt_host = "localhost";
 static const char* mqtt_topic = "devices/update";
 static const char* mqtt_uname = "username";
@@ -30,10 +28,7 @@ static const char* dev_lon = "82.935732";
 // static const char* dev_FW_ver = "0.1";
 // static const char* dev_APP_ver = "0.1";
 // static const char* dev_HW_ver = "029";
-static const char* mqtt_event_host = "localhost";
-static const char* mqtt_event_topic = "PowQutyEvent";
 static int powqutyd_print = 0;
-static int mqtt_event_flag = 0;
 
 struct powquty_conf* config;
 void publish_callback(struct mosquitto *mosq, void* obj, int res);
@@ -42,10 +37,8 @@ static void *mosquitto_thread_main(void* param);
 static pthread_t mosquitto_thread;
 
 static char payload[MAX_MQTT_MSG_LEN];
-static char event_payload[MAX_MQTT_MSG_LEN];
 
 struct mosquitto *mosq;
-struct mosquitto *event_mosq;
 
 void mosq_str_err(int mosq_errno) {
 	switch (mosq_errno) {
@@ -112,7 +105,6 @@ void connect_callback(struct mosquitto *mosq, void* obj, int res)
 void publish_callback(struct mosquitto *mosq, void* obj, int res) {
 	//printf("publish callback, rp=%d\n", res);
 	publish_msg = 0;
-	publish_powquty_event = 0;
 	// TODO unlock Mutex
 }
 
@@ -188,11 +180,6 @@ int mqtt_load_from_config() {
 		res= -1;
 	}*/
 
-	/* event handling variables */
-	mqtt_event_host = config->mqtt_event_host;
-	mqtt_event_topic = config->mqtt_event_topic;
-	mqtt_event_flag = config->mqtt_event_flag;
-
 	powqutyd_print = config->powqutyd_print;
 
 	return res;
@@ -247,27 +234,6 @@ void publish_device_online() {
 			dev_HW_ver);
 	mqtt_publish_payload();
 	*/
-}
-
-void mqtt_publish_event() {
-	if (powqutyd_print)
-		printf("%s\n", event_payload);
-
-	if (mqtt_event_flag)
-		publish_powquty_event = 1;
-}
-
-void publish_event(const char *event) {
-	event_payload[0] = '\0';
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	snprintf(event_payload, MAX_MQTT_MSG_LEN, "%s,%s,%lu,%lu",
-			dev_uuid,
-			event,
-			tv.tv_sec,
-			(long int)tv.tv_usec/100
-		);
-	mqtt_publish_event();
 }
 
 void publish_measurements(PQResult pqResult) {
@@ -332,18 +298,11 @@ static void *mosquitto_thread_main(void* param) {
 	printf("DEBUG:\tMQTT Thread has started \t mqtt_host:%s\n",mqtt_host);
 	char buff[250];
 	char* clientid = (char *) dev_uuid;
-	char *event_id = malloc(sizeof(char) * MAX_EVENT_LENGTH);
-	snprintf(event_id, MAX_EVENT_LENGTH, "%s_event", (char *)dev_uuid);
-
-
 	int mosq_loop= 0, rc = 0, pub_res = 0;
 	// char payload_msg[250] ="";
 
 	mosquitto_lib_init();
 	mosq = mosquitto_new(clientid, true, 0);
-	if (mqtt_event_flag) {
-		event_mosq = mosquitto_new(event_id, true, 0);
-	}
 
 	if(mosq){
 		mosquitto_username_pw_set (mosq, mqtt_uname, mqtt_pw);
@@ -356,14 +315,6 @@ static void *mosquitto_thread_main(void* param) {
 			printf("\n");
 		}
 
-		if (mqtt_event_flag) {
-			rc = mosquitto_connect(event_mosq, mqtt_event_host, mqtt_port, 15);
-			if (rc != MOSQ_ERR_SUCCESS)
-				printf("Error: mosquitto_connect event\n");
-
-			mosquitto_connect_callback_set(event_mosq, connect_callback);
-			mosquitto_publish_callback_set(event_mosq, publish_callback);
-		}
 
 		mosquitto_connect_callback_set(mosq, connect_callback);
 		mosquitto_publish_callback_set(mosq, publish_callback);
@@ -381,12 +332,6 @@ static void *mosquitto_thread_main(void* param) {
 					mosq_str_err(rc);
 					printf(" Error: mosquitto_connect\n");
 				}
-				if (mqtt_event_flag) {
-					rc = mosquitto_connect(event_mosq,
-						mqtt_event_host, mqtt_port, 60);
-					if (rc != MOSQ_ERR_SUCCESS)
-					printf("Error: mosquitto_connect event\n");
-				}
 				//break;
 			} else {
 				// printf("DEBUG:\tMQTT-Loop: %d\t\n", mosq_loop);
@@ -397,21 +342,10 @@ static void *mosquitto_thread_main(void* param) {
 						printf("Error: mosquitto_publish\n");
 					}
 				}
-				if (publish_powquty_event) {
-					pub_res = mqtt_publish(event_mosq,
-							       event_payload,
-							       mqtt_event_topic);
-					if (pub_res != MOSQ_ERR_SUCCESS)
-						printf("Error: publishing event\n");
-				}
 			}
 		}
 		mosquitto_disconnect(mosq);
 		mosquitto_destroy(mosq);
-		if (mqtt_event_flag) {
-			mosquitto_disconnect(event_mosq);
-			mosquitto_destroy(event_mosq);
-		}
 	}
 
 	mosquitto_lib_cleanup();

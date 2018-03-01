@@ -47,9 +47,6 @@ int uci_config_powquty(struct powquty_conf* conf) {
 	/* mqtt config */
 	char default_mqtt_host[MAX_LENGTH] = "localhost";
 	char default_mqtt_topic[MAX_LENGTH] = "devices/update";
-	char default_mqtt_event_host[MAX_LENGTH] = "localhost";
-	char default_mqtt_event_topic[MAX_LENGTH] = "en50160/events";
-	int default_mqtt_event_flag = OFF;
 
 	/* Slack configuration */
 	char default_webhook[MAX_LENGTH] = "";
@@ -84,9 +81,6 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			/* mqtt */
 			strcpy(conf->mqtt_host, default_mqtt_host);
 			strcpy(conf->mqtt_topic, default_mqtt_topic);
-			strcpy(conf->mqtt_event_host, default_mqtt_event_host);
-			strcpy(conf->mqtt_event_topic, default_mqtt_event_topic);
-			conf->mqtt_event_flag = default_mqtt_event_flag;
 
 			/* slack */
 			conf->slack_notification = default_slack;
@@ -213,30 +207,6 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			strcpy(conf->mqtt_pw, str);
 			printf("looking up mqtt_pw: currently ==> %s\n",
 				conf->mqtt_pw);
-
-			/* mqtt event host */
-			str = uci_lookup_option_string(uci, s, "mqtt_event_host");
-			if (str == NULL)
-				continue;
-			if (strlen(str) >= MAX_LENGTH - 1)
-				continue;
-			strcpy(conf->mqtt_event_host, str);
-			printf("looking up mqtt_event_host: currently ==> %s\n",
-				conf->mqtt_event_host);
-
-			/* mqtt event topic */
-			str = uci_lookup_option_string(uci, s, "mqtt_event_topic");
-			if (str == NULL)
-				continue;
-			if (strlen(str) >= MAX_LENGTH - 1)
-				continue;
-			strcpy(conf->mqtt_event_topic, str);
-			printf("looking up mqtt_event_topic: currently ==> %s\n",
-				conf->mqtt_event_topic);
-
-			/* mqtt event flag */
-			conf->mqtt_event_flag = uci_lookup_option_int(uci, s,
-				"mqtt_event_flag");
 
 			/* slack */
 			/* powquty slack */
