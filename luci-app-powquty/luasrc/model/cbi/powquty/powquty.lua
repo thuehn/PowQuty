@@ -31,7 +31,7 @@ max_log_size_kb = s:taboption("general", Value, "max_log_size_kb", "max_log_size
 max_log_size_kb.datatype = "string"
 max_log_size_kb.default = "4096"
 
-dev_lat = s:taboption("general", Value, "dev_lat", "dev_lat", "Device Lattitude")
+dev_lat = s:taboption("general", Value, "dev_lat", "dev_lat", "Device Latitude")
 dev_lat.datatype = "string"
 dev_lat.default = "55.0083525"
 
@@ -39,7 +39,43 @@ dev_lon = s:taboption("general", Value, "dev_lon", "dev_lon", "Device Longitude"
 dev_lon.datatype = "string"
 dev_lon.default = "82.935732"
 
+dev_acc = s:taboption("general", Value, "dev_acc", "dev_acc", "GPS accuracy")
+dev_acc.datatype = "string"
+dev_acc.default = "0"
+
+dev_alt = s:taboption("general", Value, "dev_alt", "dev_alt", "Device altitude")
+dev_alt.datatype = "string"
+dev_alt.default = "0"
+
 -- mqtt
+use_metadata = s:taboption("mqtt", Flag, "use_metadata", "use_metadata", "Send metadata with MQTT")
+use_metadata.rmempty = false
+use_metadata.default = false
+
+meta_comment = s:taboption("mqtt", Value, "meta_comment", "meta_comment", "Set comment for node")
+meta_comment.datatype = "string"
+meta_comment.default = ""
+
+meta_id = s:taboption("mqtt", Value, "meta_id", "meta_id", "Set node id")
+meta_id.datatype = "string"
+meta_id.default = ""
+
+meta_operator = s:taboption("mqtt", Value, "meta_operator", "meta_operator", "Set node operator")
+meta_operator.datatype = "string"
+meta_operator.default = ""
+
+meta_phase = s:taboption("mqtt", Value, "meta_phase", "meta_phase", "Set measurement phase")
+meta_phase.datatype = "string"
+meta_phase.default = ""
+
+meta_reason = s:taboption("mqtt", Value, "meta_reason", "meta_reason", "Set a reason")
+meta_reason.datatype = "string"
+meta_reason.default = ""
+
+meta_type = s:taboption("mqtt", Value, "meta_type", "meta_type", "Set a measurement type")
+meta_type.datatype = "string"
+meta_type.default = ""
+
 mqtt_uname = s:taboption("mqtt", Value, "mqtt_uname", "mqtt_uname", "Username for MQTT server")
 mqtt_uname.datatype = "string"
 mqtt_uname.default = "username"

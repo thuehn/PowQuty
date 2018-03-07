@@ -41,8 +41,19 @@ int uci_config_powquty(struct powquty_conf* conf) {
 	char default_dev_uuid[MAX_LENGTH] = "BERTUB001";
 	char default_dev_lat[MAX_LENGTH] = "55.0083525";
 	char default_dev_lon[MAX_LENGTH] = "82.935732";
+	char default_dev_acc[MAX_LENGTH] = "18.234567";
+	char default_dev_alt[MAX_LENGTH] = "0";
 	long default_max_log_size_kb = 4096;
 	int default_powqutyd_print = ON;
+
+	/* metadata block */
+	char default_meta_comment[MAX_LONG_LENGTH] = "";
+	char default_meta_id[MAX_LENGTH] = "";
+	char default_meta_operator[MAX_LONG_LENGTH] = "";
+	char default_meta_phase[MAX_LENGTH] = "";
+	char default_meta_reason[MAX_LONG_LENGTH] = "";
+	char default_meta_type[MAX_LONG_LENGTH] = "";
+	int default_meta_use = OFF;
 
 	/* mqtt config */
 	char default_mqtt_host[MAX_LENGTH] = "localhost";
@@ -72,6 +83,8 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			strcpy(conf->dev_uuid, default_dev_uuid);
 			strcpy(conf->dev_lat, default_dev_lat);
 			strcpy(conf->dev_lon, default_dev_lon);
+			strcpy(conf->dev_acc, default_dev_acc);
+			strcpy(conf->dev_alt, default_dev_alt);
 			strcpy(conf->powquty_path, default_powquty_path);
 			strcpy(conf->powquty_event_path, default_event_path);
 
@@ -87,6 +100,15 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			strcpy(conf->slack_webhook, default_webhook);
 			strcpy(conf->slack_channel, default_slack_channel);
 			strcpy(conf->slack_user, default_slack_user);
+
+			/* metadata */
+			conf->use_metadata = default_meta_use;
+			strcpy(conf->meta_comment, default_meta_comment);
+			strcpy(conf->meta_id, default_meta_id);
+			strcpy(conf->meta_operator, default_meta_operator);
+			strcpy(conf->meta_phase, default_meta_phase);
+			strcpy(conf->meta_reason, default_meta_reason);
+			strcpy(conf->meta_type, default_meta_type);
 
 			/* general */
 			/* uuid */
@@ -121,6 +143,28 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			strcpy(conf->dev_lon, str);
 			printf("looking up dev_lon: currently ==> %s\n",
 				conf->dev_lon);
+
+			/* gps accuracy */
+			str = uci_lookup_option_string(uci, s, "dev_acc");
+			if (str == NULL)
+				continue;
+			if (strlen(str) >= MAX_LENGTH - 1) {
+				continue;
+			}
+			strcpy(conf->dev_acc, str);
+			printf("looking up dev_acc: currently ==> %s\n",
+				conf->dev_acc);
+
+			/* altitude */
+			str = uci_lookup_option_string(uci, s, "dev_alt");
+			if (str == NULL)
+				continue;
+			if (strlen(str) >= MAX_LENGTH - 1) {
+				continue;
+			}
+			strcpy(conf->dev_alt, str);
+			printf("looking up dev_alt: currently ==> %s\n",
+				conf->dev_alt);
 
 			/* device tty */
 			str = uci_lookup_option_string(uci, s, "device_tty");
@@ -158,10 +202,84 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			/* print_print */
 			conf->powqutyd_print = uci_lookup_option_int(uci, s,
 					"powqutyd_print");
+			printf("powqutyd_print set to: %d\n", conf->powqutyd_print);
 
 			/* max logfile size */
 			conf->max_log_size_kb = uci_lookup_option_long(uci, s,
 					"max_log_size_kb");
+			printf("max_log_size_kb set to: %ld\n", conf->max_log_size_kb);
+
+			/* metadata */
+			/* use metadata */
+			conf->use_metadata= uci_lookup_option_int(uci, s,
+					"use_metadata");
+			printf("use_metadata set to: %d\n", conf->use_metadata);
+
+			/* comment */
+			str = uci_lookup_option_string(uci, s, "meta_comment");
+			if (str == NULL)
+				continue;
+			if (strlen(str) >= MAX_LONG_LENGTH - 1) {
+				continue;
+			}
+			strcpy(conf->meta_comment, str);
+			printf("looking up meta_comment: currently ==> %s\n",
+				conf->meta_comment);
+
+			/* id */
+			str = uci_lookup_option_string(uci, s, "meta_id");
+			if (str == NULL)
+				continue;
+			if (strlen(str) >= MAX_LENGTH - 1) {
+				continue;
+			}
+			strcpy(conf->meta_id, str);
+			printf("looking up meta_id: currently ==> %s\n",
+				conf->meta_id);
+
+			/* operator name */
+			str = uci_lookup_option_string(uci, s, "meta_operator");
+			if (str == NULL)
+				continue;
+			if (strlen(str) >= MAX_LONG_LENGTH - 1) {
+				continue;
+			}
+			strcpy(conf->meta_operator, str);
+			printf("looking up meta_operator: currently ==> %s\n",
+				conf->meta_operator);
+
+			/* pahse */
+			str = uci_lookup_option_string(uci, s, "meta_phase");
+			if (str == NULL)
+				continue;
+			if (strlen(str) >= MAX_LENGTH - 1) {
+				continue;
+			}
+			strcpy(conf->meta_phase, str);
+			printf("looking up meta_phase: currently ==> %s\n",
+				conf->meta_phase);
+
+			/* reason */
+			str = uci_lookup_option_string(uci, s, "meta_reason");
+			if (str == NULL)
+				continue;
+			if (strlen(str) >= MAX_LONG_LENGTH - 1) {
+				continue;
+			}
+			strcpy(conf->meta_reason, str);
+			printf("looking up meta_reason: currently ==> %s\n",
+				conf->meta_reason);
+
+			/* type */
+			str = uci_lookup_option_string(uci, s, "meta_type");
+			if (str == NULL)
+				continue;
+			if (strlen(str) >= MAX_LONG_LENGTH - 1) {
+				continue;
+			}
+			strcpy(conf->meta_type, str);
+			printf("looking up meta_type: currently ==> %s\n",
+				conf->meta_type);
 
 			/* mqtt */
 			/* mqtt_host */

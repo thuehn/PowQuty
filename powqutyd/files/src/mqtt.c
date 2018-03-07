@@ -37,6 +37,7 @@ static void *mosquitto_thread_main(void* param);
 static pthread_t mosquitto_thread;
 
 static char payload[MAX_MQTT_MSG_LEN];
+static char metadata[512];
 
 struct mosquitto *mosq;
 
@@ -129,6 +130,27 @@ void mqtt_message_print(struct mosquitto_message* msg) {
 	}
 }
  */
+
+/* construct metadata json string
+ * @param config: configuration struct
+ */
+void compose_metadata(struct powquty_conf* conf) {
+	metadata[0] = '\0';
+	sprintf(metadata,
+			"\"comment\": \"%s\", "
+			"\"id\": \"%s\", "
+			"\"operator\": \"%s\", "
+			"\"phase\": \"%s\", "
+			"\"reason\": \"%s\", "
+			"\"type\": \"%s\"",
+			conf->meta_comment,
+			conf->meta_id,
+			conf->meta_operator,
+			conf->meta_phase,
+			conf->meta_reason,
+			conf->meta_type);
+}
+
 int mqtt_load_from_config() {
 	int res= 0;
 
@@ -179,6 +201,12 @@ int mqtt_load_from_config() {
 	if(!config_lookup_int(get_cfg_ptr(), "powqutyd_print", &powqutyd_print)) {
 		res= -1;
 	}*/
+
+	if (config->use_metadata) {
+		compose_metadata(config);
+	} else {
+		sprintf(metadata, "");
+	}
 
 	powqutyd_print = config->powqutyd_print;
 
@@ -254,11 +282,28 @@ void publish_measurements(PQResult pqResult) {
 	sprintf(payload,
 			//"%s,%ld,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
 			// "%s,%lu.%lu,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
-			"{\"id\":\"%s\", \"utc\":\"%s.%lu\", \"pkg\":\"0\", \"lat\":%s, \"lng\":%s, \"acc\":0.0, \"t5060\": { \"u\":%.6f, \"f\":%.6f, \"h3\":%.6f, \"h5\":%.6f, \"h7\":%.6f, \"h9\":%.6f, \"h11\":%.6f, \"h13\":%.6f, \"h15\":%.6f } }",
+			"{\"id\":\"%s\", "
+			"\"utc\":\"%s.%lu\", "
+			"\"pkg\":\"0\", "
+			"\"lat\":%s, "
+			"\"lng\":%s, "
+			"\"acc\":0.0, "
+			"\"metadata\": {%s}, "
+			"\"t5060\": "
+			"{ \"u\":%.6f, "
+			"\"f\":%.6f, "
+			"\"h3\":%.6f, "
+			"\"h5\":%.6f, "
+			"\"h7\":%.6f, "
+			"\"h9\":%.6f, "
+			"\"h11\":%.6f, "
+			"\"h13\":%.6f, "
+			"\"h15\":%.6f } }",
 			dev_uuid,
 			tmbuf, (long int)tv.tv_usec/1000,
 			dev_lat,
 			dev_lon,
+			metadata,
 			//ts,
 			pqResult.PowerVoltageEff_5060T,
 			pqResult.PowerFrequency5060T,
@@ -314,7 +359,6 @@ static void *mosquitto_thread_main(void* param) {
 			mosq_str_err(rc);
 			printf("\n");
 		}
-
 
 		mosquitto_connect_callback_set(mosq, connect_callback);
 		mosquitto_publish_callback_set(mosq, publish_callback);
