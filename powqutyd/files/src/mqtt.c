@@ -25,8 +25,6 @@ static const char* mqtt_topic = "devices/update";
 static const char* mqtt_uname = "username";
 static const char* mqtt_pw = "password";
 static const char* dev_uuid = "BERTUB001";
-static const char* dev_lat = "55.0083525";
-static const char* dev_lon = "82.935732";
 //static const char* dev_gps = "BERTUB001";
 // static const char* dev_FW_ver = "0.1";
 // static const char* dev_APP_ver = "0.1";
@@ -141,12 +139,14 @@ void mqtt_message_print(struct mosquitto_message* msg) {
 void compose_metadata(struct powquty_conf* conf) {
 	metadata[0] = '\0';
 	sprintf(metadata,
+			"\"metadata\": {"
 			"\"comment\": \"%s\", "
 			"\"id\": \"%s\", "
 			"\"operator\": \"%s\", "
 			"\"phase\": \"%s\", "
 			"\"reason\": \"%s\", "
-			"\"type\": \"%s\"",
+			"\"type\": \"%s\""
+			"},",
 			conf->meta_comment,
 			conf->meta_id,
 			conf->meta_operator,
@@ -225,7 +225,7 @@ int mqtt_load_from_config(struct powquty_conf* config) {
 	if (config->use_metadata) {
 		compose_metadata(config);
 	} else {
-		sprintf(metadata, "");
+		sprintf(metadata, " ");
 	}
 
 	powqutyd_print = config->powqutyd_print;
@@ -302,9 +302,8 @@ void publish_measurements(PQResult pqResult) {
 			//"%s,%ld,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
 			// "%s,%lu.%lu,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
 			"{"
-			"%s"
-			"\"utc\":\"%s.%lu\", "
-			"\"metadata\": {%s}, "
+			"%s"			//static data
+			"%s"			//metadata (optional object)
 			"\"pkg\":\"0\", "
 			"\"t5060\": "
 			"{ \"u\":%.6f, "
@@ -315,9 +314,10 @@ void publish_measurements(PQResult pqResult) {
 			"\"h9\":%.6f, "
 			"\"h11\":%.6f, "
 			"\"h13\":%.6f, "
-			"\"h15\":%.6f } }",
+			"\"h15\":%.6f }"
+			"\"utc\":\"%s.%lu\" "
+			"}",
 			static_data,
-			tmbuf, (long int)tv.tv_usec/1000,
 			metadata,
 			pqResult.PowerVoltageEff_5060T,
 			pqResult.PowerFrequency5060T,
@@ -327,7 +327,9 @@ void publish_measurements(PQResult pqResult) {
 			pqResult.Harmonics[3],
 			pqResult.Harmonics[4],
 			pqResult.Harmonics[5],
-			pqResult.Harmonics[6] );
+			pqResult.Harmonics[6],
+			tmbuf,
+			(long int)tv.tv_usec/1000);
 	mqtt_publish_payload();
 }
 

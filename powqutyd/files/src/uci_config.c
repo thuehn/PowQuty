@@ -34,7 +34,7 @@ static long uci_lookup_option_long(struct uci_context *uci,
  * @param option_length: max length of option value
  * @return 1 on to long option value, -1 if unset, 0 else
  */
-static int check_option_value(char * option_value, unsigned int option_length) {
+static int check_option_value(const char * option_value, unsigned int option_length) {
 	if ((option_value == NULL) || (strlen(option_value) == 0)) {
 		return -1;
 	}
