@@ -17,6 +17,9 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#define STATIC_DATA_LENGTH 210
+#define META_DATA_LENGTH 512
+
 static const char* mqtt_host = "localhost";
 static const char* mqtt_topic = "devices/update";
 static const char* mqtt_uname = "username";
@@ -30,14 +33,14 @@ static const char* dev_lon = "82.935732";
 // static const char* dev_HW_ver = "029";
 static int powqutyd_print = 0;
 
-struct powquty_conf* config;
 void publish_callback(struct mosquitto *mosq, void* obj, int res);
 void mqtt_publish_payload();
 static void *mosquitto_thread_main(void* param);
 static pthread_t mosquitto_thread;
 
 static char payload[MAX_MQTT_MSG_LEN];
-static char metadata[512];
+static char metadata[META_DATA_LENGTH];
+static char static_data[STATIC_DATA_LENGTH];
 
 struct mosquitto *mosq;
 
@@ -131,7 +134,8 @@ void mqtt_message_print(struct mosquitto_message* msg) {
 }
  */
 
-/* construct metadata json string
+/*
+ * construct metadata json string
  * @param config: configuration struct
  */
 void compose_metadata(struct powquty_conf* conf) {
@@ -151,8 +155,29 @@ void compose_metadata(struct powquty_conf* conf) {
 			conf->meta_type);
 }
 
-int mqtt_load_from_config() {
+/*
+ * construct static data json string
+ * @param config: configuration struct
+ */
+void compose_staticdata(struct powquty_conf* conf) {
+	static_data[0] = '\0';
+	sprintf(static_data,
+		"\"acc\":%s, "
+		"\"alt\":%s, "
+		"\"id\":\"%s\", "
+		"\"lat\":%s, "
+		"\"lng\":%s, ",
+		conf->dev_acc,
+		conf->dev_alt,
+		conf->dev_uuid,
+		conf->dev_lat,
+		conf->dev_lon);
+}
+
+int mqtt_load_from_config(struct powquty_conf* config) {
 	int res= 0;
+
+	compose_staticdata(config);
 
 	// printf("looking up mqtt_host: currently ==> %s\n", mqtt_host);
 	/*if(!config_lookup_string(get_cfg_ptr(), "mqtt_host", &mqtt_host)) {
@@ -176,11 +201,6 @@ int mqtt_load_from_config() {
 	if(!config_lookup_string(get_cfg_ptr(), "dev_uuid", &dev_uuid)) {
 		res= -1;
 	}*/
-
-	dev_uuid = config->dev_uuid;
-
-	dev_lat = config->dev_lat;
-	dev_lon = config->dev_lon;
 
 	/*if(!config_lookup_string(get_cfg_ptr(), "dev_gps", &dev_gps)) {
 		res= -1;
@@ -215,9 +235,8 @@ int mqtt_load_from_config() {
 
 int mqtt_init (struct powquty_conf* conf) {
 	int res = 0;
-	config = conf;
 	//if(is_config_loaded()) {
-	res = mqtt_load_from_config();
+	res = mqtt_load_from_config(conf);
 	//}
 	int vers [] = {0,0,0};
 	int ret = mosquitto_lib_version(&vers[0], &vers[1], &vers[2]);
@@ -282,13 +301,11 @@ void publish_measurements(PQResult pqResult) {
 	sprintf(payload,
 			//"%s,%ld,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
 			// "%s,%lu.%lu,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
-			"{\"id\":\"%s\", "
+			"{"
+			"%s"
 			"\"utc\":\"%s.%lu\", "
-			"\"pkg\":\"0\", "
-			"\"lat\":%s, "
-			"\"lng\":%s, "
-			"\"acc\":0.0, "
 			"\"metadata\": {%s}, "
+			"\"pkg\":\"0\", "
 			"\"t5060\": "
 			"{ \"u\":%.6f, "
 			"\"f\":%.6f, "
@@ -299,12 +316,9 @@ void publish_measurements(PQResult pqResult) {
 			"\"h11\":%.6f, "
 			"\"h13\":%.6f, "
 			"\"h15\":%.6f } }",
-			dev_uuid,
+			static_data,
 			tmbuf, (long int)tv.tv_usec/1000,
-			dev_lat,
-			dev_lon,
 			metadata,
-			//ts,
 			pqResult.PowerVoltageEff_5060T,
 			pqResult.PowerFrequency5060T,
 			pqResult.Harmonics[0],
