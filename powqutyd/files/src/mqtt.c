@@ -5,17 +5,19 @@
  *      Author: neez
  */
 #ifdef MQTT
-#include "config.h"
-#include "mqtt.h"
-#include <stdio.h>
-#include <string.h>
+#include <errno.h>
+#include <limits.h>
 #include <mosquitto.h>
 #include <pthread.h>
-#include "helper.h"
-#include "uci_config.h"
-#include <sys/time.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
+#include <string.h>
+#include <sys/time.h>
+
+#include "config.h"
+#include "helper.h"
+#include "mqtt.h"
+#include "uci_config.h"
 
 #define STATIC_DATA_LENGTH 210
 #define META_DATA_LENGTH 512
@@ -284,27 +286,25 @@ void publish_device_online() {
 }
 
 void publish_measurements(PQResult pqResult) {
-	// printf("publish_measurements: \n");
-	payload[0] = '\0';
-	//long long ts = get_curr_time_in_milliseconds();
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
+	static unsigned long long pkg_count = 0;
 
-	time_t nowtime;
+	struct timeval tv;
 	struct tm *nowtm;
+	time_t nowtime;
 	char tmbuf[64];
+	gettimeofday(&tv, NULL);
 	nowtime = tv.tv_sec;
 	nowtm = gmtime(&nowtime);
 	strftime(tmbuf, sizeof tmbuf, "%Y-%m-%d %H:%M:%S", nowtm);
 
-	//long ts_sec = get_curr_time_in_seconds();
+	payload[0] = '\0';
 	sprintf(payload,
 			//"%s,%ld,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
 			// "%s,%lu.%lu,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
 			"{"
 			"%s"			//static data
 			"%s"			//metadata (optional object)
-			"\"pkg\":\"0\", "
+			"\"pkg\":\"%llu\", "
 			"\"t5060\": "
 			"{ \"u\":%.6f, "
 			"\"f\":%.6f, "
@@ -319,6 +319,7 @@ void publish_measurements(PQResult pqResult) {
 			"}",
 			static_data,
 			metadata,
+			pkg_count,
 			pqResult.PowerVoltageEff_5060T,
 			pqResult.PowerFrequency5060T,
 			pqResult.Harmonics[0],
@@ -331,6 +332,12 @@ void publish_measurements(PQResult pqResult) {
 			tmbuf,
 			(long int)tv.tv_usec/1000);
 	mqtt_publish_payload();
+
+	if (pkg_count < ULLONG_MAX) {
+		pkg_count++;
+	} else {
+		pkg_count = 0;
+	}
 }
 
 void mqtt_publish_payload() {
