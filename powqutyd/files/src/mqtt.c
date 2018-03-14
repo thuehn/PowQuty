@@ -22,7 +22,7 @@
 #define STATIC_DATA_LENGTH 210
 #define META_DATA_LENGTH 512
 #define T5060_DATA_LENGTH 184
-#define T1012_DATA_LENGTH 50
+#define T1012_DATA_LENGTH 70
 
 static const char* mqtt_host = "localhost";
 static const char* mqtt_topic = "devices/update";
@@ -188,7 +188,7 @@ static void compose_metadata(struct powquty_conf* conf) {
  * @param pqResult: PQResult struct containing frequency, harmonics and voltage
  * 		    data
  */
-static inline void compose_t5060_data(const PQResult* pqResult) {
+static inline volatile void compose_t5060_data(const PQResult* pqResult) {
 	t5060_data[0] = '\0';
 	sprintf(t5060_data,
 		" \"t5060\": "
@@ -225,14 +225,16 @@ static inline void compose_empty_t5060_data(const PQResult* pqResult) {
  * @param pqResult: PQResult struct containing frequency, harmonics and voltage
  * 		    data
  */
-static inline void compose_t1012_data(const PQResult* pqResult) {
+static inline volatile void compose_t1012_data(const PQResult* pqResult) {
 	t1012_data[0] = '\0';
 	sprintf(t1012_data,
 		" \"t1012\": {"
-		"\"f\": %10.6f, "
-		"\"u\": %11.6f},",
-		pqResult->PowerFrequency5060T,
-		pqResult->PowerVoltageEff_5060T);
+		"\"f\": %10.6f/%10.6f, "
+		"\"u\": %11.6f/%11.6f},",
+		pqResult->PowerFrequency1012T[0],
+		pqResult->PowerFrequency1012T[1],
+		pqResult->PowerVoltageEff_1012T[0],
+		pqResult->PowerVoltageEff_1012T[1]);
 }
 
 /*
