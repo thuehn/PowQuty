@@ -109,6 +109,8 @@ int uci_config_powquty(struct powquty_conf* conf) {
 
 			conf->powqutyd_print = default_powqutyd_print;
 			conf->max_log_size_kb = default_max_log_size_kb;
+			conf->send_t5060_data = ON;
+			conf->send_t1012_data = OFF;
 
 			/* mqtt */
 			strcpy(conf->mqtt_host, default_mqtt_host);
@@ -289,6 +291,14 @@ int uci_config_powquty(struct powquty_conf* conf) {
 				printf("looking up mqtt_pw: currently ==> %s\n",
 					conf->mqtt_pw);
 			}
+
+			/* send t5060 data in mqtt message */
+			conf->send_t5060_data = uci_lookup_option_int(uci, s,
+					"send_t5060_data");
+
+			/*send t1012 data in mqtt message */
+			conf->send_t1012_data = uci_lookup_option_int(uci, s,
+					"send_t1012_data");
 
 			/* slack */
 			/* powquty slack */

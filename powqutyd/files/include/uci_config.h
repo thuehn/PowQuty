@@ -34,6 +34,8 @@ struct powquty_conf {
 	char meta_reason[MAX_LONG_LENGTH];
 	char meta_type[MAX_LONG_LENGTH];
 	int use_metadata;
+	int send_t5060_data;
+	int send_t1012_data;
 
 	/* mqtt */
 	char mqtt_host[MAX_LENGTH];

@@ -52,6 +52,14 @@ use_metadata = s:taboption("mqtt", Flag, "use_metadata", "use_metadata", "Send m
 use_metadata.rmempty = false
 use_metadata.default = false
 
+send_t5060_data = s:taboption("mqtt", Flag, "send_t5060_data", "send_t5060_data", "Send frequency, voltage and harmonics in mqtt message")
+send_t5060_data.rmempty = false
+send_t5060_data.default = true
+
+send_t1012_data = s:taboption("mqtt", Flag, "send_t1012_data", "send_t1012_data", "Send frequency and voltage in mqtt message")
+send_t1012_data.rmempty = false
+send_t1012_data.default = false
+
 meta_comment = s:taboption("mqtt", Value, "meta_comment", "meta_comment", "Set comment for node")
 meta_comment.datatype = "string"
 meta_comment.default = ""

@@ -21,6 +21,8 @@
 
 #define STATIC_DATA_LENGTH 210
 #define META_DATA_LENGTH 512
+#define T5060_DATA_LENGTH 184
+#define T1012_DATA_LENGTH 50
 
 static const char* mqtt_host = "localhost";
 static const char* mqtt_topic = "devices/update";
@@ -33,6 +35,9 @@ static const char* dev_uuid = "BERTUB001";
 // static const char* dev_HW_ver = "029";
 static int powqutyd_print = 0;
 
+static void (*t5060_composer)(PQResult*);
+static void (*t1012_composer)(PQResult*);
+
 void publish_callback(struct mosquitto *mosq, void* obj, int res);
 void mqtt_publish_payload();
 static void *mosquitto_thread_main(void* param);
@@ -41,6 +46,8 @@ static pthread_t mosquitto_thread;
 static char payload[MAX_MQTT_MSG_LEN];
 static char metadata[META_DATA_LENGTH];
 static char static_data[STATIC_DATA_LENGTH];
+static char t5060_data[T5060_DATA_LENGTH];
+static char t1012_data[T1012_DATA_LENGTH];
 
 struct mosquitto *mosq;
 
@@ -135,13 +142,32 @@ void mqtt_message_print(struct mosquitto_message* msg) {
  */
 
 /*
+ * construct static data json string
+ * @param config: configuration struct
+ */
+static void compose_staticdata(struct powquty_conf* conf) {
+	static_data[0] = '\0';
+	sprintf(static_data,
+		"\"acc\":%s, "
+		"\"alt\":%s, "
+		"\"id\":\"%s\", "
+		"\"lat\":%s, "
+		"\"lng\":%s,",
+		conf->dev_acc,
+		conf->dev_alt,
+		conf->dev_uuid,
+		conf->dev_lat,
+		conf->dev_lon);
+}
+
+/*
  * construct metadata json string
  * @param config: configuration struct
  */
-void compose_metadata(struct powquty_conf* conf) {
+static void compose_metadata(struct powquty_conf* conf) {
 	metadata[0] = '\0';
 	sprintf(metadata,
-			"\"metadata\": {"
+			" \"metadata\": {"
 			"\"comment\": \"%s\", "
 			"\"id\": \"%s\", "
 			"\"operator\": \"%s\", "
@@ -158,22 +184,63 @@ void compose_metadata(struct powquty_conf* conf) {
 }
 
 /*
- * construct static data json string
- * @param config: configuration struct
+ * construct t5060 data json string
+ * @param pqResult: PQResult struct containing frequency, harmonics and voltage
+ * 		    data
  */
-void compose_staticdata(struct powquty_conf* conf) {
-	static_data[0] = '\0';
-	sprintf(static_data,
-		"\"acc\":%s, "
-		"\"alt\":%s, "
-		"\"id\":\"%s\", "
-		"\"lat\":%s, "
-		"\"lng\":%s, ",
-		conf->dev_acc,
-		conf->dev_alt,
-		conf->dev_uuid,
-		conf->dev_lat,
-		conf->dev_lon);
+static inline void compose_t5060_data(const PQResult* pqResult) {
+	t5060_data[0] = '\0';
+	sprintf(t5060_data,
+		" \"t5060\": "
+		"{ \"f\":%10.6f, "
+		"\"u\":%11.6f, "
+		"\"h3\":%10.6f, "
+		"\"h5\":%10.6f, "
+		"\"h7\":%10.6f, "
+		"\"h9\":%10.6f, "
+		"\"h11\":%10.6f, "
+		"\"h13\":%10.6f, "
+		"\"h15\":%10.6f },",
+		pqResult->PowerFrequency5060T,
+		pqResult->PowerVoltageEff_5060T,
+		pqResult->Harmonics[0],
+		pqResult->Harmonics[1],
+		pqResult->Harmonics[2],
+		pqResult->Harmonics[3],
+		pqResult->Harmonics[4],
+		pqResult->Harmonics[5],
+		pqResult->Harmonics[6]);
+}
+
+/*
+ * compose empty json string for t5060 data
+ * @param pqResult: PQResult struct containing frequency, harmonics and voltage
+ */
+static inline void compose_empty_t5060_data(const PQResult* pqResult) {
+	t5060_data[0]='\0';
+}
+
+/*
+ * construct t1012 data json string
+ * @param pqResult: PQResult struct containing frequency, harmonics and voltage
+ * 		    data
+ */
+static inline void compose_t1012_data(const PQResult* pqResult) {
+	t1012_data[0] = '\0';
+	sprintf(t1012_data,
+		" \"t1012\": {"
+		"\"f\": %10.6f, "
+		"\"u\": %11.6f},",
+		pqResult->PowerFrequency5060T,
+		pqResult->PowerVoltageEff_5060T);
+}
+
+/*
+ * compose empty json string for t1012 data
+ * @param pqResult: PQResult struct containing frequency, harmonics and voltage
+ */
+static inline void compose_empty_t1012_data(const PQResult* pqResult) {
+	t1012_data[0] = '\0';
 }
 
 int mqtt_load_from_config(struct powquty_conf* config) {
@@ -193,7 +260,7 @@ int mqtt_load_from_config(struct powquty_conf* config) {
 	/*if(!config_lookup_string(get_cfg_ptr(), "mqtt_topic", &mqtt_topic)) {
 		res= -1;
 	}*/
-
+/*  */
 	mqtt_topic = config->mqtt_topic;
 
 	mqtt_uname = config->mqtt_uname;
@@ -227,7 +294,7 @@ int mqtt_load_from_config(struct powquty_conf* config) {
 	if (config->use_metadata) {
 		compose_metadata(config);
 	} else {
-		sprintf(metadata, " ");
+		metadata[0] = '\0';
 	}
 
 	powqutyd_print = config->powqutyd_print;
@@ -237,11 +304,27 @@ int mqtt_load_from_config(struct powquty_conf* config) {
 
 int mqtt_init (struct powquty_conf* conf) {
 	int res = 0;
-	//if(is_config_loaded()) {
-	res = mqtt_load_from_config(conf);
-	//}
 	int vers [] = {0,0,0};
 	int ret = mosquitto_lib_version(&vers[0], &vers[1], &vers[2]);
+	res = mqtt_load_from_config(conf);
+	printf("send_t1012_data: %d, send_t5060_data: %d\n",
+			conf->send_t1012_data,
+			conf->send_t5060_data);
+
+	/* select composer function for t5060 data */
+	if (conf->send_t5060_data == 1) {
+		t5060_composer = (void (*))&compose_t5060_data;
+	} else {
+		t5060_composer = (void (*))&compose_empty_t5060_data;
+	}
+
+	/* select composer function for t1012 data */
+	if (conf->send_t1012_data == 1) {
+		t1012_composer = (void (*))&compose_t1012_data;
+	} else {
+		t1012_composer = (void (*))&compose_empty_t1012_data;
+	}
+
 	printf("MQTT_LIB_VERSION: \tRet: %d\tMaj: %d\tMin: %d\tRev: %d\n",ret, vers[0], vers[1], vers[2]);
 	printf("DEBUG:\tCreating MQTT Thread\n");
 	res = pthread_create(&mosquitto_thread,NULL, mosquitto_thread_main,NULL);
@@ -297,6 +380,8 @@ void publish_measurements(PQResult pqResult) {
 	nowtm = gmtime(&nowtime);
 	strftime(tmbuf, sizeof tmbuf, "%Y-%m-%d %H:%M:%S", nowtm);
 
+	t5060_composer(&pqResult);
+	t1012_composer(&pqResult);
 	payload[0] = '\0';
 	sprintf(payload,
 			//"%s,%ld,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
@@ -304,31 +389,16 @@ void publish_measurements(PQResult pqResult) {
 			"{"
 			"%s"			//static data
 			"%s"			//metadata (optional object)
-			"\"pkg\":\"%llu\", "
-			"\"t5060\": "
-			"{ \"u\":%.6f, "
-			"\"f\":%.6f, "
-			"\"h3\":%.6f, "
-			"\"h5\":%.6f, "
-			"\"h7\":%.6f, "
-			"\"h9\":%.6f, "
-			"\"h11\":%.6f, "
-			"\"h13\":%.6f, "
-			"\"h15\":%.6f }"
+			"\"pkg\":\"%llu\","	//pkg count
+			"%s"			//t5060 data
+			"%s"			//t1012 data
 			"\"utc\":\"%s.%lu\" "
 			"}",
 			static_data,
 			metadata,
 			pkg_count,
-			pqResult.PowerVoltageEff_5060T,
-			pqResult.PowerFrequency5060T,
-			pqResult.Harmonics[0],
-			pqResult.Harmonics[1],
-			pqResult.Harmonics[2],
-			pqResult.Harmonics[3],
-			pqResult.Harmonics[4],
-			pqResult.Harmonics[5],
-			pqResult.Harmonics[6],
+			t5060_data,
+			t1012_data,
 			tmbuf,
 			(long int)tv.tv_usec/1000);
 	mqtt_publish_payload();
