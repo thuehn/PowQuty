@@ -21,7 +21,7 @@ struct powquty_conf {
 	char dev_lon[MAX_LENGTH];
 	char dev_acc[MAX_LENGTH];
 	char dev_alt[MAX_LENGTH];
-	char powquty_path[MAX_LENGTH];
+	char powquty_path[PATH_LENGTH];
 	char powquty_event_path[PATH_LENGTH];
 	long max_log_size_kb;
 	int  powqutyd_print;
@@ -34,14 +34,14 @@ struct powquty_conf {
 	char meta_reason[MAX_LONG_LENGTH];
 	char meta_type[MAX_LONG_LENGTH];
 	int use_metadata;
-	int send_t5060_data;
-	int send_t1012_data;
 
 	/* mqtt */
 	char mqtt_host[MAX_LENGTH];
 	char mqtt_topic[MAX_LENGTH];
 	char mqtt_uname[MAX_LENGTH];
 	char mqtt_pw[MAX_LENGTH];
+	int send_t5060_data;
+	int send_t1012_data;
 
 	/* slack */
 	char slack_webhook[MAX_WEBHOOK_LENGTH];
