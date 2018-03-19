@@ -167,20 +167,20 @@ static void compose_staticdata(struct powquty_conf* conf) {
 static void compose_metadata(struct powquty_conf* conf) {
 	metadata[0] = '\0';
 	sprintf(metadata,
-			" \"metadata\": {"
-			"\"comment\": \"%s\", "
-			"\"id\": \"%s\", "
-			"\"operator\": \"%s\", "
-			"\"phase\": \"%s\", "
-			"\"reason\": \"%s\", "
-			"\"type\": \"%s\""
-			"},",
-			conf->meta_comment,
-			conf->meta_id,
-			conf->meta_operator,
-			conf->meta_phase,
-			conf->meta_reason,
-			conf->meta_type);
+		" \"metadata\": {"
+		"\"comment\": \"%s\", "
+		"\"id\": \"%s\", "
+		"\"operator\": \"%s\", "
+		"\"phase\": \"%s\", "
+		"\"reason\": \"%s\", "
+		"\"type\": \"%s\""
+		"},",
+		conf->meta_comment,
+		conf->meta_id,
+		conf->meta_operator,
+		conf->meta_phase,
+		conf->meta_reason,
+		conf->meta_type);
 }
 
 /*
