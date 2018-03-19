@@ -234,7 +234,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 					conf->meta_operator);
 			}
 
-			/* pahse */
+			/* phase */
 			str = uci_lookup_option_string(uci, s, "meta_phase");
 			if (!check_option_value(str, MAX_LENGTH)) {
 				strcpy(conf->meta_phase, str);
