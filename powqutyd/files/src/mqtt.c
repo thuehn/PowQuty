@@ -447,9 +447,10 @@ static void *mosquitto_thread_main(void* param) {
 	if(mosq){
 		mosquitto_username_pw_set (mosq, mqtt_uname, mqtt_pw);
 		//mosquitto_threaded_set(mosq, true); ==> setting it to true seem to hinder device_offline msg.
-		rc = mosquitto_connect(mosq, mqtt_host, mqtt_port, 60);
+		rc = mosquitto_connect(mosq, mqtt_host, MQTT_PORT, 60);
 		if(rc != MOSQ_ERR_SUCCESS) {
-			printf("Error: mosquitto_connect while first connecting to host:\t%s,at port\t%d\n",mqtt_host,mqtt_port);
+			printf("Error: mosquitto_connect while first connecting "
+				"to host:\t%s,at port\t%d\n",mqtt_host, MQTT_PORT);
 			printf("\t\t\t");
 			mosq_str_err(rc);
 			printf("\n");
@@ -464,8 +465,9 @@ static void *mosquitto_thread_main(void* param) {
 				mosq_str_err(mosq_loop);
 				//strerror_r(mosq_loop,buff,250);
 				printf("%s\n",buff);
-				printf("\t\t\t--> reconnecting to host:\t%s,at port\t%d\n",mqtt_host,mqtt_port);
-				rc = mosquitto_connect(mosq, mqtt_host, mqtt_port, 60);
+				printf("\t\t\t--> reconnecting to host:\t%s,at port\t%d\n",
+					mqtt_host,MQTT_PORT);
+				rc = mosquitto_connect(mosq, mqtt_host, MQTT_PORT, 60);
 				if(rc != MOSQ_ERR_SUCCESS) {
 					printf("\t\t\t");
 					mosq_str_err(rc);
