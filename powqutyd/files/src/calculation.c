@@ -41,8 +41,9 @@ static void *calculation_thread_run(void* param);
  * ===> idx <= (TS_BUFFER_SIZE -32)
  */
 static volatile unsigned int buffer_data_start_idx=0;
-static volatile unsigned int stop_calculation_run = 0, data_ready=0;
-float hw_offset= 0.0, hw_scale=0.0;
+static volatile unsigned int stop_calculation_run = 0;
+static volatile int data_ready = 0;
+float hw_offset = 0.0, hw_scale = 0.0;
 
 // short block_buffer[BLOCK_BUFFER_SIZE];
 //long long timestamp_buffer[TS_BUFFER_SIZE];
@@ -137,10 +138,10 @@ static void *calculation_thread_run(void* param) {
 
 		// printf("DEBUG:\tWaiting for Data .....\n");
 		pthread_mutex_lock(&calc_mtx);
-		while (data_ready<=0)
+		while (data_ready <= 0)
 			pthread_cond_wait(&calc_cond,&calc_mtx);
 
-		if (data_ready==1) {
+		if (data_ready == 1) {
 			// do the calculation
 			//printf("\n\ncalculating @ idx: %d\n", buffer_data_start_idx );
 			//print_from_buffer();
