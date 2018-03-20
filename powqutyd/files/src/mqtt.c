@@ -19,8 +19,8 @@
 #include "mqtt.h"
 #include "uci_config.h"
 
-#define STATIC_DATA_LENGTH 210
-#define META_DATA_LENGTH 512
+#define STATIC_DATA_LENGTH 208
+#define META_DATA_LENGTH 398
 #define T5060_DATA_LENGTH 184
 #define T1012_DATA_LENGTH 70
 
@@ -141,13 +141,20 @@ void mqtt_message_print(struct mosquitto_message* msg) {
 }
  */
 
+static void composing_error(const char* function, const char* data, int size) {
+	printf("Error: composing %s failed in %s: %s block exceeds available"
+	       "space by %d character\n",data, function, data, size);
+	exit(EXIT_FAILURE);
+}
+
 /*
  * construct static data json string
  * @param config: configuration struct
  */
 static void compose_staticdata(struct powquty_conf* conf) {
+	int ret;
 	static_data[0] = '\0';
-	sprintf(static_data,
+	ret = snprintf(static_data, STATIC_DATA_LENGTH,
 		"\"acc\":%s, "
 		"\"alt\":%s, "
 		"\"id\":\"%s\", "
@@ -158,6 +165,10 @@ static void compose_staticdata(struct powquty_conf* conf) {
 		conf->dev_uuid,
 		conf->dev_lat,
 		conf->dev_lon);
+
+	if (ret > STATIC_DATA_LENGTH) {
+		composing_error(__func__, "static data", ret - STATIC_DATA_LENGTH);
+	}
 }
 
 /*
@@ -165,8 +176,9 @@ static void compose_staticdata(struct powquty_conf* conf) {
  * @param config: configuration struct
  */
 static void compose_metadata(struct powquty_conf* conf) {
+	int ret;
 	metadata[0] = '\0';
-	sprintf(metadata,
+	ret = snprintf(metadata, META_DATA_LENGTH,
 		" \"metadata\": {"
 		"\"comment\": \"%s\", "
 		"\"id\": \"%s\", "
@@ -181,6 +193,10 @@ static void compose_metadata(struct powquty_conf* conf) {
 		conf->meta_phase,
 		conf->meta_reason,
 		conf->meta_type);
+
+	if (ret > META_DATA_LENGTH) {
+		composing_error(__func__, "meta data", ret - META_DATA_LENGTH);
+	}
 }
 
 /*
