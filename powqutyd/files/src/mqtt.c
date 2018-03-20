@@ -5,47 +5,51 @@
  *      Author: neez
  */
 #ifdef MQTT
-#include "config.h"
-#include "mqtt.h"
-#include <stdio.h>
-#include <string.h>
+#include <errno.h>
+#include <limits.h>
 #include <mosquitto.h>
 #include <pthread.h>
-#include "helper.h"
-#include "uci_config.h"
-#include <sys/time.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
+#include <string.h>
+#include <sys/time.h>
 
-#define MAX_EVENT_LENGTH 39 // MAX_LENGTH + _event + 1
+#include "config.h"
+#include "helper.h"
+#include "mqtt.h"
+#include "uci_config.h"
+
+#define STATIC_DATA_LENGTH 208
+#define META_DATA_LENGTH 398
+#define T5060_DATA_LENGTH 184
+#define T1012_DATA_LENGTH 70
 
 static const char* mqtt_host = "localhost";
 static const char* mqtt_topic = "devices/update";
 static const char* mqtt_uname = "username";
 static const char* mqtt_pw = "password";
 static const char* dev_uuid = "BERTUB001";
-static const char* dev_lat = "55.0083525";
-static const char* dev_lon = "82.935732";
 //static const char* dev_gps = "BERTUB001";
 // static const char* dev_FW_ver = "0.1";
 // static const char* dev_APP_ver = "0.1";
 // static const char* dev_HW_ver = "029";
-static const char* mqtt_event_host = "localhost";
-static const char* mqtt_event_topic = "PowQutyEvent";
 static int powqutyd_print = 0;
-static int mqtt_event_flag = 0;
 
-struct powquty_conf* config;
+static void (*t5060_composer)(PQResult*);
+static void (*t1012_composer)(PQResult*);
+
 void publish_callback(struct mosquitto *mosq, void* obj, int res);
 void mqtt_publish_payload();
 static void *mosquitto_thread_main(void* param);
 static pthread_t mosquitto_thread;
 
 static char payload[MAX_MQTT_MSG_LEN];
-static char event_payload[MAX_MQTT_MSG_LEN];
+static char metadata[META_DATA_LENGTH];
+static char static_data[STATIC_DATA_LENGTH];
+static char t5060_data[T5060_DATA_LENGTH];
+static char t1012_data[T1012_DATA_LENGTH];
 
 struct mosquitto *mosq;
-struct mosquitto *event_mosq;
 
 void mosq_str_err(int mosq_errno) {
 	switch (mosq_errno) {
@@ -112,7 +116,6 @@ void connect_callback(struct mosquitto *mosq, void* obj, int res)
 void publish_callback(struct mosquitto *mosq, void* obj, int res) {
 	//printf("publish callback, rp=%d\n", res);
 	publish_msg = 0;
-	publish_powquty_event = 0;
 	// TODO unlock Mutex
 }
 
@@ -137,8 +140,131 @@ void mqtt_message_print(struct mosquitto_message* msg) {
 	}
 }
  */
-int mqtt_load_from_config() {
+
+static void composing_error(const char* function, const char* data, int size) {
+	printf("Error: composing %s failed in %s: %s block exceeds available"
+	       "space by %d character\n",data, function, data, size);
+	exit(EXIT_FAILURE);
+}
+
+/*
+ * construct static data json string
+ * @param config: configuration struct
+ */
+static void compose_staticdata(struct powquty_conf* conf) {
+	int ret;
+	static_data[0] = '\0';
+	ret = snprintf(static_data, STATIC_DATA_LENGTH,
+		"\"acc\":%s, "
+		"\"alt\":%s, "
+		"\"id\":\"%s\", "
+		"\"lat\":%s, "
+		"\"lng\":%s,",
+		conf->dev_acc,
+		conf->dev_alt,
+		conf->dev_uuid,
+		conf->dev_lat,
+		conf->dev_lon);
+
+	if (ret > STATIC_DATA_LENGTH) {
+		composing_error(__func__, "static data", ret - STATIC_DATA_LENGTH);
+	}
+}
+
+/*
+ * construct metadata json string
+ * @param config: configuration struct
+ */
+static void compose_metadata(struct powquty_conf* conf) {
+	int ret;
+	metadata[0] = '\0';
+	ret = snprintf(metadata, META_DATA_LENGTH,
+		" \"metadata\": {"
+		"\"comment\": \"%s\", "
+		"\"id\": \"%s\", "
+		"\"operator\": \"%s\", "
+		"\"phase\": \"%s\", "
+		"\"reason\": \"%s\", "
+		"\"type\": \"%s\""
+		"},",
+		conf->meta_comment,
+		conf->meta_id,
+		conf->meta_operator,
+		conf->meta_phase,
+		conf->meta_reason,
+		conf->meta_type);
+
+	if (ret > META_DATA_LENGTH) {
+		composing_error(__func__, "meta data", ret - META_DATA_LENGTH);
+	}
+}
+
+/*
+ * construct t5060 data json string
+ * @param pqResult: PQResult struct containing frequency, harmonics and voltage
+ * 		    data
+ */
+static inline volatile void compose_t5060_data(const PQResult* pqResult) {
+	t5060_data[0] = '\0';
+	sprintf(t5060_data,
+		" \"t5060\": "
+		"{ \"f\":%10.6f, "
+		"\"u\":%11.6f, "
+		"\"h3\":%10.6f, "
+		"\"h5\":%10.6f, "
+		"\"h7\":%10.6f, "
+		"\"h9\":%10.6f, "
+		"\"h11\":%10.6f, "
+		"\"h13\":%10.6f, "
+		"\"h15\":%10.6f },",
+		pqResult->PowerFrequency5060T,
+		pqResult->PowerVoltageEff_5060T,
+		pqResult->Harmonics[0],
+		pqResult->Harmonics[1],
+		pqResult->Harmonics[2],
+		pqResult->Harmonics[3],
+		pqResult->Harmonics[4],
+		pqResult->Harmonics[5],
+		pqResult->Harmonics[6]);
+}
+
+/*
+ * compose empty json string for t5060 data
+ * @param pqResult: PQResult struct containing frequency, harmonics and voltage
+ */
+static inline void compose_empty_t5060_data(const PQResult* pqResult) {
+	t5060_data[0]='\0';
+}
+
+/*
+ * construct t1012 data json string
+ * @param pqResult: PQResult struct containing frequency, harmonics and voltage
+ * 		    data
+ */
+static inline volatile void compose_t1012_data(const PQResult* pqResult) {
+	t1012_data[0] = '\0';
+	sprintf(t1012_data,
+		" \"t1012\": {"
+		"\"f\": %10.6f/%10.6f, "
+		"\"u\": %11.6f/%11.6f},",
+		pqResult->PowerFrequency1012T[0],
+		pqResult->PowerFrequency1012T[1],
+		pqResult->PowerVoltageEff_1012T[0],
+		pqResult->PowerVoltageEff_1012T[1]);
+}
+
+/*
+ * compose empty json string for t1012 data
+ * @param pqResult: PQResult struct containing frequency, harmonics and voltage
+ */
+static inline void compose_empty_t1012_data(const PQResult* pqResult) {
+	t1012_data[0] = '\0';
+}
+
+int mqtt_load_from_config(struct powquty_conf* config) {
 	int res= 0;
+
+	compose_staticdata(config);
 
 	// printf("looking up mqtt_host: currently ==> %s\n", mqtt_host);
 	/*if(!config_lookup_string(get_cfg_ptr(), "mqtt_host", &mqtt_host)) {
@@ -152,7 +278,7 @@ int mqtt_load_from_config() {
 	/*if(!config_lookup_string(get_cfg_ptr(), "mqtt_topic", &mqtt_topic)) {
 		res= -1;
 	}*/
-
+/*  */
 	mqtt_topic = config->mqtt_topic;
 
 	mqtt_uname = config->mqtt_uname;
@@ -162,11 +288,6 @@ int mqtt_load_from_config() {
 	if(!config_lookup_string(get_cfg_ptr(), "dev_uuid", &dev_uuid)) {
 		res= -1;
 	}*/
-
-	dev_uuid = config->dev_uuid;
-
-	dev_lat = config->dev_lat;
-	dev_lon = config->dev_lon;
 
 	/*if(!config_lookup_string(get_cfg_ptr(), "dev_gps", &dev_gps)) {
 		res= -1;
@@ -188,10 +309,11 @@ int mqtt_load_from_config() {
 		res= -1;
 	}*/
 
-	/* event handling variables */
-	mqtt_event_host = config->mqtt_event_host;
-	mqtt_event_topic = config->mqtt_event_topic;
-	mqtt_event_flag = config->mqtt_event_flag;
+	if (config->use_metadata) {
+		compose_metadata(config);
+	} else {
+		metadata[0] = '\0';
+	}
 
 	powqutyd_print = config->powqutyd_print;
 
@@ -200,12 +322,27 @@ int mqtt_load_from_config() {
 
 int mqtt_init (struct powquty_conf* conf) {
 	int res = 0;
-	config = conf;
-	//if(is_config_loaded()) {
-	res = mqtt_load_from_config();
-	//}
 	int vers [] = {0,0,0};
 	int ret = mosquitto_lib_version(&vers[0], &vers[1], &vers[2]);
+	res = mqtt_load_from_config(conf);
+	printf("send_t1012_data: %d, send_t5060_data: %d\n",
+			conf->send_t1012_data,
+			conf->send_t5060_data);
+
+	/* select composer function for t5060 data */
+	if (conf->send_t5060_data == 1) {
+		t5060_composer = (void (*))&compose_t5060_data;
+	} else {
+		t5060_composer = (void (*))&compose_empty_t5060_data;
+	}
+
+	/* select composer function for t1012 data */
+	if (conf->send_t1012_data == 1) {
+		t1012_composer = (void (*))&compose_t1012_data;
+	} else {
+		t1012_composer = (void (*))&compose_empty_t1012_data;
+	}
+
 	printf("MQTT_LIB_VERSION: \tRet: %d\tMaj: %d\tMin: %d\tRev: %d\n",ret, vers[0], vers[1], vers[2]);
 	printf("DEBUG:\tCreating MQTT Thread\n");
 	res = pthread_create(&mosquitto_thread,NULL, mosquitto_thread_main,NULL);
@@ -249,61 +386,44 @@ void publish_device_online() {
 	*/
 }
 
-void mqtt_publish_event() {
-	if (powqutyd_print)
-		printf("%s\n", event_payload);
-
-	if (mqtt_event_flag)
-		publish_powquty_event = 1;
-}
-
-void publish_event(const char *event) {
-	event_payload[0] = '\0';
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	snprintf(event_payload, MAX_MQTT_MSG_LEN, "%s,%s,%lu,%lu",
-			dev_uuid,
-			event,
-			tv.tv_sec,
-			(long int)tv.tv_usec/100
-		);
-	mqtt_publish_event();
-}
-
 void publish_measurements(PQResult pqResult) {
-	// printf("publish_measurements: \n");
-	payload[0] = '\0';
-	//long long ts = get_curr_time_in_milliseconds();
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
+	static signed int pkg_count = 1;
 
-	time_t nowtime;
+	struct timeval tv;
 	struct tm *nowtm;
+	time_t nowtime;
 	char tmbuf[64];
+	gettimeofday(&tv, NULL);
 	nowtime = tv.tv_sec;
 	nowtm = gmtime(&nowtime);
 	strftime(tmbuf, sizeof tmbuf, "%Y-%m-%d %H:%M:%S", nowtm);
 
-	//long ts_sec = get_curr_time_in_seconds();
+	t5060_composer(&pqResult);
+	t1012_composer(&pqResult);
+	payload[0] = '\0';
 	sprintf(payload,
-			//"%s,%ld,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
-			// "%s,%lu.%lu,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
-			"{\"id\":\"%s\", \"utc\":\"%s.%lu\", \"pkg\":\"0\", \"lat\":%s, \"lng\":%s, \"acc\":0.0, \"t5060\": { \"u\":%.6f, \"f\":%.6f, \"h3\":%.6f, \"h5\":%.6f, \"h7\":%.6f, \"h9\":%.6f, \"h11\":%.6f, \"h13\":%.6f, \"h15\":%.6f } }",
-			dev_uuid,
-			tmbuf, (long int)tv.tv_usec/1000,
-			dev_lat,
-			dev_lon,
-			//ts,
-			pqResult.PowerVoltageEff_5060T,
-			pqResult.PowerFrequency5060T,
-			pqResult.Harmonics[0],
-			pqResult.Harmonics[1],
-			pqResult.Harmonics[2],
-			pqResult.Harmonics[3],
-			pqResult.Harmonics[4],
-			pqResult.Harmonics[5],
-			pqResult.Harmonics[6] );
+			"{"
+			"%s"			//static data
+			"%s"			//metadata (optional object)
+			"\"pkg\":\"%d\","	//pkg count
+			"%s"			//t5060 data
+			"%s"			//t1012 data
+			"\"utc\":\"%s.%lu\" "
+			"}",
+			static_data,
+			metadata,
+			pkg_count,
+			t5060_data,
+			t1012_data,
+			tmbuf,
+			(long int)tv.tv_usec/1000);
 	mqtt_publish_payload();
+
+	if (pkg_count < INT_MAX) {
+		pkg_count++;
+	} else {
+		pkg_count = 1;
+	}
 }
 
 void mqtt_publish_payload() {
@@ -332,37 +452,22 @@ static void *mosquitto_thread_main(void* param) {
 	printf("DEBUG:\tMQTT Thread has started \t mqtt_host:%s\n",mqtt_host);
 	char buff[250];
 	char* clientid = (char *) dev_uuid;
-	char *event_id = malloc(sizeof(char) * MAX_EVENT_LENGTH);
-	snprintf(event_id, MAX_EVENT_LENGTH, "%s_event", (char *)dev_uuid);
-
-
 	int mosq_loop= 0, rc = 0, pub_res = 0;
 	// char payload_msg[250] ="";
 
 	mosquitto_lib_init();
 	mosq = mosquitto_new(clientid, true, 0);
-	if (mqtt_event_flag) {
-		event_mosq = mosquitto_new(event_id, true, 0);
-	}
 
 	if(mosq){
 		mosquitto_username_pw_set (mosq, mqtt_uname, mqtt_pw);
 		//mosquitto_threaded_set(mosq, true); ==> setting it to true seem to hinder device_offline msg.
-		rc = mosquitto_connect(mosq, mqtt_host, mqtt_port, 60);
+		rc = mosquitto_connect(mosq, mqtt_host, MQTT_PORT, 60);
 		if(rc != MOSQ_ERR_SUCCESS) {
-			printf("Error: mosquitto_connect while first connecting to host:\t%s,at port\t%d\n",mqtt_host,mqtt_port);
+			printf("Error: mosquitto_connect while first connecting "
+				"to host:\t%s,at port\t%d\n",mqtt_host, MQTT_PORT);
 			printf("\t\t\t");
 			mosq_str_err(rc);
 			printf("\n");
-		}
-
-		if (mqtt_event_flag) {
-			rc = mosquitto_connect(event_mosq, mqtt_event_host, mqtt_port, 15);
-			if (rc != MOSQ_ERR_SUCCESS)
-				printf("Error: mosquitto_connect event\n");
-
-			mosquitto_connect_callback_set(event_mosq, connect_callback);
-			mosquitto_publish_callback_set(event_mosq, publish_callback);
 		}
 
 		mosquitto_connect_callback_set(mosq, connect_callback);
@@ -374,18 +479,13 @@ static void *mosquitto_thread_main(void* param) {
 				mosq_str_err(mosq_loop);
 				//strerror_r(mosq_loop,buff,250);
 				printf("%s\n",buff);
-				printf("\t\t\t--> reconnecting to host:\t%s,at port\t%d\n",mqtt_host,mqtt_port);
-				rc = mosquitto_connect(mosq, mqtt_host, mqtt_port, 60);
+				printf("\t\t\t--> reconnecting to host:\t%s,at port\t%d\n",
+					mqtt_host,MQTT_PORT);
+				rc = mosquitto_connect(mosq, mqtt_host, MQTT_PORT, 60);
 				if(rc != MOSQ_ERR_SUCCESS) {
 					printf("\t\t\t");
 					mosq_str_err(rc);
 					printf(" Error: mosquitto_connect\n");
-				}
-				if (mqtt_event_flag) {
-					rc = mosquitto_connect(event_mosq,
-						mqtt_event_host, mqtt_port, 60);
-					if (rc != MOSQ_ERR_SUCCESS)
-					printf("Error: mosquitto_connect event\n");
 				}
 				//break;
 			} else {
@@ -397,21 +497,10 @@ static void *mosquitto_thread_main(void* param) {
 						printf("Error: mosquitto_publish\n");
 					}
 				}
-				if (publish_powquty_event) {
-					pub_res = mqtt_publish(event_mosq,
-							       event_payload,
-							       mqtt_event_topic);
-					if (pub_res != MOSQ_ERR_SUCCESS)
-						printf("Error: publishing event\n");
-				}
 			}
 		}
 		mosquitto_disconnect(mosq);
 		mosquitto_destroy(mosq);
-		if (mqtt_event_flag) {
-			mosquitto_disconnect(event_mosq);
-			mosquitto_destroy(event_mosq);
-		}
 	}
 
 	mosquitto_lib_cleanup();
