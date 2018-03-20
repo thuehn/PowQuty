@@ -387,7 +387,7 @@ void publish_device_online() {
 }
 
 void publish_measurements(PQResult pqResult) {
-	static unsigned long long pkg_count = 0;
+	static signed int pkg_count = 1;
 
 	struct timeval tv;
 	struct tm *nowtm;
@@ -407,7 +407,7 @@ void publish_measurements(PQResult pqResult) {
 			"{"
 			"%s"			//static data
 			"%s"			//metadata (optional object)
-			"\"pkg\":\"%llu\","	//pkg count
+			"\"pkg\":\"%d\","	//pkg count
 			"%s"			//t5060 data
 			"%s"			//t1012 data
 			"\"utc\":\"%s.%lu\" "
@@ -421,10 +421,10 @@ void publish_measurements(PQResult pqResult) {
 			(long int)tv.tv_usec/1000);
 	mqtt_publish_payload();
 
-	if (pkg_count < ULLONG_MAX) {
+	if (pkg_count < INT_MAX) {
 		pkg_count++;
 	} else {
-		pkg_count = 0;
+		pkg_count = 1;
 	}
 }
 
