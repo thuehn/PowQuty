@@ -402,8 +402,6 @@ void publish_measurements(PQResult pqResult) {
 	t1012_composer(&pqResult);
 	payload[0] = '\0';
 	sprintf(payload,
-			//"%s,%ld,%lld,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
-			// "%s,%lu.%lu,3,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f",
 			"{"
 			"%s"			//static data
 			"%s"			//metadata (optional object)
