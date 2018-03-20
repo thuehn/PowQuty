@@ -34,7 +34,7 @@ static long uci_lookup_option_long(struct uci_context *uci,
  * @param option_length: max length of option value
  * @return 1 on to long option value, -1 if unset, 0 else
  */
-static int check_option_value(const char * option_value, unsigned int option_length) {
+static int config_option_is_valid(const char * option_value, unsigned int option_length) {
 	if ((option_value == NULL) || (strlen(option_value) == 0)) {
 		return -1;
 	}
@@ -134,7 +134,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			/* general */
 			/* uuid */
 			str = uci_lookup_option_string(uci, s, "dev_uuid");
-			if (!check_option_value(str, MAX_LENGTH)) {
+			if (!config_option_is_valid(str, MAX_LENGTH)) {
 				strcpy(conf->dev_uuid, str);
 				printf("looking up dev_uuid: currently ==> %s\n",
 					conf->dev_uuid);
@@ -142,7 +142,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 
 			/* latitude */
 			str = uci_lookup_option_string(uci, s, "dev_lat");
-			if (!check_option_value(str, MAX_LENGTH)) {
+			if (!config_option_is_valid(str, MAX_LENGTH)) {
 				strcpy(conf->dev_lat, str);
 				printf("looking up dev_lat: currently ==> %s\n",
 					conf->dev_lat);
@@ -150,7 +150,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 
 			/* longitude */
 			str = uci_lookup_option_string(uci, s, "dev_lon");
-			if (!check_option_value(str, MAX_LENGTH)) {
+			if (!config_option_is_valid(str, MAX_LENGTH)) {
 				strcpy(conf->dev_lon, str);
 				printf("looking up dev_lon: currently ==> %s\n",
 					conf->dev_lon);
@@ -158,7 +158,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 
 			/* gps accuracy */
 			str = uci_lookup_option_string(uci, s, "dev_acc");
-			if (!check_option_value(str, MAX_LENGTH)) {
+			if (!config_option_is_valid(str, MAX_LENGTH)) {
 				strcpy(conf->dev_acc, str);
 				printf("looking up dev_acc: currently ==> %s\n",
 					conf->dev_acc);
@@ -166,7 +166,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 
 			/* altitude */
 			str = uci_lookup_option_string(uci, s, "dev_alt");
-			if (!check_option_value(str, MAX_LENGTH)) {
+			if (!config_option_is_valid(str, MAX_LENGTH)) {
 				strcpy(conf->dev_alt, str);
 				printf("looking up dev_alt: currently ==> %s\n",
 					conf->dev_alt);
@@ -174,7 +174,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 
 			/* device tty */
 			str = uci_lookup_option_string(uci, s, "device_tty");
-			if (!check_option_value(str, MAX_LENGTH)) {
+			if (!config_option_is_valid(str, MAX_LENGTH)) {
 				strcpy(conf->device_tty, str);
 				printf("looking up device_tty: currently ==> %s\n",
 					conf->device_tty);
@@ -182,7 +182,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 
 			/* logfile path */
 			str = uci_lookup_option_string(uci, s, "powquty_path");
-			if (!check_option_value(str, PATH_LENGTH)) {
+			if (!config_option_is_valid(str, PATH_LENGTH)) {
 				strcpy(conf->powquty_path, str);
 				printf("looking up powquty_path: currently ==> %s\n",
 					conf->powquty_path);
@@ -191,7 +191,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			/* event log file */
 			str = uci_lookup_option_string(uci, s,
 						       "powquty_event_path");
-			if (!check_option_value(str, PATH_LENGTH)) {
+			if (!config_option_is_valid(str, PATH_LENGTH)) {
 				strcpy(conf->powquty_event_path, str);
 				printf("looking up powquty_event_path: currently ==>"
 					"%s\n", conf->powquty_event_path);
@@ -212,7 +212,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 
 			/* comment */
 			str = uci_lookup_option_string(uci, s, "meta_comment");
-			if (!check_option_value(str, MAX_LONG_LENGTH)) {
+			if (!config_option_is_valid(str, MAX_LONG_LENGTH)) {
 				strcpy(conf->meta_comment, str);
 				printf("looking up meta_comment: currently ==> %s\n",
 					conf->meta_comment);
@@ -220,7 +220,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 
 			/* id */
 			str = uci_lookup_option_string(uci, s, "meta_id");
-			if (!check_option_value(str, MAX_LENGTH)) {
+			if (!config_option_is_valid(str, MAX_LENGTH)) {
 				strcpy(conf->meta_id, str);
 				printf("looking up meta_id: currently ==> %s\n",
 					conf->meta_id);
@@ -228,7 +228,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 
 			/* operator name */
 			str = uci_lookup_option_string(uci, s, "meta_operator");
-			if (!check_option_value(str, MAX_LONG_LENGTH)) {
+			if (!config_option_is_valid(str, MAX_LONG_LENGTH)) {
 				strcpy(conf->meta_operator, str);
 				printf("looking up meta_operator: currently ==> %s\n",
 					conf->meta_operator);
@@ -236,7 +236,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 
 			/* phase */
 			str = uci_lookup_option_string(uci, s, "meta_phase");
-			if (!check_option_value(str, MAX_LENGTH)) {
+			if (!config_option_is_valid(str, MAX_LENGTH)) {
 				strcpy(conf->meta_phase, str);
 				printf("looking up meta_phase: currently ==> %s\n",
 					conf->meta_phase);
@@ -244,7 +244,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 
 			/* reason */
 			str = uci_lookup_option_string(uci, s, "meta_reason");
-			if (!check_option_value(str, MAX_LONG_LENGTH)) {
+			if (!config_option_is_valid(str, MAX_LONG_LENGTH)) {
 				printf("in if\n");
 				strcpy(conf->meta_reason, str);
 				printf("looking up meta_reason: currently ==> %s\n",
@@ -253,7 +253,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 
 			/* type */
 			str = uci_lookup_option_string(uci, s, "meta_type");
-			if (!check_option_value(str, MAX_LONG_LENGTH)) {
+			if (!config_option_is_valid(str, MAX_LONG_LENGTH)) {
 				strcpy(conf->meta_type, str);
 				printf("looking up meta_type: currently ==> %s\n",
 					conf->meta_type);
@@ -262,7 +262,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 			/* mqtt */
 			/* mqtt_host */
 			str = uci_lookup_option_string(uci, s, "mqtt_host");
-			if (!check_option_value(str, MAX_LENGTH)) {
+			if (!config_option_is_valid(str, MAX_LENGTH)) {
 				strcpy(conf->mqtt_host, str);
 				printf("looking up mqtt_host: currently ==> %s\n",
 					conf->mqtt_host);
@@ -270,7 +270,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 
 			/* mqtt_topic */
 			str = uci_lookup_option_string(uci, s, "mqtt_topic");
-			if (!check_option_value(str, MAX_LENGTH)) {
+			if (!config_option_is_valid(str, MAX_LENGTH)) {
 				strcpy(conf->mqtt_topic, str);
 				printf("looking up mqtt_topic: currently ==> %s\n",
 					conf->mqtt_topic);
@@ -278,7 +278,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 
 			/* mqtt username */
 			str = uci_lookup_option_string(uci, s, "mqtt_uname");
-			if (!check_option_value(str, MAX_LENGTH)) {
+			if (!config_option_is_valid(str, MAX_LENGTH)) {
 				strcpy(conf->mqtt_uname, str);
 				printf("looking up mqtt_uname: currently ==> %s\n",
 					conf->mqtt_uname);
@@ -286,7 +286,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 
 			/* mqtt password */
 			str = uci_lookup_option_string(uci, s, "mqtt_pw");
-			if (!check_option_value(str, MAX_LENGTH)) {
+			if (!config_option_is_valid(str, MAX_LENGTH)) {
 				strcpy(conf->mqtt_pw, str);
 				printf("looking up mqtt_pw: currently ==> %s\n",
 					conf->mqtt_pw);
@@ -307,7 +307,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 
 			/* webhook */
 			str = uci_lookup_option_string(uci, s, "slack_webhook");
-			if (!check_option_value(str, MAX_WEBHOOK_LENGTH)) {
+			if (!config_option_is_valid(str, MAX_WEBHOOK_LENGTH)) {
 				strcpy(conf->slack_webhook, str);
 				printf("looking up slack_webhook: currently ==> %s\n",
 					conf->slack_webhook);
@@ -315,7 +315,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 
 			/* slack channel */
 			str = uci_lookup_option_string(uci, s, "slack_channel");
-			if (!check_option_value(str, MAX_LENGTH)) {
+			if (!config_option_is_valid(str, MAX_LENGTH)) {
 				strcpy(conf->slack_channel, str);
 				printf("looking up slack_channel: currently ==> %s\n",
 					conf->slack_channel);
@@ -323,7 +323,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 
 			/* slack user */
 			str = uci_lookup_option_string(uci, s, "slack_user");
-			if (!check_option_value(str, MAX_LENGTH)) {
+			if (!config_option_is_valid(str, MAX_LENGTH)) {
 				strcpy(conf->slack_user,str);
 				printf("looking up slack_user: currently ==> %s\n",
 					conf->slack_user);
