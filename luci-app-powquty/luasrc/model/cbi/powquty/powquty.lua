@@ -31,7 +31,7 @@ max_log_size_kb = s:taboption("general", Value, "max_log_size_kb", "max_log_size
 max_log_size_kb.datatype = "string"
 max_log_size_kb.default = "4096"
 
-dev_lat = s:taboption("general", Value, "dev_lat", "dev_lat", "Device Lattitude")
+dev_lat = s:taboption("general", Value, "dev_lat", "dev_lat", "Device Latitude")
 dev_lat.datatype = "string"
 dev_lat.default = "55.0083525"
 
@@ -39,7 +39,51 @@ dev_lon = s:taboption("general", Value, "dev_lon", "dev_lon", "Device Longitude"
 dev_lon.datatype = "string"
 dev_lon.default = "82.935732"
 
+dev_acc = s:taboption("general", Value, "dev_acc", "dev_acc", "GPS accuracy")
+dev_acc.datatype = "string"
+dev_acc.default = "0"
+
+dev_alt = s:taboption("general", Value, "dev_alt", "dev_alt", "Device altitude")
+dev_alt.datatype = "string"
+dev_alt.default = "0"
+
 -- mqtt
+use_metadata = s:taboption("mqtt", Flag, "use_metadata", "use_metadata", "Send metadata with MQTT")
+use_metadata.rmempty = false
+use_metadata.default = false
+
+send_t5060_data = s:taboption("mqtt", Flag, "send_t5060_data", "send_t5060_data", "Send frequency, voltage and harmonics in mqtt message")
+send_t5060_data.rmempty = false
+send_t5060_data.default = true
+
+send_t1012_data = s:taboption("mqtt", Flag, "send_t1012_data", "send_t1012_data", "Send frequency and voltage in mqtt message")
+send_t1012_data.rmempty = false
+send_t1012_data.default = false
+
+meta_comment = s:taboption("mqtt", Value, "meta_comment", "meta_comment", "Set comment for node")
+meta_comment.datatype = "string"
+meta_comment.default = ""
+
+meta_id = s:taboption("mqtt", Value, "meta_id", "meta_id", "Set node id")
+meta_id.datatype = "string"
+meta_id.default = ""
+
+meta_operator = s:taboption("mqtt", Value, "meta_operator", "meta_operator", "Set node operator")
+meta_operator.datatype = "string"
+meta_operator.default = ""
+
+meta_phase = s:taboption("mqtt", Value, "meta_phase", "meta_phase", "Set measurement phase")
+meta_phase.datatype = "string"
+meta_phase.default = ""
+
+meta_reason = s:taboption("mqtt", Value, "meta_reason", "meta_reason", "Set a reason")
+meta_reason.datatype = "string"
+meta_reason.default = ""
+
+meta_type = s:taboption("mqtt", Value, "meta_type", "meta_type", "Set a measurement type")
+meta_type.datatype = "string"
+meta_type.default = ""
+
 mqtt_uname = s:taboption("mqtt", Value, "mqtt_uname", "mqtt_uname", "Username for MQTT server")
 mqtt_uname.datatype = "string"
 mqtt_uname.default = "username"
@@ -55,18 +99,6 @@ mqtt_host.default = "localhost"
 mqtt_topic = s:taboption("mqtt", Value, "mqtt_topic", "mqtt_topic", "The topic under which powquty will publish the mesurement results. The Format is the following: device_uuid,timestamp(sec),timestamp(millisec),3,RMS_Voltage,RMS_Frequency,H3,H5,H7,H9,H11,H13,H15")
 mqtt_topic.datatype = "string"
 mqtt_topic.default = "devices/update"
-
-mqtt_event_host = s:taboption("mqtt", Value, "mqtt_event_host", "mqtt_event_host", "IP-address or URL to the MQTT broker who receives the publish message of powquty events")
-mqtt_event_host.datatype = "string"
-mqtt_event_host.default = "localhost"
-
-mqtt_event_topic = s:taboption("mqtt", Value, "mqtt_event_topic", "mqtt_event_topic", "The topic under which powquty will publish EN50160 events")
-mqtt_event_topic.datatype = "string"
-mqtt_event_topic.default = "device/en50160-event"
-
-mqtt_event_flag = s:taboption("mqtt", Flag, "mqtt_event_flag", "mqtt_event_flag", "If activated powquty will send notifications via mqtt about EN50160 events")
-mqtt_event_flag.rmempty = false
-mqtt_event_flag.default = false
 
 -- slack
 slack_webhook = s:taboption("slack", Value, "slack_webhook", "slack_webhook", "Set webhook to use with slack")

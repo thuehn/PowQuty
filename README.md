@@ -12,7 +12,7 @@
 ```
 
 ### What is PowQuty ?
-PowQuty consists of an Ansi C daemon and a luci webinterface extension to perform power quality measurements with a dedicated USB oszilloscope connected to a wireless routers based on OpenWrt Linux.
+PowQuty consists of an Ansi C daemon and a luci web-interface extension to perform power quality measurements with a dedicated USB oscilloscope connected to a wireless routers based on OpenWrt Linux.
 
 Sustainable energy production and consumption are crucial for a prospering life on earth. Decentralized energy production is one of the next big challenges, which will influence the energy production in the future years. The emerging smart grids include an inherent need for communication for monitoring and control purposes in a more and more dynamic environment. One of the major challenges is monitoring the power quality parameters in a decentralized manner. The Freifunk mesh network is an outstanding example for a decentralized infrastructure that could be augmented with grid related functionalities to cope with future energy challenges. The main goal of this project is to enable power quality measurements on OpenWrt. Voltage samples from the electric socket are retrieved at the router. Next power quality parameters are calculated, and finally made available for retrieval over IP networks.
 
@@ -22,7 +22,7 @@ Sustainable energy production and consumption are crucial for a prospering life 
 ![alt tag](https://cloud.githubusercontent.com/assets/1880886/23344150/98904e36-fc77-11e6-8fc0-ebbea06efe2b.png)
 
 
-### How to install PowQuty (under Linux OpenWrt [www.lede-project.org])
+### How to install PowQuty (under Linux OpenWrt [https://openwrt.org])
 1. Add the following line to your feeds.conf in your OpenWrt source directory:
 ```
 src-git powquty https://github.com/thuehn/powquty.git
@@ -36,11 +36,11 @@ $./scripts/feeds install powqutyd
 5. flash a new image or install the powquty with the help of opkg
 
 Note this package depends on the following libraries/packages, that have to be installed before installing powqutyd:
-* libmosquitto 
+* libmosquitto
 * libconfig
 * kmod-usb-acm (kernel module)
 
-When successfull the  powqutyd package will create:
+When successful the  powqutyd package will create:
 * the binary powqutyd in /usr/sbin
 * the configuration file in /etc/powqutyd/powqutyd.cfg
 
@@ -60,27 +60,38 @@ src-git powquty https://github.com/thuehn/powquty.git
 ## How to use PowQuty ?
 
 ### powquty configuration
-Before running powqutyd you need to configure it. 
+Before running powqutyd you need to configure it.
 
 ### Configure the USB connection settings
 #### TTY-Device configuration
 Powqutyd needs to read the measurement samples from the USB oscilloscope. The USB oscilloscope has to be plugged to the router before running powqutyd.
-The USB oscilloscope implements the USB Communication Device Class (CDC) device specification. This means that the kernel module kmod-usb-acm will recognize the USB oscilloscope once plugged and will create a tty device probably under /dev/ttyACM0. Depending on your setup this could be different. Check your system logs after plugging the USB oscilloscope to find out the actual path of the tty-device on your setup and adjust the path in the config file of powqutyd (/etc/powqutyd/powqutyd.cfg) accordingly.
+The USB oscilloscope implements the USB Communication Device Class (CDC) device specification. This means that the kernel module kmod-usb-acm will recognize the USB oscilloscope once plugged and will create a tty device probably under /dev/ttyACM0. Depending on your setup this could be different. Check your system logs after plugging the USB oscilloscope to find out the actual path of the tty-device on your setup and adjust the path in the config file of powqutyd (/etc/config/powquty) accordingly.
 Note: if the tty-device is not set right the powqutyd will not start!
 
 ```
 // the device_tty confis is the path to the tty device created by cdc-acm driver
 // device_tty = "/dev/ttyACM0";
 ```
+#### Possible general configuration options
+```
+device_tty          'usb device to use'         //max 31 character
+dev_lat             'set latitude'              //max 31 character
+dev_lon             'set longitude'             //max 31 character
+dev_acc             'set gps accuracy'          //max 31 character
+dev_alt             'set altitude'              //max 31 character
+poquty_path         'path/to/logfile'           //max 511 character
+powquty_event_path  'path/to/event/logfile'     //max 511 character
+max_log_size_kb     'set max logfile size(kb)'  //default 4096
+```
 
 ### Configure the MQTT-Broker settings
 
 #### MQTT-Broker
 Powqutyd will send the calculated power quality parameters using MQTT-protocol to an MQTT-broker. This means that powqutyd requires IP connectivity between your router and the MQTT-broker.
-Of course this is given if you set up an MQTT broker on your router itself, but this is not a requirement, as long as the router has an IP connectivity to an MQTT-broker. 
-For testing purposes we used mosquitto on the router as MQTT-broker. Depending on your setup you need to adjust the mqtt_host config option in your /etc/powqutyd/powqutyd.cfg accordingly. 
+Of course this is given if you set up an MQTT broker on your router itself, but this is not a requirement, as long as the router has an IP connectivity to an MQTT-broker.
+For testing purposes we used mosquitto on the router as MQTT-broker. Depending on your setup you need to adjust the mqtt_host config option in your /etc/config/powquty accordingly.
 The mqtt_host config option is a string that could contain either the IP-address of the Fully Qualified Domain Name (FQDN) of the MQTT-broker.
-Note: at the current state, the MQTT-client implemented by powqutyd uses the port 1883 with no SSL support. 
+Note: at the current state, the MQTT-client implemented by powqutyd uses the port 1883 with no SSL support.
 
 ```
 // the mqtt_host is the IP-address or URL to the MQTT broker who receives the publish messages of powqutd
@@ -91,20 +102,72 @@ Note: at the current state, the MQTT-client implemented by powqutyd uses the por
 Furthermore the powqutyd's MQTT-client is an publish only client, thus it will not subscribe and has no will. Nonetheless the topic under which the powqutyd's MQTT-client publishes needs to be set. This can be done by adjusting the mqtt_topic config option in your /etc/powqutyd/powqutyd.cfg accordingly.
 ```
 // the mqtt_topic is the topic under which powquty will publish the mesurement results
-// the Format is the following device_uuid,timestamp,3,RMS_Voltag_RMS_Frequency,H3,H5,H7,H9,H11,H13,H15
 // mqtt_topic = "devices/update";
 ```
 
+#### Message Format
+The current message format is a Json string with the following elements:
+```
+{"acc":0,
+ "alt":0,
+ "id":"BERTUB001",
+ "lat":52.520008,
+ "lng":13.404954,
+ "metadata": { //optional object
+   "comment": "",
+   "id": "",
+   "operator": "",
+   "phase": "",
+   "reason": "",
+   "type": ""
+ },
+ "pkg":"0",
+ "t5060": { //optional object
+   "f": 50.017506,
+   "u": 230.599289,
+   "h3":  1.157205,
+   "h5":  0.515359,
+   "h7":  1.126879,
+   "h9":  0.951026,
+   "h11":  0.527944,
+   "h13":  0.481196,
+   "h15":  0.302587
+ },
+ "t1012": { //optional object
+   "f":  50.017506,
+   "u":  230.599289
+ },
+ "utc":"2018-03-14 14:45:37.282"
+}
+```
+
+#### Possible configuration file options
+```
+mqtt_host       'set_your_hostname' //max 31 character
+mqtt_topic      'set_mqtt_topic'    //max 31 character
+mqtt_uname      'username'          //max 31 character
+mqtt_pw         'password'          //max 31 character
+send_t5060_data '1'                 //1 or 0 -> send voltage, frequency and harmonics
+send_t1012_data '0'                 //1 or 0 -> send voltage and frequency
+
+use_metadata    '0'                 //1 or 0 -> send meta-data block
+meta_phase      'set phase'         //max 31 character
+meta_id         'set an id'         //max 31 character
+meta_comment    'set a comment'     //max 63 character
+meta_operator   'set node operator' //max 63 character
+meta_reason     'set a reason'      //max 63 character
+meta_type       'set a node type'   //max 63 character
+```
 #### Device unique ID
-Powqutyd sends three types of messages to the MQTT-broker: 
- * msg_device_online 
+Powqutyd sends three types of messages to the MQTT-broker:
+ * msg_device_online
  * msg_device_data
  * msg_device_offline
 
 These messages are explained below, yet all of them use a common setting which is a (universally) unique id for the devices that communicate with the same MQTT-Broker. This way the MQTT-broker can differentiate between the messages it receives. This device-unique-id is set by the config option dev_uuid
 ```
 // the dev_uuid sets the device name used in the MQTT-publish messages
-// dev_uuid = "BERTUB001"
+dev_uuid 'BERTUB001'        //max 31 character
 ```
 
 ### (Optional) configure whether or not to print result to stdout
@@ -112,7 +175,7 @@ It is possible to print the results messages that powqutyd sends to the MQTT-Bro
 ```
 // This option, if activated, will print the results published to the MQTT broker to stdout
 // Setting this option to 0 (zero) will desactivate stdout printing. Setting it to any other int value will activate stdout printing.
-// powqutyd_print = 0;
+powqutyd_print '0'          //1 or 0
 ```
 
 ## Running powqutyd
@@ -122,31 +185,20 @@ powqutyd &
 ```
 to your terminal.
 
-# powqutyd messages
-Powqutyd sends three types of messages to the MQTT-broker: 
- * msg_device_online 
- * msg_device_data
- * msg_device_offline
-
-
-### msg_device_online 
-Once powqutyd is started it sends msg_device_online message that signalize to the MQTT-Broker that the device is online. Here we see an example
+Upon installation PowQuty will create an init file ```/etc/init.d/powqutd```
+and powqutyd will be enabled and started.
+Stop it:
 ```
-BERTUB001,1458689325895,1,0.1,0.1,029
+/etc/init.d/powqutyd stop
 ```
-It is a string with the Format: DEV_UUID,Timestamp,1,Version
-### msg_device_offline 
-when powqutyd ends it sends msg_device_offline message that signalize to the MQTT-Broker that the device is offline. Here we see an example
+configure it for your setting:
 ```
-BERTUB001,1458689329483,0
+vim /etc/config/powquty
 ```
-It is a string with the Format: DEV_UUID,Timestamp,0
-### msg_device_data
-Once powqutyd has calculated the RMS Voltage in Volts, the actual Frequency in Hz and Harmonics coefficients, (H3 - to - H15) it publishes them to the MQTT-broker. Here we see an example:
+and restart it:
 ```
-BERTUB001,1458689327099,3,223.732391,49.973961,0.926936,1.542370,2.207536,1.318457,1.243623,0.722359,2.283980
+/etc/init.d/powqutyd start
 ```
-It is a string with the Format: DEV_UUID,Timestamp,3,RMS_Voltag_RMS_Frequency,H3,H5,H7,H9,H11,H13,H15
 
 ## Do you want to contribute ?
 Everybody can participate, and any help is highly appreciated.

@@ -156,10 +156,6 @@ void send_event(PQEvent pqe, struct powquty_conf *conf) {
 	}
 #endif /* Slack */
 
-#ifdef MQTT
-	publish_event(event);
-#endif
-
 	/* free allocated stuff and close file*/
 	free(msg);
 	free(event);

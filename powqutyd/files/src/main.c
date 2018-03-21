@@ -20,6 +20,11 @@
 #include "uci_config.h"
 
 static volatile int stop_main = 0;
+/*
+void lebenszeichen(){
+	printf("\t\t\t\t\tAlive\n");
+}
+*/
 
 void handle_signal()
 {
@@ -74,8 +79,8 @@ int main (int argc, char *argv[]) {
 	}*/
 
 	struct powquty_conf conf;
-	uci_config_powquty(&conf);
-	//printf("UCI CONFIG FTW!!!");
+	int	conf_res = uci_config_powquty(&conf);
+	printf("UCI CONFIG returned %d\n",conf_res);
 
 	// PQ_ERROR err = PQ_NO_ERROR;
 
@@ -121,7 +126,9 @@ int main (int argc, char *argv[]) {
 
 
 	while (!stop_main){
-		join_calculation();
+		sleep(2);
+		// lebenszeichen();
+
 
 	}
 

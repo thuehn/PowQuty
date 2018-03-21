@@ -170,6 +170,7 @@ int is_outdated(FILE *file, ssize_t char_count) {
 	last_line[char_count] = '\0';
 	last_time = atol(get_entry_from_line_position(last_line,
 						      TIME_STAMP_POSITION));
+	free(last_line);
 
 	if (last_time > first_time)
 		return 1;
