@@ -13,11 +13,14 @@
 #define SAMPLES_PER_FRAME	64
 #define SAMPLES_PER_BLOCK	2048
 #define FRAMES_PER_BLOCK	(SAMPLES_PER_BLOCK / SAMPLES_PER_FRAME)	// 32
-#define NUMBER_OF_BLOCKS_IN_BUFFER	5
+#define NUMBER_OF_BLOCKS_IN_BUFFER	50
 #define BLOCK_BUFFER_SIZE	NUMBER_OF_BLOCKS_IN_BUFFER*SAMPLES_PER_BLOCK	// 5*2048 = 10240
 #define TS_BUFFER_SIZE	NUMBER_OF_BLOCKS_IN_BUFFER*FRAMES_PER_BLOCK			// 5*32 = 160
 #define FRAMES_IN_BLOCK_BUFFER NUMBER_OF_BLOCKS_IN_BUFFER*FRAMES_PER_BLOCK	// 5*32 = 160
 
+void store_data(unsigned char * buf, unsigned int stored_frame_idx, long long ts);
+
+void do_calculation(unsigned int stored_frame_idx);
 
 /*
  * init function for the retrieval functionality

@@ -22,6 +22,7 @@ UCI_POWQUTY_DEVICE="powquty.powquty.device_tty"
 STDOUT=0
 MQTT="10.10.4.5"
 
+
 random_int()
 {
 	local start="${1:-0}"

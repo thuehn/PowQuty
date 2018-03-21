@@ -21,11 +21,11 @@ static pthread_cond_t dump_cond;
 static pthread_mutex_t dump_mtx;
 static pthread_t raw_dump_thread;
 
-unsigned char * dump_buffer;	// [MAX_FRAME_SIZE*DUMP_BUFFER_SIZE];
-char *dump_mode; 				// [DUMP_BUFFER_SIZE];
+unsigned char * dump_buffer;		// [MAX_FRAME_SIZE*DUMP_BUFFER_SIZE];
+char *dump_mode;			// [DUMP_BUFFER_SIZE];
 long long *dump_time;			// [DUMP_BUFFER_SIZE];
-int *dump_size;					// [DUMP_BUFFER_SIZE];
-char *dump_string;				// [MAX_DUMP_STRING];
+int *dump_size;				// [DUMP_BUFFER_SIZE];
+char *dump_string;			// [MAX_DUMP_STRING];
 static volatile short new_pkt_idx=0, pkt_to_dump_idx=0;
 static volatile unsigned int stop_raw_dump_run = 0;
 unsigned short last_frame_idx =0;
@@ -75,7 +75,8 @@ void dump_raw_packet(unsigned char* frame, int read_size, char mode) {
 }
 
 void* raw_dump_run(void* args) {
-	printf("DEBUG:\tDump Thread has started\n");
+	printf("DEBUG:\tDump Thread has started with Thread Id: %lu\n",
+		(long unsigned int)pthread_self());
 	while(!stop_raw_dump_run) {
 		pthread_mutex_lock(&dump_mtx);
 		pthread_cond_wait(&dump_cond,&dump_mtx);
@@ -134,8 +135,8 @@ void dump_to_string(short idx) {
 
 void raw_dump_join() {
 	printf("DEBUG:\tJoining Dump Thread \n");
+	pthread_join(raw_dump_thread, NULL);
 	pthread_cond_destroy(&dump_cond);
 	pthread_mutex_destroy(&dump_mtx);
-	pthread_join(raw_dump_thread, NULL);
 	printf("DEBUG:\tDump Thread Joined \n");
 }
