@@ -6,18 +6,23 @@ LOGFILE=${2:-/dev/null}
 DAEMON='powqutyd'
 PID=`pidof ${DAEMON}`
 DIR_OUTPUT="/mnt/sdcard/"
-PACKER="/usr/bin/bzip2"
+PACKER=""
 
 OUTPUT_FILE_BASENAME="powquty_raw"
 OUTPUT_FILE_ON="$(uname -n)-$(date +%Y_%m_%d)"
-OUTPUT_FILE_EXT=".bz2"
+OUTPUT_FILE_EXT=""
+[[ -n "${PACKER}" ]] && OUTPUT_FILE_EXT=".bz2"
 OUTPUT_FILE="${DIR_OUTPUT}${OUTPUT_FILE_ON}-${OUTPUT_FILE_BASENAME}.log${OUTPUT_FILE_EXT}"
 
 OFFSET_FILE="/var/run/powcrond.timer"
 OFFSET_MIN=60							# seconds
 OFFSET_MAX=3600							# seconds
 
+UCI_POWQUTY_DEVICE="powquty.powquty.device_tty"
+
 STDOUT=0
+MQTT="10.10.4.5"
+
 
 random_int()
 {
@@ -45,6 +50,8 @@ not_modified_for() {
 
 check() {
 	RES=0
+	detect_usb_device || RES=$(( RES | 8 ))
+
 	[[ ! -f "${OUTPUT_FILE}" ]] && RES=$(( $RES | 1))	# output missing
 
 	[[ -z "${PID}" ]] && RES=$(( $RES | 2 ))		# daemon not running
@@ -57,7 +64,7 @@ check() {
 
 restart() {
 	killall -9 "${DAEMON}" 2>/dev/null
-	# TODO: correct way to restart? 
+
 	[[ -n "${PACKER}" ]] && ( ${DAEMON} -r | ${PACKER} >> "${OUTPUT_FILE}" 2>/dev/null ) &
 	[[ -z "${PACKER}" ]] && ( ${DAEMON} -r >> "${OUTPUT_FILE}" 2>/dev/null ) &
 	exit 0
@@ -67,16 +74,16 @@ on_new_day() {
 	if [[ ! -f "${OFFSET_FILE}" ]]; then
 		OFFSET=$(random_int ${OFFSET_MIN} ${OFFSET_MAX})
 		OFFSET_TOTAL=$(date -d @$(($(date +%s) + $OFFSET)) +%s)
-		#echod "new day, created new offset timer with offset $OFFSET, total $OFFSET_TOTAL"
+		#echod "new day - created new offset timer with offset $OFFSET (total $OFFSET_TOTAL)"
 		echo "${OFFSET_TOTAL}" > ${OFFSET_FILE}
 
 		RESTART_AT=$(date -d @"$OFFSET_TOTAL")	# human readable
-		echod "new day, restart pending at ${RESTART_AT}"
+		echod "new day - restart pending at ${RESTART_AT}"
 	fi
 	OFFSET_TOTAL=`cat ${OFFSET_FILE}`
 	local OFFSET_DIFF=$(( $OFFSET_TOTAL - $(date +%s) ))
 	if [ ${OFFSET_DIFF} -le 0 ]; then
-		echod "new day, restarting now"
+		echod "new day - restarting now"
 		rm "${OFFSET_FILE}" 2>/dev/null
 
 		# copy log file
@@ -90,20 +97,42 @@ on_new_day() {
 	fi
 }
 
+detect_usb_device() {
+	DEVFOUND=`ls -1 /dev/ttyACM* 2>/dev/null | head -n 1`
+	if [ -z "${DEVFOUND}" ]; then
+		echod "ttyACM device not available"
+		exit 16					# give up..
+	fi
+
+	DEVCONF=`uci get "${UCI_POWQUTY_DEVICE}"`
+	if [ "${DEVFOUND}" != "${DEVCONF}" ]; then
+		uci set ${UCI_POWQUTY_DEVICE}="${DEVFOUND}"
+		uci commit
+		echod "reconfigured USB device to ${DEVFOUND} (was ${DEVCONF})"
+		return 8
+	fi
+	return 0
+}
+
 echod() {
+	local MSG_TS="$(date +%s)"
+	local MSG_DATE="$(date +'%d.%m.%Y %H:%M:%S')"
+	local MSG_HOST="$(uname -n)"
 	local TEXT="[$(date +'%d.%m.%Y %H:%M:%S')] $@"
 	[[ $STDOUT -ne 0 ]] && echo "$TEXT"
 	echo "${TEXT}" >> "${LOGFILE}"
+	[[ -n "$MQTT" ]] && mosquitto_pub -t 'measurement/powcrond' -q 0 --quiet -h "${MQTT}" -m "${MSG_TS},${MSG_DATE},${MSG_HOST},$@"
 }
 
 check
 RES=$?
 MSG=""
-[[ $(( $RES & 1 )) -eq 1 ]] && MSG="${MSG}, output file missing"
-[[ $(( $RES & 2 )) -eq 2 ]] && MSG="${MSG}, daemon not running"
-[[ $(( $RES & 4 )) -eq 4 ]] && MSG="${MSG}, output timeout"
+[[ $(( $RES & 1 )) -eq 1 ]] && MSG="${MSG} [output file missing]"
+[[ $(( $RES & 2 )) -eq 2 ]] && MSG="${MSG} [daemon not running]"
+[[ $(( $RES & 4 )) -eq 4 ]] && MSG="${MSG} [output timeout]"
+[[ $(( $RES & 8 )) -eq 8 ]] && MSG="${MSG} [device changed]"
 
 [[ $RES -eq 1 ]] && on_new_day && exit 0			# if restart is because of a new day,
 								# don't try to trigger a normal restart
 								# because of a "missing" output file
-[[ $RES -ne 0 ]] && echod "restarting${MSG}" && restart
+[[ $RES -ne 0 ]] && echod "restarting:${MSG}" && restart
