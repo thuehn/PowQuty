@@ -10,7 +10,8 @@ PACKER=""
 
 OUTPUT_FILE_BASENAME="powquty_raw"
 OUTPUT_FILE_ON="$(uname -n)-$(date +%Y_%m_%d)"
-OUTPUT_FILE_EXT=".bz2"
+OUTPUT_FILE_EXT=""
+[[ -n "${PACKER}" ]] && OUTPUT_FILE_EXT=".bz2"
 OUTPUT_FILE="${DIR_OUTPUT}${OUTPUT_FILE_ON}-${OUTPUT_FILE_BASENAME}.log${OUTPUT_FILE_EXT}"
 
 OFFSET_FILE="/var/run/powcrond.timer"
