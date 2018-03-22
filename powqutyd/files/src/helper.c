@@ -21,7 +21,7 @@ int file_is_unchecked = 1;
 long cur_offset;
 
 void print_received_buffer(unsigned char* buf, int len) {
-	int i=0;
+	int i;
 	char c;
 
 	if(len>0) {
