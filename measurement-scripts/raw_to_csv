@@ -21,6 +21,8 @@ getopt = OptionParser()
 #		  help='enable debugging verbosity', default=False)
 getopt.add_option('-i', '--input', dest='input', help='powquty raw trace file', default='')
 getopt.add_option('-o', '--output', dest='output', help='target CSV file', default='')
+getopt.add_option('-g', '--group', dest='group', action='store_true',
+		  help='group voltage values per timestamp', default=False)
 getopt.add_option('-q', '--quiet', dest='quiet', action='store_true',
 		  help='show no messages except errors', default=False)
 #getopt.add_option('-v', '--verbosity', action='count', dest='verbosity', help='set verbosity level', default=1)
@@ -77,11 +79,19 @@ with open(sopts.input, 'r') as fh:
                     volt_value = voltage(k, offset, scaling, True)
                     res.append(volt_value)
             # write output
-            csvline = '{},{},{}'.format(tstamp, pktcount,','.join(map(str, res)))
-            if (fo):
-                fo.write('{}\n'.format(csvline))
+            if (sopts.group):
+                csvline = '{},{},{}'.format(tstamp, pktcount,','.join(map(str, res)))
+                if (fo):
+                    fo.write('{}\n'.format(csvline))
+                else:
+                    print(csvline)
             else:
-                print(csvline)
+                for val in res:
+                    csvline = '{},{},{}'.format(tstamp, pktcount, val)
+                    if (fo):
+                        fo.write('{}\n'.format(csvline))
+                    else:
+                        print(csvline)
         match = re_off.search(line)
         if (match):
             offset = float(match.group(1))
