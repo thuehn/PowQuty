@@ -32,7 +32,9 @@ if (not os.path.isfile(sopts.input)):
     print('no input file specified', file=sys.stderr)
     sys.exit(0)
 
-re_line = re.compile('^-> ([0-9A-Fa-f]+):\s\[([^\]]+)\]')
+
+re_line = re.compile('^-> ([0-9A-Fa-f]+):\s\[[^-]+-130-([^\]]+)\]')
+
 re_off  = re.compile('^[Oo]ffset: ([0-9\.-]+)\s*[Ss]caling: ([0-9-\.]+)')
 re_raw  = re.compile('[0-9A-Fa-f]{16}')
 
@@ -65,7 +67,8 @@ with open(sopts.input, 'r') as fh:
             lpsec = lineno / t_elapsed
             print('{}: {} lines after {:.3f} s ({:.3f} lines/s)'.format(sopts.input, lineno, t_elapsed, lpsec), file=sys.stderr)
         match = re_line.search(line)
-        if (match and ('-130-' in match.group(2))):
+
+        if (match):
             pktcount = match.group(2).strip()
             tstamp = match.group(1).strip()
             count = 0
