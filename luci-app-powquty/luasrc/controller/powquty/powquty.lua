@@ -1,6 +1,7 @@
 module("luci.controller.powquty.powquty", package.seeall)
 
 require ("lfs")
+require ("uci")
 -- require("luci.i18n")
 local event_path = uci.get("powquty", "powquty", "powquty_event_path") or "/tmp/powquty_event.log"
 local epoch = tonumber(os.time())

@@ -21,12 +21,13 @@ int file_is_unchecked = 1;
 long cur_offset;
 
 void print_received_buffer(unsigned char* buf, int len) {
+	int i;
+	char c;
+
 	if(len>0) {
-		int i=0;
-		char c;
 		printf("Received[%d] ",len);
-		for (i=0;i<len;i++) {
-			c= buf[i];
+		for (i = 0; i < len; i++) {
+			c = buf[i];
 			printf("%x ", (unsigned char) c);
 		}
 		printf("\n");
@@ -276,7 +277,8 @@ void store_to_file(PQResult pqResult, struct powquty_conf *config) {
 	FILE* pf;
 	struct powquty_conf *conf = config;
 	ssize_t char_count;
-	long lower_bound, upper_bound;
+	long lower_bound, upper_bound, ts_sec;
+	long long ts;
 
 	if (!has_max_size(conf->powquty_path, (off_t)conf->max_log_size_kb)) {
 		pf = fopen(config->powquty_path,"a");
@@ -309,8 +311,8 @@ void store_to_file(PQResult pqResult, struct powquty_conf *config) {
 				file_is_unchecked = 1;
 		}
 	}
-	long long ts = get_curr_time_in_milliseconds();
-	long ts_sec = get_curr_time_in_seconds();
+	ts = get_curr_time_in_milliseconds();
+	ts_sec = get_curr_time_in_seconds();
 	fprintf(pf,
 			"%s,%ld,%lld,3,%010.6f,%09.6f,%09.6f,%09.6f,%09.6f,%09.6f,"
 			"%09.6f,%09.6f,%09.6f\n",
