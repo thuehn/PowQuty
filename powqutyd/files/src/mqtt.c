@@ -403,7 +403,7 @@ void publish_measurements(PQResult pqResult) {
 			"{"
 			"%s"			//static data
 			"%s"			//metadata (optional object)
-			"\"pkg\":\"%d\","	//pkg count
+			"\"pkg\": %d,"	//pkg count
 			"%s"			//t5060 data
 			"%s"			//t1012 data
 			"\"utc\":\"%s.%lu\" "
