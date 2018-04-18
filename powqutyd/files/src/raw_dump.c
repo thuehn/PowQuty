@@ -65,7 +65,7 @@ void dump_raw_packet(unsigned char* frame, int read_size, char mode) {
 			frame, MAX_FRAME_SIZE);
 	dump_mode[new_pkt_idx] = mode;
 	dump_size[new_pkt_idx] = read_size;
-	dump_time[new_pkt_idx] = get_curr_time_in_milliseconds();
+	dump_time[new_pkt_idx] = get_curr_time_in_microseconds();
 	new_pkt_idx = (new_pkt_idx+1)%DUMP_BUFFER_SIZE;
 	if(!stop_raw_dump_run) {
 		pthread_mutex_lock(&dump_mtx);

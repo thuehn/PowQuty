@@ -65,6 +65,12 @@ long long get_curr_time_in_milliseconds() {
 	return (long long) ( (tv.tv_sec * 1000) + (int)tv.tv_usec/1000 );
 }
 
+long long get_curr_time_in_microseconds() {
+	struct timeval tv;
+	gettimeofday(&tv,NULL);
+	return (long long) ( (tv.tv_sec * 1000000) + (int)tv.tv_usec);
+}
+
 long get_curr_time_in_seconds() {
 	struct timeval tv;
 	gettimeofday(&tv,NULL);
