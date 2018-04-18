@@ -232,7 +232,7 @@ static inline volatile void compose_t5060_data(const PQResult* pqResult) {
  * compose empty json string for t5060 data
  * @param pqResult: PQResult struct containing frequency, harmonics and voltage
  */
-static inline void compose_empty_t5060_data(const PQResult* pqResult) {
+static void compose_empty_t5060_data(const PQResult* pqResult) {
 	t5060_data[0]='\0';
 }
 
@@ -241,7 +241,7 @@ static inline void compose_empty_t5060_data(const PQResult* pqResult) {
  * @param pqResult: PQResult struct containing frequency, harmonics and voltage
  * 		    data
  */
-static inline volatile void compose_t1012_data(const PQResult* pqResult) {
+static volatile void compose_t1012_data(const PQResult* pqResult) {
 	t1012_data[0] = '\0';
 	sprintf(t1012_data,
 		" \"t1012\": {"
@@ -257,7 +257,7 @@ static inline volatile void compose_t1012_data(const PQResult* pqResult) {
  * compose empty json string for t1012 data
  * @param pqResult: PQResult struct containing frequency, harmonics and voltage
  */
-static inline void compose_empty_t1012_data(const PQResult* pqResult) {
+static void compose_empty_t1012_data(const PQResult* pqResult) {
 	t1012_data[0] = '\0';
 }
 

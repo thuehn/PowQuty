@@ -35,7 +35,9 @@ if ((not os.path.isfile(sopts.input)) and
 	print('no input file specified', file=sys.stderr)
 	sys.exit(0)
 
+
 re_line = re.compile('^-> ([0-9A-Fa-f]+):\s\[[^-]+-130-([^\]]+)\]')
+
 re_off  = re.compile('^[Oo]ffset: ([0-9\.-]+)\s*[Ss]caling: ([0-9-\.]+)')
 re_raw  = re.compile('[0-9A-Fa-f]{16}')
 
