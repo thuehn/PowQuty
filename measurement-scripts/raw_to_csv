@@ -9,9 +9,11 @@ from timeit import default_timer as timer
 
 
 def signal_handler(signal, frame):
+    if (fh):
+        fh.close()
     if (fo):
         fo.close()
-    print("terminated")
+    print("Terminated", file=sys.stderr)
     sys.exit(1)
 signal.signal(signal.SIGINT, signal_handler)
 
@@ -19,7 +21,7 @@ signal.signal(signal.SIGINT, signal_handler)
 getopt = OptionParser()
 #getopt.add_option('-d', '--debug', dest='debug', action='store_true',
 #		  help='enable debugging verbosity', default=False)
-getopt.add_option('-i', '--input', dest='input', help='powquty raw trace file', default='')
+getopt.add_option('-i', '--input', dest='input', help='powquty raw trace file', default='-')
 getopt.add_option('-o', '--output', dest='output', help='target CSV file', default='')
 getopt.add_option('-g', '--group', dest='group', action='store_true',
 		  help='group voltage values per timestamp', default=False)
@@ -28,9 +30,10 @@ getopt.add_option('-q', '--quiet', dest='quiet', action='store_true',
 #getopt.add_option('-v', '--verbosity', action='count', dest='verbosity', help='set verbosity level', default=1)
 (sopts, sargs) = getopt.parse_args()
 
-if (not os.path.isfile(sopts.input)):
-    print('no input file specified', file=sys.stderr)
-    sys.exit(0)
+if ((not os.path.isfile(sopts.input)) and
+	(sopts.input != "-")):
+	print('no input file specified', file=sys.stderr)
+	sys.exit(0)
 
 re_line = re.compile('^-> ([0-9A-Fa-f]+):\s\[[^-]+-130-([^\]]+)\]')
 re_off  = re.compile('^[Oo]ffset: ([0-9\.-]+)\s*[Ss]caling: ([0-9-\.]+)')
@@ -52,55 +55,57 @@ def voltage(hexstr, offset, scaling, littleEndian = True):
         volt_val -= 2**16
     return (volt_val - offset) * scaling
 
+fh = open(sopts.input, 'r') if (sopts.input != '-') else sys.stdin
 fo = open(sopts.output, 'w') if (sopts.output) else None
+lineno = 1
 t_start = timer()
-with open(sopts.input, 'r') as fh:
-    lineno = 1
-    for line in fh:
-        line = line.replace('\n', '')
-        lineno += 1
-        if ((lineno % 10000000 == 0) and (not sopts.quiet)):
-            t_now = timer()
-            t_elapsed = t_now - t_start
-            lpsec = lineno / t_elapsed
-            print('{}: {} lines after {:.3f} s ({:.3f} lines/s)'.format(sopts.input, lineno, t_elapsed, lpsec), file=sys.stderr)
-        match = re_line.search(line)
-        if (match):
-            pktcount = match.group(2).strip()
-            tstamp = match.group(1).strip()
-            count = 0
-            res = []
-            if (offset is None):
-                continue
-            for m in re.finditer(re_raw, line):
-                count += 1
-                hsplit = split(m.group(0), 4)
-                for k in hsplit:
-                    volt_value = voltage(k, offset, scaling, True)
-                    res.append(volt_value)
-            # write output
-            if (sopts.group):
-                csvline = '{},{},{}'.format(tstamp, pktcount,','.join(map(str, res)))
-                if (fo):
-                    fo.write('{}\n'.format(csvline))
-                else:
-                    print(csvline)
-            else:
-                for val in res:
-                    csvline = '{},{},{}'.format(tstamp, pktcount, val)
-                    if (fo):
-                        fo.write('{}\n'.format(csvline))
-                    else:
-                        print(csvline)
-        match = re_off.search(line)
-        if (match):
-            offset = float(match.group(1))
-            scaling = float(match.group(2))
+file_in = sopts.input if (sopts.input != '-') else "<STDIN>"
+for line in fh:
+	line = line.replace('\n', '')
+	lineno += 1
+	if ((lineno % 10000000 == 0) and (not sopts.quiet)):
+		t_now = timer()
+		t_elapsed = t_now - t_start
+		lpsec = lineno / t_elapsed
+		print('{}: {} lines after {:.3f} s ({:.3f} lines/s)'.format(file_in, lineno, t_elapsed, lpsec), file=sys.stderr)
+	match = re_line.search(line)
+	if (match):
+		pktcount = match.group(2).strip()
+		tstamp = match.group(1).strip()
+		count = 0
+		res = []
+		if (offset is None):
+			continue
+		for m in re.finditer(re_raw, line):
+			count += 1
+			hsplit = split(m.group(0), 4)
+			for k in hsplit:
+				volt_value = voltage(k, offset, scaling, True)
+				res.append(volt_value)
+		# write output
+		if (sopts.group):
+			csvline = '{},{},{}'.format(tstamp, pktcount,','.join(map(str, res)))
+			if (fo):
+				fo.write('{}\n'.format(csvline))
+			else:
+				print(csvline)
+		else:
+			for val in res:
+				csvline = '{},{},{}'.format(tstamp, pktcount, val)
+				if (fo):
+					fo.write('{}\n'.format(csvline))
+				else:
+					print(csvline)
+	match = re_off.search(line)
+	if (match):
+		offset = float(match.group(1))
+		scaling = float(match.group(2))
 
 if (not sopts.quiet):
     t_now = timer()
     t_elapsed = t_now - t_start
-    print('{}: done after {:.3f} s'.format(sopts.input, t_elapsed), file=sys.stderr)
+    print('{}: done after {:.3f} s'.format(file_in, t_elapsed), file=sys.stderr)
 
+fh.close()
 if (fo):
     fo.close()
