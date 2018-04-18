@@ -61,6 +61,7 @@ fh = open(sopts.input, 'r') if (sopts.input != '-') else sys.stdin
 fo = open(sopts.output, 'w') if (sopts.output) else None
 lineno = 1
 t_start = timer()
+
 file_in = sopts.input if (sopts.input != '-') else "<STDIN>"
 for line in fh:
 	line = line.replace('\n', '')

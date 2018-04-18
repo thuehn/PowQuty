@@ -245,12 +245,10 @@ static volatile void compose_t1012_data(const PQResult* pqResult) {
 	t1012_data[0] = '\0';
 	sprintf(t1012_data,
 		" \"t1012\": {"
-		"\"f\": %10.6f/%10.6f, "
-		"\"u\": %11.6f/%11.6f},",
+		"\"f\": %10.6f, "
+		"\"u\": %11.6f},",
 		pqResult->PowerFrequency1012T[0],
-		pqResult->PowerFrequency1012T[1],
-		pqResult->PowerVoltageEff_1012T[0],
-		pqResult->PowerVoltageEff_1012T[1]);
+		pqResult->PowerVoltageEff_1012T[0]);
 }
 
 /*
@@ -405,7 +403,7 @@ void publish_measurements(PQResult pqResult) {
 			"{"
 			"%s"			//static data
 			"%s"			//metadata (optional object)
-			"\"pkg\":\"%d\","	//pkg count
+			"\"pkg\": %d,"	//pkg count
 			"%s"			//t5060 data
 			"%s"			//t1012 data
 			"\"utc\":\"%s.%lu\" "
