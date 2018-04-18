@@ -4,7 +4,7 @@ require("nixio")
 require("luci.model.uci")
 
 local uci = luci.model.uci.cursor()
-local powquty_path = uci.get("powquty", "powquty", "powquty_path") or "/tmp/powquty.log"
+local powquty_path = uci:get("powquty", "powquty", "powquty_path") or "/tmp/powquty.log"
 
 
 

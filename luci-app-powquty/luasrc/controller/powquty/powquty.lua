@@ -1,9 +1,12 @@
 module("luci.controller.powquty.powquty", package.seeall)
 
 require ("lfs")
-require ("uci")
+
 -- require("luci.i18n")
-local event_path = uci.get("powquty", "powquty", "powquty_event_path") or "/tmp/powquty_event.log"
+
+local uci = require("luci.model.uci").cursor()
+
+local event_path = uci:get("powquty", "powquty", "powquty_event_path") or "/tmp/powquty_event.log"
 local epoch = tonumber(os.time())
 local dip_status = "green"
 local swell_status = "green"
@@ -265,12 +268,12 @@ function powquty_render()
     local vars  = luci.http.formvalue()
     --local spans = luci.util.split( uci.get( "luci_statistics", "collectd_rrdtool", "RRATimespans" ), "%s+", nil, true )
     local spans = luci.util.split( "10min 1hour 1day 1week 1month 1year", "%s+", nil, true )
-	local span  = vars.timespan or uci.get( "luci_statistics", "rrdtool", "default_timespan" ) or spans[1]
+	local span  = vars.timespan or uci:get( "luci_statistics", "rrdtool", "default_timespan" ) or spans[1]
 
-    local powquty_paths = uci.get("powquty", "powquty", "powquty_path") or "/tmp/powquty.log"
+    local powquty_paths = uci:get("powquty", "powquty", "powquty_path") or "/tmp/powquty.log"
     local metrics = {"voltage"}
     local busy_metric = {}
-    local rrd_dir = uci.get("luci_statistics", "collectd_rrdtool", "DataDir") or "/tmp/rrd"
+    local rrd_dir = uci:get("luci_statistics", "collectd_rrdtool", "DataDir") or "/tmp/rrd"
     local rrdimg_dir = "/tmp/powquty"
     local hostname = luci.sys.hostname()
     local img_width = '800'
