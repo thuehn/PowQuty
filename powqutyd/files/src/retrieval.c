@@ -97,7 +97,12 @@ void handle_status_message(int read_size) {
 }
 
 void handle_data_message(int read_size) {
-	long long current_time = get_curr_time_in_milliseconds();
+	struct timespec ts_curr;
+	long long current_time;
+
+	clock_gettime(CLOCK_REALTIME, &ts_curr);
+	current_time = ts_curr.tv_sec * 1000 + ts_curr.tv_nsec / 1000000;
+
 	// Check that Data Messages has to have a read size equal to 134 (= 1xID + 1xCC + 2xLEN + 130-Data)
 	if (debug_flag) {
 		if (read_size != 134) {
@@ -293,6 +298,8 @@ void join_retrieval() {
 }
 
 static void *reading_thread_run(void* param) {
+	struct timespec ts_curr;
+
 	printf("DEBUG:\tRetrieval Thread has started\n");
 	// int read_size = 0, poll_time_out_ms = 10, offset = 0, done_reading = 0;
 	int offset = 0, done_reading = 0, poll_time_out_ms = 2000, poll_result;
@@ -307,7 +314,10 @@ static void *reading_thread_run(void* param) {
 		done_reading = 0;
 		if (poll_result <= 0) {
 			if (poll_result == 0) {
-				printf("ERROR: \t\t%lld:\tRead timed out.\n", get_curr_time_in_milliseconds());
+				clock_gettime(CLOCK_REALTIME, &ts_curr);
+				printf("ERROR: \t\t%lld:\tRead timed out.\n",
+					ts_curr.tv_sec * 1000 +
+					ts_curr.tv_nsec / 1000000);
 				exit(EXIT_FAILURE);
 			}
 		} else {

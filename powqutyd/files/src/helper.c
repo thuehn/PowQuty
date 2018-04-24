@@ -7,7 +7,7 @@
 
 #include "helper.h"
 #include <stdio.h>
-#include <sys/time.h>
+#include <time.h>
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <string.h>
@@ -57,24 +57,6 @@ unsigned short get_unsigned_short_val(unsigned char* buf) {
 short get_short_val(unsigned char* buf) {
 	unsigned char c0= buf[0], c1= buf[1];
 	return (short) (c1<<8 | c0);
-}
-
-long long get_curr_time_in_milliseconds() {
-	struct timeval tv;
-	gettimeofday(&tv,NULL);
-	return (long long) ( (tv.tv_sec * 1000) + (int)tv.tv_usec/1000 );
-}
-
-long long get_curr_time_in_microseconds() {
-	struct timeval tv;
-	gettimeofday(&tv,NULL);
-	return (long long) ( (tv.tv_sec * 1000000) + (int)tv.tv_usec);
-}
-
-long get_curr_time_in_seconds() {
-	struct timeval tv;
-	gettimeofday(&tv,NULL);
-	return tv.tv_sec;
 }
 
 void print_PQ_Error(PQ_ERROR err) {
@@ -283,8 +265,8 @@ void store_to_file(PQResult pqResult, struct powquty_conf *config) {
 	FILE* pf;
 	struct powquty_conf *conf = config;
 	ssize_t char_count;
-	long lower_bound, upper_bound, ts_sec;
-	long long ts;
+	long lower_bound, upper_bound;
+	struct timespec ts_curr, ts_diff;
 
 	if (!has_max_size(conf->powquty_path, (off_t)conf->max_log_size_kb)) {
 		pf = fopen(config->powquty_path,"a");
@@ -317,14 +299,15 @@ void store_to_file(PQResult pqResult, struct powquty_conf *config) {
 				file_is_unchecked = 1;
 		}
 	}
-	ts = get_curr_time_in_milliseconds();
-	ts_sec = get_curr_time_in_seconds();
+
+	clock_gettime(CLOCK_REALTIME, &ts_curr);
+	clock_gettime(CLOCK_MONOTONIC, &ts_diff);
 	fprintf(pf,
-			"%s,%ld,%lld,3,%010.6f,%09.6f,%09.6f,%09.6f,%09.6f,%09.6f,"
-			"%09.6f,%09.6f,%09.6f\n",
+			"%s,%lld.%.9ld,%lld.%.9ld,3,%010.6f,%09.6f,%09.6f,"
+			"%09.6f,%09.6f,%09.6f,%09.6f,%09.6f,%09.6f\n",
 			"DEV_UUID",
-			ts_sec,
-			ts,
+			(long long)ts_curr.tv_sec, ts_curr.tv_nsec,
+			(long long)ts_diff.tv_sec, ts_diff.tv_nsec,
 			pqResult.PowerVoltageEff_5060T,
 			pqResult.PowerFrequency5060T,
 			pqResult.Harmonics[0],
