@@ -420,7 +420,7 @@ void publish_measurements(PQResult pqResult) {
 			t5060_data,
 			t1012_data,
 			tmbuf,
-			(long int)(ts_curr.tv_sec * 1000 + ts_curr.tv_nsec/1000000));
+			(long int)(ts_curr.tv_nsec / 1000000));
 	mqtt_publish_payload();
 
 	if (pkg_count < INT_MAX) {
