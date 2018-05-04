@@ -21,7 +21,6 @@ OFFSET_MAX=3600							# seconds
 UCI_POWQUTY_DEVICE="powquty.powquty.device_tty"
 
 STDOUT=0
-MQTT="10.10.4.5"
 
 
 random_int()
@@ -121,7 +120,7 @@ echod() {
 	local TEXT="[$(date +'%d.%m.%Y %H:%M:%S')] $@"
 	[[ $STDOUT -ne 0 ]] && echo "$TEXT"
 	echo "${TEXT}" >> "${LOGFILE}"
-	[[ -n "$MQTT" ]] && mosquitto_pub -t 'measurement/powcrond' -q 0 --quiet -h "${MQTT}" -m "${MSG_TS},${MSG_DATE},${MSG_HOST},$@"
+#	[[ -n "$MQTT" ]] && mosquitto_pub -t 'measurement/powcrond' -q 0 --quiet -h "${MQTT}" -m "${MSG_TS},${MSG_DATE},${MSG_HOST},$@"
 }
 
 check
