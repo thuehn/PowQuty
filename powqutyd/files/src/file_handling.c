@@ -73,6 +73,9 @@ void join_file_read() {
 
 void stop_file_read() {
 	printf("DEBUG:\tStopping file read thread\n");
+	if (input_file) {
+		free(input_file);
+	}
 	stop_file_read_run = 1;
 	destroyPowerQuality(&frpPQInst);
 }
