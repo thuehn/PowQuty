@@ -20,7 +20,6 @@
 
 #define FILE_READ_OFFSET 0.f
 #define FILE_READ_SCALE 1.f
-#define MAX_PATH_LENGTH 512
 #define SAMPLE_FREQUENCY 10240
 
 short *block_buffer;

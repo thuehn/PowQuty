@@ -8,6 +8,9 @@
 #ifndef UCI_CONFIG_H_
 #define UCI_CONFIG_H_
 
+#define OFF 0
+#define ON (!OFF)
+
 #define MAX_LENGTH		32
 #define MAX_LONG_LENGTH		64
 #define PATH_LENGTH		512
