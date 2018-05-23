@@ -18,5 +18,10 @@ void raw_dump_stop();
 
 void raw_dump_join();
 
+/* set path to file for raw log
+ * @param path: path for raw log file
+ */
+int dump_raw_to_file(const char* path);
+
 
 #endif /* POWQUTYD_FILES_INCLUDE_RAW_DUMP_H_ */

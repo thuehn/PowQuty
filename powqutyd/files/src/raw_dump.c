@@ -4,14 +4,18 @@
  *  Created on: Feb 15, 2017
  *      Author: nadim
  */
-#include "raw_dump.h"
+
+#include <errno.h>
 #include <pthread.h>
-#include "retrieval.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <stdlib.h>
+
+#include "file_checks.h"
 #include "helper.h"
+#include "raw_dump.h"
+#include "retrieval.h"
 #include "time.h"
 
 #define DUMP_BUFFER_SIZE	32
@@ -28,14 +32,38 @@ long long *dump_curr_time;		// [DUMP_BUFFER_SIZE];
 long long *dump_diff_time;		// [DUMP_BUFFER_SIZE];
 int *dump_size;				// [DUMP_BUFFER_SIZE];
 char *dump_string;			// [MAX_DUMP_STRING];
+char *raw_file;				// [MAX_PATH_LENGTH];
 static volatile short new_pkt_idx=0, pkt_to_dump_idx=0;
 static volatile unsigned int stop_raw_dump_run = 0;
 unsigned short last_frame_idx =0;
 
 void dump_to_string(short idx);
 
+int dump_raw_to_file(const char *path) {
+	if (path == NULL) {
+		return EXIT_FAILURE;
+	}
+
+	if (strlen(path) >= MAX_PATH_LENGTH) {
+		printf("ERROR:\t\t Path for raw file to long\n");
+		return EXIT_FAILURE;
+	}
+
+	raw_file = malloc(sizeof(char) * MAX_PATH_LENGTH);
+	if (raw_file == NULL) {
+		printf("ERROR:\t\t Could not allocate memory in %s\n", __func__);
+		return EXIT_FAILURE;
+	} else {
+		strcpy(raw_file, path);
+		if (raw_file) {
+		}
+		return EXIT_SUCCESS;
+	}
+
+}
+
 int raw_dump_init() {
-	int res = 0;
+int res = 0;
 	pthread_cond_init(&dump_cond, NULL);
 	pthread_mutex_init(&dump_mtx,NULL);
 	dump_buffer= calloc(sizeof (unsigned char),MAX_FRAME_SIZE*DUMP_BUFFER_SIZE);
@@ -55,9 +83,11 @@ int raw_dump_init() {
 	return res;
 }
 
-
 void raw_dump_stop() {
 	printf("DEBUG:\tStopping Dump Thread \n");
+	if (raw_file) {
+		free(raw_file);
+	}
 	stop_raw_dump_run =1;
 	pthread_cond_signal(&dump_cond);
 }
@@ -85,6 +115,17 @@ void dump_raw_packet(unsigned char* frame, int read_size, char mode) {
 	}
 }
 
+static void print_raw_to_file(const char *str) {
+	FILE *fp = fopen(raw_file, "a");
+	if (fp == NULL) {
+		printf("ERROR:\t\tCould not open raw file in %s: %s\n",
+		       __func__, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+	fprintf(fp, "%s", str);
+	fclose(fp);
+}
+
 void* raw_dump_run(void* args) {
 	printf("DEBUG:\tDump Thread has started with Thread Id: %lu\n",
 		(long unsigned int)pthread_self());
@@ -95,7 +136,11 @@ void* raw_dump_run(void* args) {
 		if(new_pkt_idx == pkt_to_dump_idx) printf("ERROR:\tdump-buffer overflow\n");
 		while (new_pkt_idx != pkt_to_dump_idx) {
 			dump_to_string(pkt_to_dump_idx);
-			printf("%s",dump_string);
+			if (raw_file) {
+				print_raw_to_file(dump_string);
+			} else {
+				printf("%s", dump_string);
+			}
 			pkt_to_dump_idx = (pkt_to_dump_idx+1)%DUMP_BUFFER_SIZE;
 		}
 	}
@@ -150,7 +195,11 @@ void dump_to_string(short idx) {
 	sprintf(dump_string + strlen(dump_string), "\n");
 	last_frame_idx=curr_idx;
 	if(flag) {
-		printf("%s", dump_string);
+		if (raw_file) {
+			print_raw_to_file(dump_string);
+		} else {
+			printf("%s", dump_string);
+		}
 	}
 }
 
