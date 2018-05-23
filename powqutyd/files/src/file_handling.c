@@ -20,7 +20,6 @@
 
 #define FILE_READ_OFFSET 0.f
 #define FILE_READ_SCALE 1.f
-#define MAX_PATH_LENGTH 512
 #define SAMPLE_FREQUENCY 10240
 
 short *block_buffer;
@@ -74,6 +73,9 @@ void join_file_read() {
 
 void stop_file_read() {
 	printf("DEBUG:\tStopping file read thread\n");
+	if (input_file) {
+		free(input_file);
+	}
 	stop_file_read_run = 1;
 	destroyPowerQuality(&frpPQInst);
 }

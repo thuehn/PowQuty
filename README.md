@@ -200,6 +200,20 @@ and restart it:
 /etc/init.d/powqutyd start
 ```
 
+## Command line options
+Print raw samples
+```
+powqutyd -r
+```
+Print raw samples to file
+```
+powqutyd --rawfile <Path/to/file>
+```
+Read samples from file
+```
+powqutyd -f <Path/to/file>
+```
+
 ## Do you want to contribute ?
 Everybody can participate, and any help is highly appreciated.
 Feel free to send pull requests or open a new issue via GitHub.

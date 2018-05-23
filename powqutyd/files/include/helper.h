@@ -11,6 +11,12 @@
 #include "PQ_App.h"
 #include "uci_config.h"
 
+long long get_curr_time_in_milliseconds();
+
+long long get_curr_time_in_microseconds();
+
+long get_curr_time_in_seconds();
+
 short get_short_val(unsigned char* buf);
 
 void print_received_buffer(unsigned char* buf, int len);

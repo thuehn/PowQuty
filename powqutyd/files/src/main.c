@@ -4,27 +4,26 @@
  *  Created on: Jun 16, 2016
  *      Author: neez
  */
+#include <getopt.h>
 #include <signal.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
+#include "calculation.h"
+#include "config.h"
+#include "file_handling.h"
 #include "PQ_App.h"
+#include "raw_dump.h"
+#include "retrieval.h"
+#include "uci_config.h"
+
 #ifdef MQTT
 #include "mqtt.h"
 #endif
-#include "calculation.h"
-#include "file_handling.h"
-#include "retrieval.h"
-#include "config.h"
-#include "uci_config.h"
 
 static volatile int stop_main = 0;
-/*
-void lebenszeichen(){
-	printf("\t\t\t\t\tAlive\n");
-}
-*/
 
 void handle_signal()
 {
@@ -51,16 +50,31 @@ void stop_powqutyd_file_read() {
 
 void handle_args (int argc, char **argv) {
 	int c;
-	while ((c = getopt (argc, argv, "rdf:")) != -1) {
+	int opt_idx = 0;
+
+	static struct option long_options[] = {
+		{"debug",	no_argument,		0,		'd'},
+		{"file",	required_argument,	0,		'f'},
+		{"raw",		no_argument,		0,		'r'},
+		{"rawfile",	required_argument,	0,		'w'},
+		{0,		0,			0,		 0 }
+	};
+
+	while ((c = getopt_long (argc, argv, "rdf:w:", long_options,
+							&opt_idx)) != -1) {
 		switch (c) {
 			case 'r':
-				set_raw_print(1);
+				set_raw_print(ON);
 				break;
 			case 'd':
-				set_debug(1);
+				set_debug(ON);
 				break;
 			case 'f':
 				set_file_read(optarg);
+				break;
+			case 'w':
+				set_raw_print(ON);
+				dump_raw_to_file(optarg);
 				break;
 			default:
 				break;
@@ -71,34 +85,21 @@ void handle_args (int argc, char **argv) {
 int main (int argc, char *argv[]) {
 	signal(SIGINT, handle_signal);
 	signal(SIGTERM, handle_signal);
-	// char* config_file = "/etc/powqutyd/powqutyd.cfg";
-
-	/*if(load_config(config_file)){
-		printf("Error: could not load some config from %s\n", config_file);
-		// return -1;
-	}*/
 
 	struct powquty_conf conf;
-	int	conf_res = uci_config_powquty(&conf);
-	printf("UCI CONFIG returned %d\n",conf_res);
-
-	// PQ_ERROR err = PQ_NO_ERROR;
+	int conf_res = uci_config_powquty(&conf);
 
 	printf("Starting powqutyd ...\n");
 #ifdef MQTT
 	if(!mqtt_init(&conf)) {
-		printf("MQTT Thread started \n");
+		printf("DEBUG:\t\tMQTT Thread started \n");
 	} else {
-		printf("couldn't start MQTT-Thread\n");
-		// return -1;
+		printf("WARN:\t\tCouldn't start MQTT-Thread\n");
 	}
 #endif
 	handle_args(argc, argv);
 
-	printf("arguments handled\n");
 	if (get_input_file_state()) {
-		printf("use input file\n");
-//		sleep(10);
 		if (!file_read_init(&conf)) {
 #ifdef MQTT
 			publish_device_online();
@@ -110,7 +111,6 @@ int main (int argc, char *argv[]) {
 		}
 		return 0;
 	}
-	printf("not input_file\n");
 	if(!calculation_init(&conf)) {
 		printf("Calculation Thread started\n");
 #ifdef MQTT
@@ -127,9 +127,6 @@ int main (int argc, char *argv[]) {
 
 	while (!stop_main){
 		sleep(2);
-		// lebenszeichen();
-
-
 	}
 
 

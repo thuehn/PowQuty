@@ -8,6 +8,7 @@
 #define FILE_HANDLING_H_
 
 #include "event_handling.h"
+#include "file_checks.h"
 
 /*
  * use file instead of usb oscilloscope for data input
