@@ -35,8 +35,8 @@ static const char* dev_uuid = "BERTUB001";
 // static const char* dev_HW_ver = "029";
 static int powqutyd_print = 0;
 
-static void (*t5060_composer)(PQResult*);
-static void (*t1012_composer)(PQResult*);
+static void (*t5060_composer)(const PQResult*);
+static void (*t1012_composer)(const PQResult*);
 
 void publish_callback(struct mosquitto *mosq, void* obj, int res);
 void mqtt_publish_payload();
@@ -328,17 +328,17 @@ int mqtt_init (struct powquty_conf* conf) {
 			conf->send_t5060_data);
 
 	/* select composer function for t5060 data */
-	if (conf->send_t5060_data == 1) {
-		t5060_composer = (void (*))&compose_t5060_data;
+	if (conf->send_t5060_data != 0) {
+		t5060_composer = &compose_t5060_data;
 	} else {
-		t5060_composer = (void (*))&compose_empty_t5060_data;
+		t5060_composer = &compose_empty_t5060_data;
 	}
 
 	/* select composer function for t1012 data */
 	if (conf->send_t1012_data == 1) {
-		t1012_composer = (void (*))&compose_t1012_data;
+		t1012_composer = &compose_t1012_data;
 	} else {
-		t1012_composer = (void (*))&compose_empty_t1012_data;
+		t1012_composer = &compose_empty_t1012_data;
 	}
 
 	printf("MQTT_LIB_VERSION: \tRet: %d\tMaj: %d\tMin: %d\tRev: %d\n",ret, vers[0], vers[1], vers[2]);

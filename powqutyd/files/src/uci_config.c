@@ -11,9 +11,6 @@
 
 #include "uci_config.h"
 
-#define OFF 0
-#define ON (!OFF)
-
 /** analogous to uci_lookup_option_string from uci.h, returns -1 when not found */
 static int uci_lookup_option_int(struct uci_context *uci, struct uci_section *s,
 		const char *name) {

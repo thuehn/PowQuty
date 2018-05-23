@@ -315,7 +315,7 @@ static void *reading_thread_run(void* param) {
 		if (poll_result <= 0) {
 			if (poll_result == 0) {
 				clock_gettime(CLOCK_REALTIME, &ts_curr);
-				printf("ERROR: \t\t%lld:\tRead timed out.\n",
+				printf("ERROR: \t\t%ld:\tRead timed out.\n",
 					ts_curr.tv_sec * 1000 +
 					ts_curr.tv_nsec / 1000000);
 				exit(EXIT_FAILURE);
