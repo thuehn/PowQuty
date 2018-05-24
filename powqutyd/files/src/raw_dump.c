@@ -45,13 +45,13 @@ int dump_raw_to_file(const char *path) {
 	}
 
 	if (strlen(path) >= MAX_PATH_LENGTH) {
-		printf("ERROR:\t\t Path for raw file to long\n");
+		printf("ERROR:\t Path for raw file to long\n");
 		return EXIT_FAILURE;
 	}
 
 	raw_file = malloc(sizeof(char) * MAX_PATH_LENGTH);
 	if (raw_file == NULL) {
-		printf("ERROR:\t\t Could not allocate memory in %s\n", __func__);
+		printf("ERROR:\t Could not allocate memory in %s\n", __func__);
 		return EXIT_FAILURE;
 	} else {
 		strcpy(raw_file, path);
@@ -66,25 +66,29 @@ int raw_dump_init() {
 	int res = 0;
 
 	pthread_cond_init(&dump_cond, NULL);
-	pthread_mutex_init(&dump_mtx,NULL);
-	dump_buffer = calloc(sizeof(unsigned char), MAX_FRAME_SIZE*DUMP_BUFFER_SIZE);
+	pthread_mutex_init(&dump_mtx, NULL);
+
+	dump_buffer = calloc(sizeof(unsigned char), MAX_FRAME_SIZE * DUMP_BUFFER_SIZE);
 	dump_mode = calloc(sizeof(char), DUMP_BUFFER_SIZE);
 	dump_curr_time = calloc(sizeof(long long), DUMP_BUFFER_SIZE);
 	dump_diff_time = calloc(sizeof(long long), DUMP_BUFFER_SIZE);
 	dump_size = calloc(sizeof(int), DUMP_BUFFER_SIZE);
 	dump_string = calloc(sizeof(char), MAX_DUMP_STRING);
-	printf("DEBUG:\tCreating Dump Thread\t[n_idx: %d, td_idx: %d] \n",new_pkt_idx,pkt_to_dump_idx);
+
+	printf("DEBUG:\t Creating Dump Thread\t[n_idx: %d, td_idx: %d]\n",
+		new_pkt_idx, pkt_to_dump_idx);
+
 	res = pthread_create(&raw_dump_thread, NULL, raw_dump_run, NULL);
 
 	return res;
 }
 
 void raw_dump_stop() {
-	printf("DEBUG:\tStopping Dump Thread \n");
+	printf("DEBUG:\t Stopping Dump Thread\n");
 	if (raw_file) {
 		free(raw_file);
 	}
-	stop_raw_dump_run =1;
+	stop_raw_dump_run = 1;
 	pthread_cond_signal(&dump_cond);
 }
 
@@ -96,6 +100,7 @@ void dump_raw_packet(unsigned char* frame, int read_size, char mode) {
 	dump_mode[new_pkt_idx] = mode;
 	dump_size[new_pkt_idx] = read_size;
 
+	/*Get current system & monotonic timestamps */
 	clock_gettime(CLOCK_REALTIME, &ts_curr);
 	dump_curr_time[new_pkt_idx] = ts_curr.tv_sec * 1000000 + ts_curr.tv_nsec;
 	clock_gettime(CLOCK_MONOTONIC, &ts_diff);
@@ -113,8 +118,9 @@ void dump_raw_packet(unsigned char* frame, int read_size, char mode) {
 
 static void print_raw_to_file(const char *str) {
 	FILE *fp = fopen(raw_file, "a");
+
 	if (fp == NULL) {
-		printf("ERROR:\tCould not open raw file in %s: %s\n",
+		printf("ERROR:\t Could not open raw file in %s: %s\n",
 		       __func__, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
@@ -123,8 +129,8 @@ static void print_raw_to_file(const char *str) {
 }
 
 void* raw_dump_run(void* args) {
-	printf("DEBUG:\tDump Thread has started with Thread Id: %lu\n",
-		(long unsigned int)pthread_self());
+	printf("DEBUG:\t Dump Thread has started with Thread Id: %lu\n",
+	       (long unsigned int)pthread_self());
 	while(!stop_raw_dump_run) {
 		pthread_mutex_lock(&dump_mtx);
 		pthread_cond_wait(&dump_cond, &dump_mtx);
@@ -141,7 +147,8 @@ void* raw_dump_run(void* args) {
 			pkt_to_dump_idx = (pkt_to_dump_idx + 1) % DUMP_BUFFER_SIZE;
 		}
 	}
-	printf("DEBUG:\tDump Thread has ended\n");
+	printf("DEBUG:\t Dump Thread has ended\n");
+
 	return 0;
 }
 
@@ -153,15 +160,19 @@ void dump_to_string(short idx) {
 	curr_len = get_unsigned_short_val(&dump_buffer[idx * MAX_FRAME_SIZE + 2]);
 
 	if(dump_buffer[idx] == 0x05 && dump_size[idx] != 134) {
-		printf("DUMP-WARNING - READ_SIZE != 134\t read_size = %d\n", dump_size[idx]);
+		printf("DUMP-WARNING:\t READ_SIZE != 134\t read_size = %d\n",
+			dump_size[idx]);
 	}
 
-	if (dump_buffer[idx] == 0x05 && (last_frame_idx + 1) % 65536 != curr_idx % 65536) {
-		printf("DUMP-WARNING - Frame Got Missing:\tlast_Frame_idx: %d,\tcurr_Frame_idx: %d\n", last_frame_idx, curr_idx);
+	if (dump_buffer[idx] == 0x05 &&
+	    (last_frame_idx + 1) % 65536 != curr_idx % 65536) {
+		printf("DUMP-WARNING:\t Frame Got Missing:\t last_Frame_idx: %d,"
+		       "curr_Frame_idx: %d\n", last_frame_idx, curr_idx);
 	}
 
 	if(dump_buffer[idx] == 0x05 && (curr_len != 130)) {
-		printf("WARNING - Packet with unexpected Data-Length: \tLEN: %d\n", curr_len);
+		printf("WARNING:\t Packet with unexpected Data-Length:"
+		       "\tLEN: %d\n", curr_len);
 	}
 
 	if(dump_mode[idx] == 'r') {
@@ -180,9 +191,10 @@ void dump_to_string(short idx) {
 			curr_idx);
 	}
 
-	/* create measurement blocks */
+	/* create blocks of measurement data */
 	for (int i = 0; i < MAX_FRAME_SIZE; i++) {
-		sprintf(dump_string + strlen(dump_string), "%02X", dump_buffer[idx * MAX_FRAME_SIZE + i]);
+		sprintf(dump_string + strlen(dump_string), "%02X",
+			dump_buffer[idx * MAX_FRAME_SIZE + i]);
 		if (!((i - 5) % 8) && i >= 5) {
 			sprintf(dump_string + strlen(dump_string), " ");
 		}
@@ -193,9 +205,9 @@ void dump_to_string(short idx) {
 }
 
 void raw_dump_join() {
-	printf("DEBUG:\tJoining Dump Thread \n");
+	printf("DEBUG:\t Joining Dump Thread\n");
 	pthread_join(raw_dump_thread, NULL);
 	pthread_cond_destroy(&dump_cond);
 	pthread_mutex_destroy(&dump_mtx);
-	printf("DEBUG:\tDump Thread Joined \n");
+	printf("DEBUG:\t Dump Thread Joined\n");
 }
