@@ -109,7 +109,7 @@ void send_event(PQEvent pqe, struct powquty_conf *conf) {
 		printf("Could not open event log: %s\n", strerror(errno));
 		exit(EXIT_FAILURE);
 	}
-	fprintf(file, "%s,%s,%s,%s,%s,%lld.%09ld,%llu,%d",
+	fprintf(file, "%s,%s,%s,%s,%s,%ld.%09ld,%llu,%d",
 			hostname,
 			conf->dev_uuid,
 			event,
