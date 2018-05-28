@@ -50,7 +50,7 @@ void print_data(unsigned char* buf);
 static pthread_t reading_thread;
 static int retrieval_fd = -1;
 
-static volatile float device_offset= 0.0, device_scaling_factor=0.0;
+static volatile float device_offset = 0.0, device_scaling_factor = 0.0;
 
 static volatile int stop_reading = 0,
 		got_calib_resp = 0,
@@ -81,10 +81,8 @@ void handle_other_message(int read_size) {
 void handle_calib_message(int read_size) {
 	// parse the calibration parameters
 	if( read_size > 2 && current_frame[1] == (unsigned char) 0x82)  {
-		// printf("handle_calib_message: testing print float ==> %f \n", 3.1416);
-		// print_received_buffer(current_frame, read_size);
-		device_offset = get_float_val(current_frame+4);
-		device_scaling_factor = get_float_val(current_frame+8);
+		device_offset = get_float_val(current_frame + 4);
+		device_scaling_factor = get_float_val(current_frame + 8);
 		printf("Offset: %f\tScaling: %f\n",device_offset, device_scaling_factor);
 		got_calib_resp = 1;
 	} else {
@@ -112,42 +110,35 @@ void handle_data_message(int read_size) {
 		}
 	}
 
-	unsigned short curr_idx = get_unsigned_short_val(current_frame+4);
+	unsigned short curr_idx = get_unsigned_short_val(current_frame + 4);
 	// do not store the same index twice
 	if (last_frame_idx != curr_idx) {
 		if(debug_flag) {
-			if ((last_frame_idx+1)%65536 != curr_idx%65536) {
+			if ((last_frame_idx + 1) % 65536 != curr_idx % 65536) {
 				printf("WARNING - Frame Got Missing:\t"
 					"last_Frame_idx: %d,\t"
 					"curr_Frame_idx: %d\n",
 					last_frame_idx, curr_idx);
 			}
 			// Check the frame Length at Bytes [2-3]
-			if(130 != get_unsigned_short_val(current_frame+2)) {
+			if(get_unsigned_short_val(current_frame + 2) != 130) {
 				printf("WARNING - Packet with unexpected"
-					"Data-Length: \tLEN: %d\n",
-					get_unsigned_short_val(current_frame+2));
+					"Data-Length:\t LEN: %d\n",
+					get_unsigned_short_val(current_frame + 2));
 			}
 		}
 		// new Frame
 		// update last_idx
 		last_frame_idx = curr_idx;
 
-		//printf("%d ",curr_idx);
-		/*
-		if (raw_print) {
-			printf("%lld,,", current_time);
-			print_data(current_frame+6);
-		}
-		*/
 		// Store the frame and the TS for the frame
-		store_data(current_frame+6, stored_frame_idx, current_time);
+		store_data(current_frame + 6, stored_frame_idx, current_time);
 
 		// update stored frame idx and stored TS idx (same)
 		stored_frame_idx++;
-		stored_frame_idx%=FRAMES_IN_BLOCK_BUFFER;
+		stored_frame_idx %= FRAMES_IN_BLOCK_BUFFER;
 
-		if(stored_frame_idx%FRAMES_PER_BLOCK == 0) {
+		if(stored_frame_idx % FRAMES_PER_BLOCK == 0) {
 			// apply PQ-lib
 			if (debug_flag) {
 				printf("DEBUG: Retrieval stored block ---> %d\n", stored_frame_idx);
@@ -161,7 +152,7 @@ int calibrate_device() {
 	int res = -1;
 	unsigned char command[] = {0x02, 0x02, 0x00, 0x00};
 	if (raw_print) {
-		dump_raw_packet(command,5,'w');
+		dump_raw_packet(command, 5, 'w');
 	}
 	res = write(retrieval_fd, command, 4);
 	if(res <= 0) {
@@ -170,9 +161,7 @@ int calibrate_device() {
 
 	// active waiting until we get a response
 	// TODO: avoid aggressive waiting ! 
-	// printf("Wating for device parameters .... \t");
 	while(!got_calib_resp) {}
-	// printf("Done!\n");
 
 	return res;
 }
@@ -181,7 +170,7 @@ int start_sampling() {
 	int res = -1;
 	unsigned char command[] = {0x03, 0x04, 0x01, 0x00, 0x01};
 	if (raw_print) {
-		dump_raw_packet(command,5,'w');
+		dump_raw_packet(command, 5, 'w');
 	}
 	res = write(retrieval_fd, command, 5);
 
@@ -193,7 +182,7 @@ int stop_sampling() {
 	int res = -1;
 	unsigned char command[] = {0x03, 0x04, 0x01, 0x00, 0x00};
 	if (raw_print) {
-		dump_raw_packet(command,5,'w');
+		dump_raw_packet(command, 5, 'w');
 	}
 	res = write(retrieval_fd, command, 5);
 	return res;
@@ -201,9 +190,9 @@ int stop_sampling() {
 
 void print_data(unsigned char* buf){
 	int i = 0;
-	while(i<128) {
-		printf("%d ", get_short_val(buf+i) );
-		i+=2;
+	while(i < 128) {
+		printf("%d ", get_short_val(buf + i) );
+		i += 2;
 	}
 	printf("\n");
 }
@@ -213,7 +202,6 @@ int serial_port_open(const char* device) {
 	struct termios config;
 	memset(&config, 0, sizeof(config));
 
-	// int fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
 	int fd = open(device, O_RDWR | O_NOCTTY);
 	if (fd < 0) {
 		printf("open(%s): %s", device, strerror(errno));
@@ -225,7 +213,7 @@ int serial_port_open(const char* device) {
 	bits |= TIOCM_RTS;
 	ioctl(fd, TIOCMSET, &bits);
 
-	tcgetattr( fd, &config ) ;
+	tcgetattr(fd, &config);
 
 	// set 8-N-1
 	config.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
@@ -247,23 +235,22 @@ int retrieval_init(const char* tty_device) {
 
 	// open fd
 	retrieval_fd = serial_port_open(tty_device);
-	if(retrieval_fd<0) {
+	if(retrieval_fd < 0) {
 		printf("\ncannot open %s\n",tty_device);
 		return retrieval_fd;
 	}
 
 	// initialize Buffers, ring_buffer etc.
-	memset(current_frame,0,MAX_FRAME_SIZE);
+	memset(current_frame, 0, MAX_FRAME_SIZE);
 
 	if (raw_print) {
-		if(!raw_dump_init()) {
+		if(!raw_dump_init(device_offset, device_scaling_factor)) {
 			printf("DEBUG:\tDump Thread Created\n");
-			//stop_sampling();
 		}
 	}
 	// start reading thread
 	printf("DEBUG:\tCreating Retrieval Thread\n");
-	res = pthread_create(&reading_thread,NULL, reading_thread_run,NULL);
+	res = pthread_create(&reading_thread, NULL, reading_thread_run, NULL);
 
 	// send command get Hardware parameters
 	// Blocking call until we get resp see calibrate_device()
@@ -280,7 +267,7 @@ int retrieval_init(const char* tty_device) {
 }
 
 void stop_retrieval() {
-	printf("DEBUG:\tStopping Retrieval Thread [raw=%d]\n",raw_print);
+	printf("DEBUG:\tStopping Retrieval Thread [raw=%d]\n", raw_print);
 	stop_sampling();
 	stop_reading = 1;
 	if (raw_print) {
@@ -301,43 +288,43 @@ static void *reading_thread_run(void* param) {
 	struct timespec ts_curr;
 
 	printf("DEBUG:\tRetrieval Thread has started\n");
-	// int read_size = 0, poll_time_out_ms = 10, offset = 0, done_reading = 0;
 	int offset = 0, done_reading = 0, poll_time_out_ms = 2000, poll_result;
 	struct pollfd fd[1];
 	fd[0].fd = retrieval_fd;
 	fd[0].events = POLLIN | POLLRDNORM | POLLRDBAND | POLLPRI;
 
 	while (!stop_reading) {
-		poll_result= poll(fd,1,poll_time_out_ms);
+		poll_result= poll(fd, 1, poll_time_out_ms);
 		offset = 0;
 		read_size = 0;
 		done_reading = 0;
 		if (poll_result <= 0) {
 			if (poll_result == 0) {
 				clock_gettime(CLOCK_REALTIME, &ts_curr);
-				printf("ERROR: \t\t%ld:\tRead timed out.\n",
+				printf("ERROR:\t %ld:\tRead timed out.\n",
 					ts_curr.tv_sec * 1000 +
 					ts_curr.tv_nsec / 1000000);
 				exit(EXIT_FAILURE);
 			}
 		} else {
 			do {
-				// poll(fd,1,poll_time_out_ms);
-				offset = read(retrieval_fd, current_frame+read_size,
-						MAX_FRAME_SIZE-read_size);
+				offset = read(retrieval_fd,
+					      current_frame+read_size,
+					      MAX_FRAME_SIZE-read_size);
 				if(offset < 0) {
-					printf("\n\n\nERROR:\t error while reading"
-						"\toffset = %d\t errno; %s \n\n\n\n",
-						offset,strerror(errno));
+					printf("\n\n\nERROR:\t error while"
+					       "reading \toffset = %d\t errno:"
+					       " %s \n\n\n\n",
+					       offset,strerror(errno));
 					go_sleep(1000);
 					continue;
 					//exit(EXIT_FAILURE);
 				} else if (offset == 0) {
-					printf("\n\n\nERROR:\t error while reading\t"
-						"offset = %d\t errno; %s \n\n\n\n",
-						offset,strerror(errno));
+					printf("\n\n\nERROR:\t error while "
+					       "reading\t offset = %d\t errno:"
+					       "%s \n\n\n\n",
+					       offset,strerror(errno));
 					stop_powqutyd();
-					//go_sleep(1000);
 					break;
 				} else {
 					read_size += offset;
@@ -346,9 +333,8 @@ static void *reading_thread_run(void* param) {
 					}
 				}
 			}while(read_size < MAX_FRAME_SIZE && !done_reading);
-			// read_size = read(retrieval_fd, current_frame, MAX_FRAME_SIZE);
 			if(raw_print) {
-				dump_raw_packet(current_frame,read_size,'r');
+				dump_raw_packet(current_frame ,read_size, 'r');
 			}
 			if(read_size > 0) {
 				switch (current_frame[0]) {
@@ -380,7 +366,7 @@ static void *reading_thread_run(void* param) {
 				}
 			}
 		}
-		memset(current_frame,0,MAX_FRAME_SIZE);
+		memset(current_frame, 0, MAX_FRAME_SIZE);
 	}
 	printf("DEBUG:\tRetrieval Thread has ended\n");
 	return NULL;
@@ -388,7 +374,7 @@ static void *reading_thread_run(void* param) {
 
 void go_sleep(int us) {
 	struct timeval tv;
-	tv.tv_sec=0;
-	tv.tv_usec= us;
+	tv.tv_sec = 0;
+	tv.tv_usec = us;
 	select(0, NULL, NULL, NULL, &tv);
 }
