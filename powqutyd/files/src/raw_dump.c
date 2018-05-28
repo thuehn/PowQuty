@@ -130,6 +130,15 @@ clean_dump_buffer:
 	return EXIT_FAILURE;
 }
 
+void free_raw_memory() {
+	free(dump_buffer);
+	free(dump_mode);
+	free(dump_curr_time);
+	free(dump_diff_time);
+	free(dump_size);
+	free(dump_string);
+}
+
 
 int raw_dump_init() {
 	int res = 0;
@@ -155,6 +164,7 @@ void raw_dump_stop() {
 	if (raw_file) {
 		free(raw_file);
 	}
+	free_raw_memory();
 	stop_raw_dump_run = 1;
 	pthread_cond_signal(&dump_cond);
 }
