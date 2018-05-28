@@ -20,11 +20,12 @@
 int file_is_unchecked = 1;
 long cur_offset;
 
-void print_received_buffer(unsigned char* buf, int len) {
+void print_received_buffer(unsigned char* buf, int len)
+{
 	int i;
 	char c;
 
-	if(len>0) {
+	if(len > 0) {
 		printf("Received[%d] ",len);
 		for (i = 0; i < len; i++) {
 			c = buf[i];
@@ -34,32 +35,35 @@ void print_received_buffer(unsigned char* buf, int len) {
 	}
 }
 
-float get_float_val(unsigned char* buf) {
+float get_float_val(unsigned char* buf)
+{
 	float res=0.0;
-	//* ((unsigned char *)&x+0 )= buf[3];
-	unsigned int bin = buf[3]<<24|buf[2]<<16|buf[1]<<8|buf[0];
-	// printf("Uint: \t");
-	// print_received_buffer( (unsigned char *)&bin, 4);
-	// unsigned char reversed[] = {buf[3], buf[2], buf[1], buf[0]};
-	// printf("Reversed: \t");
-	// print_received_buffer(reversed,4);
-	memcpy(&res, &bin,sizeof(float));
-	// printf("Result: \t");
-	// print_received_buffer( (unsigned char *)&res, 4);
+	unsigned int bin;
+
+	bin = buf[3] << 24 | buf[2] << 16 | buf[1] << 8 | buf[0];
+	memcpy(&res, &bin, sizeof(float));
+
 	return res;
 }
 
-unsigned short get_unsigned_short_val(unsigned char* buf) {
-	unsigned char c0= buf[0], c1= buf[1];
-	return (unsigned short) (c1<<8 | c0);
+unsigned short get_unsigned_short_val(unsigned char* buf)
+{
+	unsigned char c0 = buf[0];
+	unsigned char c1 = buf[1];
+
+	return (unsigned short) (c1 << 8 | c0);
 }
 
-short get_short_val(unsigned char* buf) {
-	unsigned char c0= buf[0], c1= buf[1];
-	return (short) (c1<<8 | c0);
+short get_short_val(unsigned char* buf)
+{
+	unsigned char c0 = buf[0];
+	unsigned char c1 = buf[1];
+
+	return (short) (c1 << 8 | c0);
 }
 
-void print_PQ_Error(PQ_ERROR err) {
+void print_PQ_Error(PQ_ERROR err)
+{
 	switch (err) {
 		case PQ_MEM_ERROR:
 			printf("Memory allocation failed.\n");
@@ -82,7 +86,8 @@ void print_PQ_Error(PQ_ERROR err) {
 /*
  * For a correct file write all line must have the same number of characters.
  */
-void store_to_file(PQResult pqResult, struct powquty_conf *config) {
+void store_to_file(PQResult pqResult, struct powquty_conf *config)
+{
 	FILE* pf;
 	struct powquty_conf *conf = config;
 	ssize_t char_count;

@@ -41,7 +41,8 @@ static char *input_file = NULL;
 long long timestamp = 0;
 unsigned int counter = -1;
 
-int set_file_read(const char *path) {
+int read_data_from_file(const char *path)
+{
 	if (path == NULL)
 		return EXIT_FAILURE;
 
@@ -50,7 +51,7 @@ int set_file_read(const char *path) {
 
 	input_file = malloc(sizeof(char) * MAX_PATH_LENGTH);
 	if (input_file == NULL) {
-		printf("ERROR:\t\t error allocacting memory in %s\n", __func__);
+		printf("ERROR:\t\t error allocating memory in %s\n", __func__);
 		return EXIT_FAILURE;
 	} else {
 		strcpy(input_file, path);
@@ -58,20 +59,23 @@ int set_file_read(const char *path) {
 	}
 }
 
-int get_input_file_state() {
+int get_input_file_state()
+{
 	if (input_file)
 		return 1;
 	else
 		return 0;
 }
 
-void join_file_read() {
+void join_file_read()
+{
 	printf("DEBUG:\tJoining file read thread\n");
 	pthread_join(file_read_thread, NULL);
 	printf("DEBUG:\tFile read thread joined\n");
 }
 
-void stop_file_read() {
+void stop_file_read()
+{
 	printf("DEBUG:\tStopping file read thread\n");
 	if (input_file) {
 		free(input_file);
@@ -84,8 +88,10 @@ void stop_file_read() {
  * set timestamp buffer to new time and return index
  * @return: index of time stamp buffer
  */
-int set_time_stamp() {
+int set_time_stamp()
+{
 	int i;
+
 	for (i = 0; i < FRAMES_PER_BLOCK; i++) {
 		counter++;
 		if (!(counter % 4)) {
@@ -105,7 +111,8 @@ int set_time_stamp() {
 }
 
 
-int file_read_init(struct powquty_conf *conf) {
+int file_read_init(struct powquty_conf *conf)
+{
 	int res;
 
 	block_buffer = calloc(sizeof(short),BLOCK_BUFFER_SIZE);
@@ -122,27 +129,31 @@ int file_read_init(struct powquty_conf *conf) {
 	frerr = createPowerQuality(&frpqConfig, &frpPQInst, &frpqInfo);
 	printf("frerr: %d\n", frerr);
 	if(frerr == PQ_NO_ERROR) {
-		// start calculation thread
+		// start file_read thread
 		res = pthread_create(&file_read_thread, NULL,
 				     file_read_thread_run, NULL);
 	} else {
-		// TODO see what happend
+		// TODO see what happened
 		printf("ERROR:\t\terror creating PQ_Instance, errno: %d\n", frerr);
 		return -1;
 	}
 	return res;
 }
 
-void *file_read_thread_run(void *param) {
-	printf("DEBUG:\tFile read thread has started\n");
+void *file_read_thread_run(void *param)
+{
+	FILE *file = fopen(input_file, "r");
 	int offset = 0;
 	int i = 0;
-	FILE *file = fopen(input_file, "r");
+
+	printf("DEBUG:\tFile read thread has started\n");
+
 	if (file == NULL) {
 		printf("ERROR:\tCould not open file %s: %s\n", input_file,
 			strerror(errno));
 		return NULL;
 	}
+
 	while (!stop_file_read_run) {
 		sleep(1);
 		if (!feof(file)) {
