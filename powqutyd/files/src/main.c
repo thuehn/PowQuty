@@ -70,7 +70,7 @@ void handle_args (int argc, char **argv) {
 				set_debug(ON);
 				break;
 			case 'f':
-				set_file_read(optarg);
+				read_data_from_file(optarg);
 				break;
 			case 'w':
 				set_raw_print(ON);
