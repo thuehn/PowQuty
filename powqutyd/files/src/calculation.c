@@ -106,11 +106,9 @@ int calculation_init(struct powquty_conf* conf) {
 
 	pqConfig.sampleRate = SAMPLE_FREQUENCY;
 
-	hw_offset = get_hw_offset();
-	pqConfig.HW_offset = hw_offset;
-
-	hw_scale = get_hw_scaling();
-	pqConfig.HW_scale = hw_scale;
+	pqConfig.HW_offset = get_hw_offset();
+	pqConfig.HW_scale = get_hw_scaling();
+	printf("\nf: %s  offset: %f scaling: %f\n", __func__, pqConfig.HW_offset, pqConfig.HW_scale);
 
 	err = createPowerQuality(&pqConfig, &pPQInst, &pqInfo);
 

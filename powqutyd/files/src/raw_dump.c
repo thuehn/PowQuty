@@ -37,7 +37,12 @@ static volatile short new_pkt_idx = 0, pkt_to_dump_idx = 0;
 static volatile unsigned int stop_raw_dump_run = 0;
 unsigned short last_frame_idx = 0;
 
-void dump_to_string(short idx);
+struct device_info {
+	float device_offset;
+	float device_scaling_factor;
+};
+
+void dump_to_string(float offset, float scaling_factor, short idx);
 
 int dump_raw_to_file(const char *path) {
 	if (path == NULL) {
@@ -140,11 +145,15 @@ void free_raw_memory() {
 }
 
 
-int raw_dump_init() {
+int raw_dump_init(float device_offset, float device_scaling_factor) {
 	int res = 0;
+	struct device_info di;
 
 	pthread_cond_init(&dump_cond, NULL);
 	pthread_mutex_init(&dump_mtx, NULL);
+
+	di.device_offset = device_offset;
+	di.device_scaling_factor = device_scaling_factor;
 
 	res = allocate_memory();
 
@@ -154,7 +163,7 @@ int raw_dump_init() {
 	printf("DEBUG:\t Creating Dump Thread\t[n_idx: %d, td_idx: %d]\n",
 		new_pkt_idx, pkt_to_dump_idx);
 
-	res = pthread_create(&raw_dump_thread, NULL, raw_dump_run, NULL);
+	res = pthread_create(&raw_dump_thread, NULL, raw_dump_run, (void *)&di);
 
 	return res;
 }
@@ -206,6 +215,16 @@ static void print_raw_to_file(const char *str) {
 }
 
 void* raw_dump_run(void* args) {
+	struct device_info *di;
+	di = args;
+	float offset, scaling_factor;
+	offset = di->device_offset;
+	if (di->device_scaling_factor == 0.0) {
+		scaling_factor = 1.0;
+	} else {
+		scaling_factor = di->device_scaling_factor;
+	}
+
 	printf("DEBUG:\t Dump Thread has started with Thread Id: %lu\n",
 	       (long unsigned int)pthread_self());
 	while(!stop_raw_dump_run) {
@@ -215,7 +234,7 @@ void* raw_dump_run(void* args) {
 		if(new_pkt_idx == pkt_to_dump_idx)
 			printf("ERROR:\tdump-buffer overflow\n");
 		while (new_pkt_idx != pkt_to_dump_idx) {
-			dump_to_string(pkt_to_dump_idx);
+			dump_to_string(offset, scaling_factor, pkt_to_dump_idx);
 			if (raw_file) {
 				print_raw_to_file(dump_string);
 			} else {
@@ -229,7 +248,7 @@ void* raw_dump_run(void* args) {
 	return 0;
 }
 
-void dump_to_string(short idx) {
+void dump_to_string(float offset, float scaling_factor, short idx) {
 	unsigned short curr_idx;
 	unsigned short curr_len;
 
@@ -253,7 +272,10 @@ void dump_to_string(short idx) {
 	}
 
 	if(dump_mode[idx] == 'r') {
-		sprintf(dump_string, "-> %lld, %lld: [%03d-%03d-%d] \t",
+		sprintf(dump_string, "-> %7.4f, %7.4f,  %lld, "
+			"%lld: [%03d-%03d-%d] \t",
+			offset,
+			scaling_factor,
 			dump_curr_time[idx],
 			dump_diff_time[idx],
 			dump_size[idx],
@@ -270,8 +292,9 @@ void dump_to_string(short idx) {
 
 	/* create blocks of measurement data */
 	for (int i = 0; i < MAX_FRAME_SIZE; i++) {
-		sprintf(dump_string + strlen(dump_string), "%02X",
-			dump_buffer[idx * MAX_FRAME_SIZE + i]);
+		sprintf(dump_string + strlen(dump_string), "%6.2f ",
+			(dump_buffer[idx * MAX_FRAME_SIZE + i] +
+			 offset) * scaling_factor);
 		if (!((i - 5) % 8) && i >= 5) {
 			sprintf(dump_string + strlen(dump_string), " ");
 		}
