@@ -62,18 +62,94 @@ int dump_raw_to_file(const char *path) {
 
 }
 
+/*
+ * Allocate memory for dump globals
+ * return: 0 on success, 1 on failure
+ */
+int allocate_memory() {
+	dump_buffer = calloc(sizeof(unsigned char), MAX_FRAME_SIZE * DUMP_BUFFER_SIZE);
+	if (dump_buffer == NULL) {
+		printf("Error:\t Could not allocate dump_buffer in %s: %s\n",
+		       __func__, strerror(errno));
+		return EXIT_FAILURE;
+	}
+
+	dump_mode = calloc(sizeof(char), DUMP_BUFFER_SIZE);
+	if (dump_mode == NULL) {
+		printf("Error:\t Could not allocate dump_mode in %s: %s\n",
+		       __func__, strerror(errno));
+		goto clean_dump_buffer;
+
+	}
+
+	dump_curr_time = calloc(sizeof(long long), DUMP_BUFFER_SIZE);
+	if (dump_curr_time == NULL) {
+		printf("Error:\t Could not allocate dump_curr_time in %s: %s\n",
+		       __func__, strerror(errno));
+		goto clean_dump_mode;
+	}
+
+	dump_diff_time = calloc(sizeof(long long), DUMP_BUFFER_SIZE);
+	if (dump_diff_time == NULL) {
+		printf("Error:\t Could not allocate dump_diff_time in %s: %s\n",
+		       __func__, strerror(errno));
+		goto clean_curr_time;
+	}
+
+	dump_size = calloc(sizeof(int), DUMP_BUFFER_SIZE);
+	if (dump_size == NULL) {
+		printf("Error:\t Could not allocate dump_size in %s: %s\n",
+		       __func__, strerror(errno));
+		goto clean_diff_time;
+	}
+
+	dump_string = calloc(sizeof(char), MAX_DUMP_STRING);
+	if (dump_string == NULL) {
+		printf("Error:\t Could not allocate dump_string in %s: %s\n",
+		       __func__, strerror(errno));
+		goto clean_dump_size;
+	}
+
+	return EXIT_SUCCESS;
+
+clean_dump_size:
+	free(dump_size);
+
+clean_diff_time:
+	free(dump_diff_time);
+
+clean_curr_time:
+	free(dump_curr_time);
+
+clean_dump_mode:
+	free(dump_mode);
+
+clean_dump_buffer:
+	free(dump_buffer);
+
+	return EXIT_FAILURE;
+}
+
+void free_raw_memory() {
+	free(dump_buffer);
+	free(dump_mode);
+	free(dump_curr_time);
+	free(dump_diff_time);
+	free(dump_size);
+	free(dump_string);
+}
+
+
 int raw_dump_init() {
 	int res = 0;
 
 	pthread_cond_init(&dump_cond, NULL);
 	pthread_mutex_init(&dump_mtx, NULL);
 
-	dump_buffer = calloc(sizeof(unsigned char), MAX_FRAME_SIZE * DUMP_BUFFER_SIZE);
-	dump_mode = calloc(sizeof(char), DUMP_BUFFER_SIZE);
-	dump_curr_time = calloc(sizeof(long long), DUMP_BUFFER_SIZE);
-	dump_diff_time = calloc(sizeof(long long), DUMP_BUFFER_SIZE);
-	dump_size = calloc(sizeof(int), DUMP_BUFFER_SIZE);
-	dump_string = calloc(sizeof(char), MAX_DUMP_STRING);
+	res = allocate_memory();
+
+	if (res)
+		exit(EXIT_FAILURE);
 
 	printf("DEBUG:\t Creating Dump Thread\t[n_idx: %d, td_idx: %d]\n",
 		new_pkt_idx, pkt_to_dump_idx);
@@ -88,6 +164,7 @@ void raw_dump_stop() {
 	if (raw_file) {
 		free(raw_file);
 	}
+	free_raw_memory();
 	stop_raw_dump_run = 1;
 	pthread_cond_signal(&dump_cond);
 }
