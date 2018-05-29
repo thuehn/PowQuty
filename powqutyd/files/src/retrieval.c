@@ -5,22 +5,23 @@
  *      Author: neez
  */
 
-#include "retrieval.h"
-#include <unistd.h>
 #include <errno.h>
-#include <stdio.h>
-#include <termios.h>
 #include <fcntl.h>
-#include <sys/ioctl.h>
-#include <string.h>
-#include <pthread.h>
-#include <stdlib.h>
-#include "helper.h"
 #include <poll.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/ioctl.h>
 #include <sys/select.h>
 #include <sys/time.h>
-#include "raw_dump.h"
+#include <termios.h>
+#include <unistd.h>
+
+#include "helper.h"
 #include "main.h"
+#include "raw_dump.h"
+#include "retrieval.h"
 
 static int raw_print = 0;
 static int debug_flag = 0;
@@ -243,11 +244,6 @@ int retrieval_init(const char* tty_device) {
 	// initialize Buffers, ring_buffer etc.
 	memset(current_frame, 0, MAX_FRAME_SIZE);
 
-	if (raw_print) {
-		if(!raw_dump_init(device_offset, device_scaling_factor)) {
-			printf("DEBUG:\tDump Thread Created\n");
-		}
-	}
 	// start reading thread
 	printf("DEBUG:\tCreating Retrieval Thread\n");
 	res = pthread_create(&reading_thread, NULL, reading_thread_run, NULL);
@@ -257,6 +253,12 @@ int retrieval_init(const char* tty_device) {
 	if (calibrate_device() <= 0) {
 		// failed to calibrate device
 		return -1;
+	}
+	printf("\nf: %s  offset: %f scaling: %f\n", __func__, device_offset, device_scaling_factor);
+	if (raw_print) {
+		if(!raw_dump_init(device_offset, device_scaling_factor)) {
+			printf("DEBUG:\tDump Thread Created\n");
+		}
 	}
 
 	if (start_sampling() <= 0){
@@ -332,10 +334,8 @@ static void *reading_thread_run(void* param) {
 						done_reading = 1;
 					}
 				}
-			}while(read_size < MAX_FRAME_SIZE && !done_reading);
-			if(raw_print) {
-				dump_raw_packet(current_frame ,read_size, 'r');
-			}
+			} while(read_size < MAX_FRAME_SIZE && !done_reading);
+
 			if(read_size > 0) {
 				switch (current_frame[0]) {
 				// Calibraton Message
@@ -361,6 +361,10 @@ static void *reading_thread_run(void* param) {
 				default:
 				{
 					handle_other_message(read_size);
+					if(raw_print) {
+						dump_raw_packet(current_frame,
+								read_size, 'r');
+					}
 				}
 				break;
 				}
