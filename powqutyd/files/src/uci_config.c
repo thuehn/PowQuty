@@ -56,7 +56,7 @@ int uci_config_powquty(struct powquty_conf* conf) {
 	/* general configuration */
 	char default_powquty_path[PATH_LENGTH] = "/tmp/powquty.log";
 	char default_event_path[PATH_LENGTH] = "/tmp/powquty_event.log";
-	char default_device_tty[MAX_LENGTH] = "/dev/ttyACM0";
+	char default_device_tty[MAX_LENGTH] = "/dev/WeSense0";
 	char default_dev_uuid[MAX_LENGTH] = "BERTUB001";
 	char default_dev_lat[MAX_LENGTH] = "55.0083525";
 	char default_dev_lon[MAX_LENGTH] = "82.935732";
