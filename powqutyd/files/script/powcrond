@@ -49,7 +49,7 @@ not_modified_for() {
 
 check() {
 	RES=0
-	detect_usb_device || RES=$(( RES | 8 ))
+#	detect_usb_device || RES=$(( RES | 8 ))	# no longer required
 
 	[[ ! -f "${OUTPUT_FILE}" ]] && RES=$(( $RES | 1))	# output missing
 
@@ -131,7 +131,7 @@ MSG=""
 [[ $(( $RES & 4 )) -eq 4 ]] && MSG="${MSG} [output timeout]"
 [[ $(( $RES & 8 )) -eq 8 ]] && MSG="${MSG} [device changed]"
 
-[[ $RES -eq 1 ]] && on_new_day && exit 0			# if restart is because of a new day,
-								# don't try to trigger a normal restart
-								# because of a "missing" output file
+# if restart is because of a new day, don't try to trigger a normal restart
+# because of a "missing" output file:
+[[ $RES -eq 1 ]] && on_new_day && exit 0
 [[ $RES -ne 0 ]] && echod "restarting:${MSG}" && restart

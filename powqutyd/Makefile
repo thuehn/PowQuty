@@ -59,7 +59,7 @@ ifeq ($(CONFIG_POWQUTYD_NO_MQTT),y)
 
   NO_MQTT := y
   export NO_MQTT
-  
+
   JKL := $(filter-out +libmosquitto,$(DEPENDS))
   DEPENDS := $(JKL)
 else
@@ -119,13 +119,22 @@ define Package/powqutyd/install
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_DIR) $(1)/etc/init.d/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/powqutyd $(1)/usr/sbin/
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/script/powcrond $(1)/usr/sbin/
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/script/pqpack $(1)/usr/sbin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/script/powcrond $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/script/pqpack $(1)/usr/bin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/etc/init.d/powqutyd.init $(1)/etc/init.d/powqutyd
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/etc/init.d/wesense-device.init $(1)/etc/init.d/wesense-device
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/etc/powqutyd.config $(1)/etc/config/powquty
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/etc/hotplug.d/usb/20-wesense $(1)/etc/hotplug.d/usb/20-wesense
 #	@echo ""
 #	@echo "Done"
 #	@echo ""
+endef
+
+define Package/powqutyd/postinst
+	#!/bin/sh
+	if [ -z "$${IPKG_INSTROOT}" ]; then
+		/etc/init.d/wesense-device enable >/dev/null 2>&1
+	fi
 endef
 
 $(eval $(call BuildPackage,powqutyd))

@@ -1,0 +1,21 @@
+#!/bin/sh /etc/rc.common
+
+START=66
+STOP=66
+
+start() {
+	PRODUCT_ID="1afe"
+	DEVICE_NAME="WeSense0"
+	logger -t WeSense "Initializing WeSense USB device"
+	find /sys/devices/pci0000:00/ -iname "uevent" | while read fname
+	do
+		grep "PRODUCT=${PRODUCT_ID}" "${fname}" &>/dev/null || continue
+		dname=`dirname "${fname}"`
+		if [ -d "${dname}/tty" ]; then
+			tty_name=`ls -1 "${dname}/tty/" 2>/dev/null | head -n 1`
+			ln -s "/dev/${tty_name}" "/dev/${DEVICE_NAME}" && exit 0
+		fi
+	done
+	logger -t WeSense "Done initializing."
+}
+
