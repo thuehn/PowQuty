@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include "helper.h"
+#include "time.h"
 
 #define DUMP_BUFFER_SIZE	32
 // DANGEROUS
@@ -23,7 +24,8 @@ static pthread_t raw_dump_thread;
 
 unsigned char * dump_buffer;		// [MAX_FRAME_SIZE*DUMP_BUFFER_SIZE];
 char *dump_mode;			// [DUMP_BUFFER_SIZE];
-long long *dump_time;			// [DUMP_BUFFER_SIZE];
+long long *dump_curr_time;		// [DUMP_BUFFER_SIZE];
+long long *dump_diff_time;		// [DUMP_BUFFER_SIZE];
 int *dump_size;				// [DUMP_BUFFER_SIZE];
 char *dump_string;			// [MAX_DUMP_STRING];
 static volatile short new_pkt_idx=0, pkt_to_dump_idx=0;
@@ -38,12 +40,14 @@ int raw_dump_init() {
 	pthread_mutex_init(&dump_mtx,NULL);
 	dump_buffer= calloc(sizeof (unsigned char),MAX_FRAME_SIZE*DUMP_BUFFER_SIZE);
 	dump_mode= calloc(sizeof(char), DUMP_BUFFER_SIZE);
-	dump_time= calloc(sizeof(long long), DUMP_BUFFER_SIZE);
+	dump_curr_time= calloc(sizeof(long long), DUMP_BUFFER_SIZE);
+	dump_diff_time= calloc(sizeof(long long), DUMP_BUFFER_SIZE);
 	dump_size= calloc(sizeof(int), DUMP_BUFFER_SIZE);
 	dump_string = calloc(sizeof(char),MAX_DUMP_STRING);
 	//memset(dump_buffer,0,MAX_FRAME_SIZE*DUMP_BUFFER_SIZE);
 	memset(dump_mode,0,DUMP_BUFFER_SIZE);
-	memset(dump_time,0,DUMP_BUFFER_SIZE);
+	memset(dump_curr_time,0,DUMP_BUFFER_SIZE);
+	memset(dump_diff_time,0,DUMP_BUFFER_SIZE);
 	memset(dump_size,0,DUMP_BUFFER_SIZE);
 	memset(dump_string,0,DUMP_BUFFER_SIZE);
 	printf("DEBUG:\tCreating Dump Thread\t[n_idx: %d, td_idx: %d] \n",new_pkt_idx,pkt_to_dump_idx);
@@ -59,13 +63,20 @@ void raw_dump_stop() {
 }
 
 void dump_raw_packet(unsigned char* frame, int read_size, char mode) {
+	struct timespec ts_curr, ts_diff;
+
 	// TODO printf("DEBUG:\t ended\n");
 	memset(dump_buffer+MAX_FRAME_SIZE*new_pkt_idx, 0, MAX_FRAME_SIZE);
 	memcpy(&dump_buffer[MAX_FRAME_SIZE*new_pkt_idx],
 			frame, MAX_FRAME_SIZE);
 	dump_mode[new_pkt_idx] = mode;
 	dump_size[new_pkt_idx] = read_size;
-	dump_time[new_pkt_idx] = get_curr_time_in_milliseconds();
+
+	clock_gettime(CLOCK_REALTIME, &ts_curr);
+	clock_gettime(CLOCK_MONOTONIC, &ts_diff);
+	dump_curr_time[new_pkt_idx] = ts_curr.tv_sec * 1000000 + ts_curr.tv_nsec;
+	dump_diff_time[new_pkt_idx] = ts_diff.tv_sec * 1000000 + ts_diff.tv_nsec;
+
 	new_pkt_idx = (new_pkt_idx+1)%DUMP_BUFFER_SIZE;
 	if(!stop_raw_dump_run) {
 		pthread_mutex_lock(&dump_mtx);
@@ -114,10 +125,20 @@ void dump_to_string(short idx) {
 		flag=1;
 	}
 	if(dump_mode[idx] == 'r') {
-		sprintf(dump_string, "-> %lld: [%03d-%03d-%d] \t", dump_time[idx], dump_size[idx], curr_len, curr_idx);
+		sprintf(dump_string, "-> %lld, %lld: [%03d-%03d-%d] \t",
+			dump_curr_time[idx],
+			dump_diff_time[idx],
+			dump_size[idx],
+			curr_len,
+			curr_idx);
 	}
 	else {
-		sprintf(dump_string, "<- %lld: [%03d-%03d-%d] \t", dump_time[idx], dump_size[idx], curr_len, curr_idx);
+		sprintf(dump_string, "<- %lld, %lld: [%03d-%03d-%d] \t",
+			dump_curr_time[idx],
+			dump_diff_time[idx],
+			dump_size[idx],
+			curr_len,
+			curr_idx);
 	}
 	//for (int i = 0; i<dump_size[idx]; i++) {
 	for (int i = 0; i<MAX_FRAME_SIZE; i++) {

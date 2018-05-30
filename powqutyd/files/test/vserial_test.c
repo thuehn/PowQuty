@@ -74,12 +74,6 @@ int stop_sampling(int fd) {
 	return res;
 }
 
-long long get_curr_time_in_milliseconds() {
-	struct timeval tv;
-	gettimeofday(&tv,NULL);
-	return (long long) ( (tv.tv_sec * 1000) + (int)tv.tv_usec/1000 );
-}
-
 short get_signed_short(unsigned char c1, unsigned char c2) {
 	return (short) (c2<<8 | c1);
 }
@@ -131,6 +125,8 @@ void print_received_buffer(unsigned char* buf, int len) {
 
 
 int main (int argc, char *argv[]) {
+	struct timespec ts_curr;
+
 	signal(SIGINT, handle_signal);
 	signal(SIGTERM, handle_signal);
 
@@ -158,7 +154,9 @@ int main (int argc, char *argv[]) {
 				// do not print the same index twice
 				if (s_idx != get_unsigned_short(buf[4],buf[5])) {
 					// update curr_time on new Frame
-					curr_time = get_curr_time_in_milliseconds();
+					clock_gettime(CLOCK_REALTIME, &ts_curr);
+					curr_time = ts_curr.tv_sec * 1000 +
+						    ts_curr.tv_nsec / 1000000;
 					// update the last printed index
 					s_idx = get_unsigned_short(buf[4],buf[5]);
 					print_data(buf,r, curr_time);

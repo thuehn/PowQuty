@@ -351,9 +351,13 @@ void publish_device_gps() {
 	/*
 	// UUID,TIMESTAMP,2,LATITUDE, LONGITUDE,ACCURANCY,PROVIDER,NETFREQ
 	payload[0] = '\0';
-	struct timeval tv;
-	gettimeofday(&tv,NULL);
-	sprintf(payload,"%s,%lu.%lu,2,%s,%s,0,2,50",dev_uuid,tv.tv_sec, (long int)tv.tv_usec/100, dev_lat, dev_lon);
+	struct timespec ts_curr;
+	clock_gettime(CLOCK_REALTIME, &ts_curr);
+	sprintf(payload,"%s,%lld.%.3ld,2,%s,%s,0,2,50",
+		dev_uuid,
+		(long long)ts_curr.tv_sec, ts_curr.tv_nsec/1000000,
+		dev_lat,
+		dev_lon);
 	mqtt_publish_payload();
 	*/
 }
@@ -361,9 +365,11 @@ void publish_device_gps() {
 void publish_device_offline() {
 	/*
 	payload[0] = '\0';
-	struct timeval tv;
-	gettimeofday(&tv,NULL);
-	sprintf(payload,"%s,%lu.%lu,0",dev_uuid,tv.tv_sec, (long int)tv.tv_usec/100);
+	struct timespec ts_curr;
+	clock_gettime(CLOCK_REALTIME, &ts_curr);
+	sprintf(payload,"%s,%lld.%.3ld,0",
+		dev_uuid,
+		(long Long)ts_curr.tv_sec, ts_curr.tv_nsec/1000000);
 	mqtt_publish_payload();
 	*/
 }
@@ -371,15 +377,14 @@ void publish_device_offline() {
 void publish_device_online() {
 	/*
 	payload[0] = '\0';
-	struct timeval tv;
-	gettimeofday(&tv,NULL);
-	sprintf(payload,
-			"%s,%lu.%lu,1,%s,%s,%s",
-			dev_uuid,
-			tv.tv_sec, (long int)tv.tv_usec/100,
-			dev_FW_ver,
-			dev_APP_ver,
-			dev_HW_ver);
+	struct timespec ts_curr;
+	clock_gettime(CLOCK_REALTIME, &ts_curr);
+	sprintf(payload,"%s,%lld.%.3ld,1,%s,%s,%s",
+		dev_uuid,
+		long long)ts_curr.tv_sec, ts_curr.tv_nsec/1000000,
+		dev_FW_ver,
+		dev_APP_ver,
+		dev_HW_ver);
 	mqtt_publish_payload();
 	*/
 }
@@ -387,26 +392,27 @@ void publish_device_online() {
 void publish_measurements(PQResult pqResult) {
 	static signed int pkg_count = 1;
 
-	struct timeval tv;
+	struct timespec ts_curr;
 	struct tm *nowtm;
 	time_t nowtime;
 	char tmbuf[64];
-	gettimeofday(&tv, NULL);
-	nowtime = tv.tv_sec;
+
+	clock_gettime(CLOCK_REALTIME, &ts_curr);
+	nowtime = ts_curr.tv_sec;
 	nowtm = gmtime(&nowtime);
 	strftime(tmbuf, sizeof tmbuf, "%Y-%m-%d %H:%M:%S", nowtm);
-
 	t5060_composer(&pqResult);
 	t1012_composer(&pqResult);
 	payload[0] = '\0';
+
 	sprintf(payload,
 			"{"
 			"%s"			//static data
 			"%s"			//metadata (optional object)
-			"\"pkg\": %d,"	//pkg count
+			"\"pkg\": %d,"		//pkg count
 			"%s"			//t5060 data
 			"%s"			//t1012 data
-			"\"utc\":\"%s.%lu\" "
+			"\"utc\":\"%s.%.3ld\" "
 			"}",
 			static_data,
 			metadata,
@@ -414,7 +420,7 @@ void publish_measurements(PQResult pqResult) {
 			t5060_data,
 			t1012_data,
 			tmbuf,
-			(long int)tv.tv_usec/1000);
+			(long int)(ts_curr.tv_nsec / 1000000));
 	mqtt_publish_payload();
 
 	if (pkg_count < INT_MAX) {

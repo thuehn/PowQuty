@@ -24,7 +24,7 @@ void send_event(PQEvent pqe, struct powquty_conf *conf) {
 	FILE *file;
 	time_t timer;
 	struct tm *tmi;
-	struct timeval tv;
+	struct timespec ts_curr;
 	int volt_event = 0, harm_event = 0;
 
 	char *msg = malloc(sizeof(char) * MAX_MSG_LENGTH);
@@ -101,7 +101,7 @@ void send_event(PQEvent pqe, struct powquty_conf *conf) {
 	snprintf(msg, MAX_MSG_LENGTH, "%s started: %s", event, local_time);
 
 	/* get time stamp */
-	gettimeofday(&tv, NULL);
+	clock_gettime(CLOCK_REALTIME, &ts_curr);
 
 	/* write event to logfile */
 	file = fopen(conf->powquty_event_path, "a+");
@@ -109,14 +109,13 @@ void send_event(PQEvent pqe, struct powquty_conf *conf) {
 		printf("Could not open event log: %s\n", strerror(errno));
 		exit(EXIT_FAILURE);
 	}
-	fprintf(file, "%s,%s,%s,%s,%s,%lu,%lu,%llu,%d",
+	fprintf(file, "%s,%s,%s,%s,%s,%lld.%09ld,%llu,%d",
 			hostname,
 			conf->dev_uuid,
 			event,
 			conf->dev_lat,
 			conf->dev_lon,
-			tv.tv_sec,
-			(long int)tv.tv_usec/100,
+			ts_curr.tv_sec, ts_curr.tv_nsec,
 			pqe.startTime,
 			pqe.length);
 	if (volt_event)
