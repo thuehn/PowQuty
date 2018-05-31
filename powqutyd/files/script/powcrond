@@ -64,7 +64,7 @@ restart() {
 	killall -9 "${DAEMON}" 2>/dev/null
 
 	[[ -n "${PACKER}" ]] && ( ${DAEMON} -r | ${PACKER} >> "${OUTPUT_FILE}" 2>/dev/null ) &
-	[[ -z "${PACKER}" ]] && ( ${DAEMON} -r >> "${OUTPUT_FILE}" 2>/dev/null ) &
+	[[ -z "${PACKER}" ]] && ( ${DAEMON} -w "${OUTPUT_FILE}" 2>/dev/null ) &
 	exit 0
 }
 
