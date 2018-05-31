@@ -116,15 +116,16 @@ define Package/powqutyd/install
 #	@echo $(PKG_BUILD_DIR)
 #	@echo ""
 	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_DIR) $(1)/etc/config
-	$(INSTALL_DIR) $(1)/etc/init.d/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/powqutyd $(1)/usr/sbin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/script/powcrond $(1)/usr/sbin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/script/pqpack $(1)/usr/sbin/
+	$(INSTALL_DIR) $(1)/etc/config
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/etc/powqutyd.config $(1)/etc/config/powquty
+	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/etc/init.d/powqutyd.init $(1)/etc/init.d/powqutyd
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/etc/init.d/wesense-device.init $(1)/etc/init.d/wesense-device
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/etc/powqutyd.config $(1)/etc/config/powquty
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/etc/hotplug.d/usb/20-wesense $(1)/etc/hotplug.d/usb/20-wesense
+	$(INSTALL_DIR) $(1)/etc/init.d/etc/hotplug.d/usb
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/etc/hotplug.d/usb/20-wesense $(1)/etc/hotplug.d/usb/20-wesense
 #	@echo ""
 #	@echo "Done"
 #	@echo ""
