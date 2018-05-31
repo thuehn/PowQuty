@@ -124,7 +124,7 @@ define Package/powqutyd/install
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/etc/init.d/powqutyd.init $(1)/etc/init.d/powqutyd
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/etc/init.d/wesense-device.init $(1)/etc/init.d/wesense-device
-	$(INSTALL_DIR) $(1)/etc/init.d/etc/hotplug.d/usb
+	$(INSTALL_DIR) $(1)/etc/hotplug.d/usb
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/etc/hotplug.d/usb/20-wesense $(1)/etc/hotplug.d/usb/20-wesense
 #	@echo ""
 #	@echo "Done"
