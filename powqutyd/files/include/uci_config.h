@@ -25,7 +25,6 @@ struct powquty_conf {
 	char powquty_event_path[PATH_LENGTH];
 	long max_log_size_kb;
 	int  powqutyd_print;
-
 	/* metadata */
 	char meta_comment[MAX_LONG_LENGTH];
 	char meta_id[MAX_LENGTH];
@@ -34,7 +33,6 @@ struct powquty_conf {
 	char meta_reason[MAX_LONG_LENGTH];
 	char meta_type[MAX_LONG_LENGTH];
 	int use_metadata;
-
 	/* mqtt */
 	char mqtt_host[MAX_LENGTH];
 	char mqtt_topic[MAX_LENGTH];
@@ -42,14 +40,13 @@ struct powquty_conf {
 	char mqtt_pw[MAX_LENGTH];
 	int send_t5060_data;
 	int send_t1012_data;
-
 	/* slack */
 	char slack_webhook[MAX_WEBHOOK_LENGTH];
 	char slack_channel[MAX_LENGTH];
 	char slack_user[MAX_LENGTH];
 	int  slack_notification;
 
-/*	option device_tty '/dev/ttyACM0'
+/*		option device_tty '/dev/WeSense0'
 		option mqtt_host 'localhost'
 		option mqtt_topic 'devices/update'
 		option mqtt_uname 'username'
