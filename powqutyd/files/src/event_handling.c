@@ -132,25 +132,20 @@ void send_event(PQEvent pqe, struct powquty_conf *conf) {
 		if (set_webhook_url(ti, conf->slack_webhook)) {
 			printf("Could not set webhook: %s\n",
 				conf->slack_webhook);
-			return;
 		}
 		if (set_channel(ti, conf->slack_channel)) {
 			printf("Could not set slack channel: %s\n",
 				conf->slack_channel);
-			return;
 		}
 		if (set_username(ti, conf->slack_user)) {
 			printf("Could not set username: %s\n",
 				conf->slack_user);
-			return;
 		}
 		if (set_message(ti, msg)) {
 			printf("Could not set message: %s\n", msg);
-			return;
 		}
 		if (send_message(ti)) {
 			printf("Could not send message\n");
-			return;
 		}
 	}
 #endif /* Slack */
