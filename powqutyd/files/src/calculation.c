@@ -237,7 +237,7 @@ void stop_calculation() {
 	// stop calculation
 	stop_calculation_run=1;
 	pthread_cond_signal(&calc_cond);
-	join_calculation();		// TODO: solve segfault on sigint
+	//join_calculation();		// TODO: solve segfault on sigint
 	// destroy PQInstance
 	destroyPowerQuality(&pPQInst);
 }

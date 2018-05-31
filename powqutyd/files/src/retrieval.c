@@ -152,9 +152,9 @@ void handle_data_message(int read_size) {
 int calibrate_device() {
 	int res = -1;
 	unsigned char command[] = {0x02, 0x02, 0x00, 0x00};
-	if (raw_print) {
+	/*if (raw_print) {
 		dump_raw_packet(command, 5, 'w');
-	}
+	}*/
 	res = write(retrieval_fd, command, 4);
 	if(res <= 0) {
 		return res;
@@ -170,9 +170,9 @@ int calibrate_device() {
 int start_sampling() {
 	int res = -1;
 	unsigned char command[] = {0x03, 0x04, 0x01, 0x00, 0x01};
-	if (raw_print) {
+	/*if (raw_print) {
 		dump_raw_packet(command, 5, 'w');
-	}
+	}*/
 	res = write(retrieval_fd, command, 5);
 
 	while(!got_status_resp) {}
@@ -182,9 +182,9 @@ int start_sampling() {
 int stop_sampling() {
 	int res = -1;
 	unsigned char command[] = {0x03, 0x04, 0x01, 0x00, 0x00};
-	if (raw_print) {
+	/*if (raw_print) {
 		dump_raw_packet(command, 5, 'w');
-	}
+	}*/
 	res = write(retrieval_fd, command, 5);
 	return res;
 }
@@ -326,8 +326,9 @@ static void *reading_thread_run(void* param) {
 					       "reading\t offset = %d\t errno:"
 					       "%s \n\n\n\n",
 					       offset,strerror(errno));
-					stop_powqutyd();
-					break;
+					continue;
+					//stop_powqutyd();
+					//break;
 				} else {
 					read_size += offset;
 					if (current_frame[0] != 0x05) {
@@ -354,6 +355,11 @@ static void *reading_thread_run(void* param) {
 				case 0x05:
 				{
 					handle_data_message(read_size);
+                                        if(raw_print) {
+                                                dump_raw_packet(current_frame,
+                                                                read_size, 'r');
+                                        }
+
 				}
 				break;
 
@@ -361,10 +367,10 @@ static void *reading_thread_run(void* param) {
 				default:
 				{
 					handle_other_message(read_size);
-					if(raw_print) {
+					/*if(raw_print) {
 						dump_raw_packet(current_frame,
 								read_size, 'r');
-					}
+					}*/
 				}
 				break;
 				}
