@@ -336,7 +336,8 @@ static void *reading_thread_run(void* param) {
 					printf("\n\n\nERROR:\t error while reading\t"
 						"offset = %d\t errno; %s \n\n\n\n",
 						offset,strerror(errno));
-					stop_powqutyd();
+					continue;
+					//stop_powqutyd();
 					//go_sleep(1000);
 					break;
 				} else {
