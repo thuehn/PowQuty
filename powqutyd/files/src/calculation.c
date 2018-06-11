@@ -87,16 +87,15 @@ int calculation_init(struct powquty_conf* conf)
 
 	/* start RETRIVAL thread*/
 	if (!retrieval_init(config->device_tty)) {
-		printf("DEBUG:\t\tRetrieval Thread started \n");
+		printf("DEBUG:\t Retrieval Thread started \n");
 	} else {
-		printf("ERROR:\t\tcouldn't start Retrieval-Thread\n");
+		printf("ERROR:\t couldn't start Retrieval-Thread\n");
 		return -1;
 	}
 
 	pqConfig.sampleRate = SAMPLE_FREQUENCY;
 	pqConfig.HW_offset = get_hw_offset();
 	pqConfig.HW_scale = get_hw_scaling();
-	printf("\nf: %s  offset: %f scaling: %f\n", __func__, pqConfig.HW_offset, pqConfig.HW_scale);
 
 	err = createPowerQuality(&pqConfig, &pPQInst, &pqInfo);
 
@@ -118,6 +117,7 @@ int calculation_init(struct powquty_conf* conf)
 
 static void *calculation_thread_run(void* param)
 {
+	unsigned char ret = 0;
 	printf("DEBUG:\t Calculation Thread has started\n");
 
 	while (!stop_calculation_run) {
@@ -135,7 +135,7 @@ static void *calculation_thread_run(void* param)
                         data_ready--;
 			pthread_mutex_unlock(&calc_mtx);
 		} else {
-			printf("ERROR:\t\t\t\tBLOCK_BUFFER_OVERFLOW! %d Blocks late\n\t\t\t\tProcessing is much slower then Data arriving\n", data_ready-1);
+			printf("ERROR:\t BLOCK_BUFFER_OVERFLOW! %d Blocks late\n\tProcessing is much slower then Data arriving\n", data_ready-1);
 			pthread_mutex_unlock(&calc_mtx);
 			exit(EXIT_FAILURE);
 		}
@@ -151,7 +151,8 @@ static void *calculation_thread_run(void* param)
 
 		/* exit processing on error */
 		if (err != PQ_NO_ERROR) {
-			printf("TODO:\t\tError applying PQ-Lib\n\t\t\t");
+			/* TODO: handle PQ-Lib Errors */
+			printf("ERROR:\tapplying PQ-Lib\n");
 			print_PQ_Error(err);
 			stop_powqutyd();
 			break;
@@ -159,7 +160,12 @@ static void *calculation_thread_run(void* param)
 
 		/* EN50160 event detected */
 		if (pqResult.nmbPqEvents > 0) {
-			handle_event(pqResult, config);
+			ret = handle_event(pqResult, config);
+		}
+
+		if (ret) {
+			stop_calculation_run = 1;
+			break;
 		}
 
 		if (pqResult.HarmonicsExist) {
@@ -169,7 +175,7 @@ static void *calculation_thread_run(void* param)
 #endif
 		}
 	}
-	printf("DEBUG:\tCalculation Thread has ended\n");
+	printf("DEBUG:\t Calculation Thread has ended\n");
 
 	return NULL;
 }
@@ -234,7 +240,7 @@ void store_data(unsigned char * buf, unsigned int stored_frame_idx, long long ts
 
 	timestamp_buffer[stored_frame_idx] = ts;
 	buffer_idx%=BLOCK_BUFFER_SIZE;
-	while(i<SAMPLES_PER_FRAME) {
+	while (i<SAMPLES_PER_FRAME) {
 		block_buffer[buffer_idx + i] = get_short_val(buf + 2 * i);
 		i++;
 	}
@@ -243,7 +249,7 @@ void store_data(unsigned char * buf, unsigned int stored_frame_idx, long long ts
 
 void print_from_buffer()
 {
-	int i;
+	unsigned int i;
 
 	for (i = buffer_data_start_idx*SAMPLES_PER_FRAME;
 	     i < (buffer_data_start_idx * SAMPLES_PER_FRAME+ SAMPLES_PER_BLOCK); i++) {
@@ -262,7 +268,7 @@ void print_in_signal() {
 }
 
 void print_from_ts_buffer() {
-	int i;
+	unsigned int i;
 
 	for (i = buffer_data_start_idx;
 	     i < (buffer_data_start_idx + FRAMES_PER_BLOCK); i++) {
@@ -288,10 +294,10 @@ void print_results()
 	if (pqResult.PowerVoltageEff5060TExist) {
 		printf("PowerVoltageEff_5060T: %f\n", pqResult.PowerVoltageEff_5060T);
 	}
-	if(pqResult.PowerFrequency5060TExist) {
+	if (pqResult.PowerFrequency5060TExist) {
 		printf("PowerFrequency5060T: %f\n", pqResult.PowerFrequency5060T);
 	}
-	if(pqResult.HarmonicsExist) {
+	if (pqResult.HarmonicsExist) {
 		printf("Harmonics: %f %f %f %f %f %f %f\n",
 				pqResult.Harmonics[0],
 				pqResult.Harmonics[1],
