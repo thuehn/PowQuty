@@ -15,6 +15,7 @@
 #include <sys/ioctl.h>
 #include <sys/select.h>
 #include <sys/time.h>
+#include <time.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -31,7 +32,7 @@ static void *retrival_thread_run(void* param);
 
 void handle_other_message(int read_size);
 void handle_calib_message(int read_size);
-void handle_status_message(int read_size);
+void handle_status_message(void);
 void handle_data_message(int read_size);
 int calibrate_device();
 int start_sampling();
@@ -54,13 +55,14 @@ void print_data(unsigned char* buf);
 static pthread_t retrival_thread;
 static int retrieval_fd = -1;
 
-static volatile float device_offset = 0.0,
-		      device_scaling_factor = 0.0;
-
 static volatile int stop_reading = 0,
 		    got_calib_resp = 0,
 		    got_status_resp = 0,
 		    read_size = 0;
+
+static volatile float device_offset = 0.0,
+		      device_scaling_factor = 0.0;
+
 
 static volatile unsigned short last_frame_idx = 0;
 
@@ -91,8 +93,11 @@ void handle_calib_message(int read_size)
 {
 	// parse the calibration parameters
 	if( read_size > 2 && current_frame[1] == (unsigned char) 0x82) {
+
 		device_offset = get_float_val(current_frame + 4);
 		device_scaling_factor = get_float_val(current_frame + 8);
+		get_device_information = ON;
+
 		printf("Offset: %f\tScaling: %f\n",device_offset, device_scaling_factor);
 		got_calib_resp = 1;
 	} else {
@@ -100,7 +105,7 @@ void handle_calib_message(int read_size)
 	}
 }
 
-void handle_status_message(int read_size)
+void handle_status_message()
 {
 	got_status_resp = 1;
 }
@@ -124,7 +129,7 @@ void handle_data_message(int read_size)
 
 	// do not store the same index twice
 	if (last_frame_idx != curr_idx) {
-		if(debug_flag) {
+		if (debug_flag) {
 			if ((last_frame_idx + 1) % 65536 != curr_idx % 65536) {
 				printf("WARNING - Frame Got Missing:\t"
 					"last_Frame_idx: %d,\t"
@@ -132,7 +137,7 @@ void handle_data_message(int read_size)
 					last_frame_idx, curr_idx);
 			}
 			// Check the frame Length at Bytes [2-3]
-			if(get_unsigned_short_val(current_frame + 2) != 130) {
+			if (get_unsigned_short_val(current_frame + 2) != 130) {
 				printf("WARNING - Packet with unexpected"
 					"Data-Length:\t LEN: %d\n",
 					get_unsigned_short_val(current_frame + 2));
@@ -151,7 +156,7 @@ void handle_data_message(int read_size)
 		stored_frame_idx %= FRAMES_IN_BLOCK_BUFFER;
 
 		// apply PQ-library
-		if(stored_frame_idx % FRAMES_PER_BLOCK == 0) {
+		if (stored_frame_idx % FRAMES_PER_BLOCK == 0) {
 			if (debug_flag)
 				printf("DEBUG: Retrieval stored block ---> %d\n", stored_frame_idx);
 			do_calculation(stored_frame_idx);
@@ -164,10 +169,6 @@ int calibrate_device()
 	int res = -1;
 	unsigned char command[] = {0x02, 0x02, 0x00, 0x00};
 
-	/*if (raw_print) {
-		dump_raw_packet(command, 5, 'w');
-	}*/
-
 	res = write(retrieval_fd, command, 4);
 
 	if(res <= 0)
@@ -175,7 +176,7 @@ int calibrate_device()
 
 	// active waiting until we get a response
 	// TODO: avoid aggressive waiting ! 
-	while(!got_calib_resp) {}
+	while (!got_calib_resp) {}
 
 	return res;
 }
@@ -185,13 +186,9 @@ int start_sampling()
 	int res = -1;
 	unsigned char command[] = {0x03, 0x04, 0x01, 0x00, 0x01};
 
-	/*if (raw_print) {
-		dump_raw_packet(command, 5, 'w');
-	}*/
-
 	res = write(retrieval_fd, command, 5);
 
-	while(!got_status_resp) {}
+	while (!got_status_resp) {}
 
 	return res;
 }
@@ -201,11 +198,7 @@ int stop_sampling()
 	int res = -1;
 	unsigned char command[] = {0x03, 0x04, 0x01, 0x00, 0x00};
 
-	/*if (raw_print) {
-		dump_raw_packet(command, 5, 'w');
-	}*/
-
-res = write(retrieval_fd, command, 5);
+	res = write(retrieval_fd, command, 5);
 
 	return res;
 }
@@ -214,7 +207,7 @@ void print_data(unsigned char* buf)
 {
 	int i = 0;
 
-	while(i < 128) {
+	while (i < 128) {
 		printf("%d ", get_short_val(buf + i) );
 		i += 2;
 	}
@@ -250,8 +243,8 @@ int open_serial_port(const char* device)
 	config.c_cflag |= CS8;
 
 	// set speed to 115200 baud
-	cfsetispeed( &config, B115200);
-	cfsetospeed( &config, B115200);
+	cfsetispeed(&config, B115200);
+	cfsetospeed(&config, B115200);
 
 	tcsetattr(fd, TCSANOW, &config);
 
@@ -264,29 +257,27 @@ int retrieval_init(const char* tty_device)
 
 	// open fd
 	retrieval_fd = open_serial_port(tty_device);
-	if(retrieval_fd < 0) {
-		printf("\ncannot open %s\n",tty_device);
+	if (retrieval_fd < 0) {
+		printf("ERROR:\t Can not open %s\n",tty_device);
 		return retrieval_fd;
+	}
+
+	if (raw_print) {
+		if (!raw_dump_init())
+			printf("DEBUG:\t Dump Thread Created\n");
 	}
 
 	// initialize Buffers, ring_buffer etc.
 	memset(current_frame, 0, MAX_FRAME_SIZE);
 
 	// start retrival thread
-	printf("DEBUG:\tCreating Retrieval Thread\n");
+	printf("DEBUG:\t Creating Retrieval Thread\n");
 	res = pthread_create(&retrival_thread, NULL, retrival_thread_run, NULL);
 
 	// send command get Hardware parameters
 	// Blocking call until we get resp see calibrate_device()
 	if (calibrate_device() <= 0)
 		return -1;
-
-printf("\nf: %s  offset: %f scaling: %f\n", __func__, device_offset, device_scaling_factor);
-
-	if (raw_print) {
-		if(!raw_dump_init(device_offset, device_scaling_factor))
-			printf("DEBUG:\tDump Thread Created\n");
-	}
 
 	if (start_sampling() <= 0)
 		return -1;
@@ -343,7 +334,7 @@ static void *retrival_thread_run(void* param)
 				offset = read(retrieval_fd,
 					      current_frame+read_size,
 					      MAX_FRAME_SIZE-read_size);
-				if(offset < 0) {
+				if (offset < 0) {
 					printf("\n\n\nERROR:\t error while"
 					       "reading \toffset = %d\t errno:"
 					       " %s \n\n\n\n",
@@ -366,7 +357,7 @@ static void *retrival_thread_run(void* param)
 				}
 			} while(read_size < MAX_FRAME_SIZE && !done_reading);
 
-			if(read_size > 0) {
+			if (read_size > 0) {
 				switch (current_frame[0]) {
 				// Calibraton Message
 				case 0x02:
@@ -377,16 +368,16 @@ static void *retrival_thread_run(void* param)
 				// Mode Message
 				case 0x03:
 				{
-					handle_status_message(read_size);
+					handle_status_message();
 				}
 				break;
 				// Data Message
 				case 0x05:
 				{
 					handle_data_message(read_size);
-                                        if(raw_print) {
-                                                dump_raw_packet(current_frame,
-                                                                read_size, 'r');
+					if (raw_print) {
+						dump_raw_packet(current_frame,
+								read_size, 'r');
                                         }
 
 				}
@@ -396,10 +387,6 @@ static void *retrival_thread_run(void* param)
 				default:
 				{
 					handle_other_message(read_size);
-					/*if(raw_print) {
-						dump_raw_packet(current_frame,
-								read_size, 'r');
-					}*/
 				}
 				break;
 				}

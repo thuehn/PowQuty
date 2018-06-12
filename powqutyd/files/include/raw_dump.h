@@ -10,7 +10,7 @@
 
 void dump_raw_packet(unsigned char* frame, int read_size, char mode);
 
-int raw_dump_init(float device_offset, float device_scaling_factor);
+int raw_dump_init();
 
 void* raw_dump_run(void* args);
 

@@ -85,7 +85,7 @@ void handle_args (int argc, char **argv) {
 int main (int argc, char *argv[]) {
 	signal(SIGINT, handle_signal);
 	signal(SIGTERM, handle_signal);
-
+	get_device_information = OFF;
 	struct powquty_conf conf;
 	uci_config_powquty(&conf);
 

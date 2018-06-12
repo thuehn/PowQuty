@@ -17,6 +17,8 @@
 #define TS_BUFFER_SIZE			NUMBER_OF_BLOCKS_IN_BUFFER * FRAMES_PER_BLOCK // 5*32 = 160
 #define FRAMES_IN_BLOCK_BUFFER		NUMBER_OF_BLOCKS_IN_BUFFER * FRAMES_PER_BLOCK // 5*32 = 160
 
+unsigned char get_device_information;
+
 void store_data(unsigned char * buf, unsigned int stored_frame_idx, long long ts);
 
 void do_calculation(unsigned int stored_frame_idx);
