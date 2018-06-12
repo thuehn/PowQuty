@@ -20,42 +20,43 @@
 #define MAX_TIME_LENGTH		64
 #define MAX_HOSTNAME_LENGTH 255
 
-void send_event(PQEvent pqe, struct powquty_conf *conf) {
+int send_event(PQEvent pqe, struct powquty_conf *conf) {
 	FILE *file;
 	time_t timer;
 	struct tm *tmi;
 	struct timespec ts_curr;
 	int volt_event = 0, harm_event = 0;
+	unsigned char error = 0;
 
 	char *msg = malloc(sizeof(char) * MAX_MSG_LENGTH);
 	if (msg == NULL) {
 		printf("Could not allocate memory for msg in %s\n", __func__);
-		return;
+		return EXIT_FAILURE;
 	}
 
 	char *event = malloc(sizeof(char) * MAX_EVENT_LENGTH);
 	if (event == NULL) {
 		printf("Could not allocate memory for event in %s\n", __func__);
-		return;
+		goto clean_msg;
 	}
 
 	char *hostname = malloc(sizeof(char) * (MAX_HOSTNAME_LENGTH + 1));
 	if (hostname == NULL) {
 		printf("Could not allocate memory for hostname in %s\n"
 			, __func__);
-		return;
+		goto clean_event;
 	}
 
 	/* set hostname */
 	if (gethostname(hostname, MAX_HOSTNAME_LENGTH + 1)) {
 		printf("Could not get hostname: %s\n", strerror(errno));
-		return;
+		goto clean_event;
 	}
 
 	char *local_time = malloc(sizeof(char) * MAX_TIME_LENGTH);
 	if (local_time == NULL) {
 		printf("Could not allocate memory for time in %s\n", __func__);
-		return;
+		goto clean_hostname;
 	}
 
 	/* set event type */
@@ -86,13 +87,15 @@ void send_event(PQEvent pqe, struct powquty_conf *conf) {
 		printf("Could not get time since epoch in %s\n", __func__);
 		if (errno)
 			printf("error is %s\n", strerror(errno));
-		return;
+
+		goto clean_hostname;
 	}
 
 	tmi = localtime(&timer);
 	if (tmi == NULL) {
 		printf("Error occurred in %s: %s\n", __func__, strerror(errno));
-		return;
+
+		goto clean_hostname;
 	}
 
 	strftime(local_time, MAX_TIME_LENGTH, "%Y-%m-%d %H:%M:%S", tmi);
@@ -107,7 +110,9 @@ void send_event(PQEvent pqe, struct powquty_conf *conf) {
 	file = fopen(conf->powquty_event_path, "a+");
 	if (file == NULL) {
 		printf("Could not open event log: %s\n", strerror(errno));
-		exit(EXIT_FAILURE);
+
+		error = ON;
+		goto clean_time;
 	}
 	fprintf(file, "%s,%s,%s,%s,%s,%ld.%09ld,%llu,%d",
 			hostname,
@@ -132,42 +137,59 @@ void send_event(PQEvent pqe, struct powquty_conf *conf) {
 		if (set_webhook_url(ti, conf->slack_webhook)) {
 			printf("Could not set webhook: %s\n",
 				conf->slack_webhook);
-			return;
+			goto clean_all;
 		}
 		if (set_channel(ti, conf->slack_channel)) {
 			printf("Could not set slack channel: %s\n",
 				conf->slack_channel);
-			return;
+			goto clean_all;
 		}
 		if (set_username(ti, conf->slack_user)) {
 			printf("Could not set username: %s\n",
 				conf->slack_user);
-			return;
+			goto clean_all;
 		}
 		if (set_message(ti, msg)) {
 			printf("Could not set message: %s\n", msg);
-			return;
+			goto clean_all;
 		}
 		if (send_message(ti)) {
 			printf("Could not send message\n");
-			return;
 		}
 	}
+clean_all:
 #endif /* Slack */
 
 	/* free allocated stuff and close file*/
-	free(msg);
-	free(event);
-	free(local_time);
-	free(hostname);
 	fclose(file);
+clean_time:
+	free(local_time);
+
+clean_hostname:
+	free(hostname);
+
+clean_event:
+	free(event);
+
+clean_msg:
+	free(msg);
+
+	if (error) {
+		printf("ERROR:\t Could not recover from error in %s\n",
+		       __func__);
+		return(EXIT_FAILURE);
+	}
+	return EXIT_SUCCESS;
 }
 
-void handle_event(PQResult pqResult, struct powquty_conf *conf) {
+unsigned char handle_event(PQResult pqResult, struct powquty_conf *conf) {
 	int i;
 
 	for (i = 0; i < pqResult.nmbPqEvents; i++) {
-		send_event(pqResult.pqEvents[i], conf);
+		if (send_event(pqResult.pqEvents[i], conf)) {
+			return EXIT_FAILURE;
+		}
 		usleep(50000);
 	}
+	return EXIT_SUCCESS;
 }

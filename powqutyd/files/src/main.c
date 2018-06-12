@@ -31,7 +31,7 @@ void handle_signal()
 	stop_mosquitto();
 #endif
 	stop_calculation();
-	printf("DEBUG:\tThreads should have stopped\n");
+	printf("DEBUG:\t Threads should have stopped\n");
 	stop_main = 1;
 }
 
@@ -44,7 +44,7 @@ void stop_powqutyd_file_read() {
 	stop_mosquitto();
 #endif
 	stop_file_read();
-	printf("DEBUG:\tThreads should have stopped\n");
+	printf("DEBUG:\t Threads should have stopped\n");
 	stop_main = 1;
 }
 
@@ -85,16 +85,16 @@ void handle_args (int argc, char **argv) {
 int main (int argc, char *argv[]) {
 	signal(SIGINT, handle_signal);
 	signal(SIGTERM, handle_signal);
-
+	get_device_information = OFF;
 	struct powquty_conf conf;
-	int conf_res = uci_config_powquty(&conf);
+	uci_config_powquty(&conf);
 
 	printf("Starting powqutyd ...\n");
 #ifdef MQTT
 	if(!mqtt_init(&conf)) {
-		printf("DEBUG:\t\tMQTT Thread started \n");
+		printf("DEBUG:\t MQTT Thread started \n");
 	} else {
-		printf("WARN:\t\tCouldn't start MQTT-Thread\n");
+		printf("WARN:\t Couldn't start MQTT-Thread\n");
 	}
 #endif
 	handle_args(argc, argv);
@@ -112,7 +112,7 @@ int main (int argc, char *argv[]) {
 		return 0;
 	}
 	if(!calculation_init(&conf)) {
-		printf("Calculation Thread started\n");
+		printf("DEBUG:\t Calculation Thread Initialized\n");
 #ifdef MQTT
 		publish_device_online();
 		publish_device_gps();
