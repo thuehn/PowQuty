@@ -142,7 +142,7 @@ void mqtt_message_print(struct mosquitto_message* msg) {
  */
 
 static void composing_error(const char* function, const char* data, int size) {
-	printf("Error: composing %s failed in %s: %s block exceeds available"
+	printf("ERROR:\t composing %s failed in %s: %s block exceeds available"
 	       "space by %d character\n",data, function, data, size);
 	exit(EXIT_FAILURE);
 }
@@ -342,7 +342,7 @@ int mqtt_init (struct powquty_conf* conf) {
 	}
 
 	printf("MQTT_LIB_VERSION: \tRet: %d\tMaj: %d\tMin: %d\tRev: %d\n",ret, vers[0], vers[1], vers[2]);
-	printf("DEBUG:\tCreating MQTT Thread\n");
+	printf("DEBUG:\t Creating MQTT Thread\n");
 	res = pthread_create(&mosquitto_thread,NULL, mosquitto_thread_main,NULL);
 	return res;
 }
@@ -412,7 +412,7 @@ void publish_measurements(PQResult pqResult) {
 			"\"pkg\": %d,"		//pkg count
 			"%s"			//t5060 data
 			"%s"			//t1012 data
-			"\"utc\":\"%s.%.3ld\" "
+			"\"utc\":\"%s.%.3ld\" " //time
 			"}",
 			static_data,
 			metadata,

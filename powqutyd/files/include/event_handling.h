@@ -16,7 +16,8 @@
  * use this function on en50160 event occurrence
  * @param pqResult: power quality result struct with event information
  * @param conf: powquty configuration
+ * @return: 1 on error, 0 else
  */
-void handle_event(PQResult pqResult, struct powquty_conf *conf);
+unsigned char handle_event(PQResult pqResult, struct powquty_conf *conf);
 
 #endif /* _EVENT_HANDLING_H_ */

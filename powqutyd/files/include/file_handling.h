@@ -11,11 +11,11 @@
 #include "file_checks.h"
 
 /*
- * use file instead of usb oscilloscope for data input
+ * use a file as data input instead of usb oscilloscope
  * @param path: file to use as input
  * returns: 1 on failure, 0 else
  */
-int set_file_read(const char* path);
+int read_data_from_file(const char* path);
 
 /*
  * check if a file is used instead of a usb=oscilloscope for data input
