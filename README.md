@@ -114,7 +114,7 @@ Note: at the current state, the MQTT-client implemented by powqutyd uses the por
 Furthermore the powqutyd's MQTT-client is an publish only client, thus it will not subscribe and has no will. Nonetheless the topic under which the powqutyd's MQTT-client publishes needs to be set. This can be done by adjusting the mqtt_topic config option in your /etc/powqutyd/powqutyd.cfg accordingly.
 ```
 // the mqtt_topic is the topic under which powquty will publish the mesurement results
-// mqtt_topic = "devices/update";
+// mqtt_topic = "devicaes/update";
 ```
 
 #### Message Format
