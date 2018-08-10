@@ -29,9 +29,9 @@ PowQuty provides a first step to start to monitor the power quality and hence th
 * provide a __Mosquitto MQTT__ based publish and subscribe data service to distribute the power-quality data
 * further post-processing to trigger events once the measured power quality does not comply with the __EU-norm EN50160__
 
-### A typical PowQuty low-voltage grid monitoring setup 
+### A typical setup for low-voltage grid monitorinig with PowQuty 
 
-
+![powquty setup](https://user-images.githubusercontent.com/1880886/43984817-4deb4042-9d03-11e8-9a17-2aec5ba885f8.png)
 
 ### Example of PowQuty LUCI web interface view
 
