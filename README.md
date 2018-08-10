@@ -15,11 +15,19 @@
 
 The PowQuty package is a software collection of tools to collect, analyse and display voltage measurements with the WeSense USB osciloscope attached to any router that runs on OpenWRT Linux. PowQuty consists of an Ansi C daemon and a Luci web-interface extension. The goal of this development is the proivide an efficient and low-cost solution to monitor the Power-Quality state of the local low-voltage grid.
 
-### To put things in context:
+### The big picture:
 Sustainable energy production and consumption are crucial for a prospering life on earth. Decentralized energy production based on renewable sources increases and happens in the low-voltage grid. That contradicts the "old" way of energy production: big power plants based on gas, cole or nuclear sources produce our energy. The design of todays power grid topologies was based on the fact to distibute and hence transmit power from those big sources all the the way down to each single consumer. From a few important and therfore good monitored high voltage lines to more midle voltage lines down to a large low voltage grid. This one directional power flow assupmtion changes with every new houshold producing energy and pumping it to the low-voltage power grid that was never design nor monitored for that purpose.
 So the largest part in terms of power lines in the ground - the low voltage grid - is used to connect power producers from renewabbles ... a power flow in the opposite direction with unknown effects to the overall power grid we have used before.
 So what is the impact of this new bi-directional power flows in the unmonitored low-voltage grid? 
 PowQuty provides a first step to start to monitor the power quality and hence the state of low voltage grids with renewable sources in a decentralized manner. The energy system transformation with its effects to the deployed low-voltage grid structurtes can be monitored and analysed with PowQuty.
+
+### PowQuty Features
+
+* collect and store raw voltage samples with a WeSense USB osciloscope at 10kHz resolution 
+* any embedded system based on OpenWRT Linux is sufficient to monitor voltage on a regular power plug
+* statistical post-processing of this raw voltage measurements to aggragate it to power-quality values per second: RMS voltage, frequency and harmonics up to H15
+* provide a Mosquitto MQTT based publish and subscribe data service to distribute the power-quality data
+* further post-processing to trigger events once the measured power quality does not comply with the EU norm EN 50160
 
 ### Example of PowQuty LUCI web interface view
 
