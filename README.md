@@ -23,11 +23,11 @@ PowQuty provides a first step to start to monitor the power quality and hence th
 
 ### PowQuty Features
 
-* collect and store raw voltage samples with a WeSense USB osciloscope at 10kHz resolution 
-* any embedded system based on OpenWRT Linux is sufficient to monitor voltage on a regular power plug
-* statistical post-processing of this raw voltage measurements to aggragate it to power-quality values per second: RMS voltage, frequency and harmonics up to H15
-* provide a Mosquitto MQTT based publish and subscribe data service to distribute the power-quality data
-* further post-processing to trigger events once the measured power quality does not comply with the EU norm EN 50160
+* collect and store raw voltage samples with a WeSense USB osciloscope at __10kHz resolution__
+* any embedded system based on __OpenWRT Linux__ is sufficient to monitor voltage on a regular power plug
+* statistical post-processing of this raw voltage measurements to aggragate it to __power-quality values per second: RMS voltage, frequency and harmonics up to H15__
+* provide a __Mosquitto MQTT__ based publish and subscribe data service to distribute the power-quality data
+* further post-processing to trigger events once the measured power quality does not comply with the __EU-norm EN50160__
 
 ### Example of PowQuty LUCI web interface view
 
