@@ -5,17 +5,22 @@
  *      Author: neez
  */
 
-#include "calculation.h"
-#include "retrieval.h"
-#include <unistd.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <pthread.h>
-#include "mqtt.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "calculation.h"
 #include "config.h"
 #include "helper.h"
 #include "main.h"
+
+#ifdef MQTT
+#include "mqtt.h"
+#endif
+
+#include "retrieval.h"
 
 const char* device_tty;
 

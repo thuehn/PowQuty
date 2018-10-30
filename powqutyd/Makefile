@@ -22,15 +22,15 @@ define Package/powqutyd/config
 menu "Configuration"
 	depends on PACKAGE_powqutyd
 
-config POWQUTYD_NO_MQTT
+config POWQUTYD_MQTT
 	bool
-	default n
-	prompt "Compile without MQTT/Mosquitto"
+	default y
+	prompt "Compile with MQTT/Mosquitto"
 
-config POWQUTYD_NO_SLACK
+config POWQUTYD_SLACK
 	bool
-	default n
-	prompt "Compile without Slack notification support"
+	default y
+	prompt "Compile with Slack notification support"
 
 endmenu
 endef
@@ -41,8 +41,8 @@ define Package/powqutyd
 	CATEGORY:=Utilities
 	DEPENDS:=+libconfig +kmod-usb-acm \
 		 +libuci \
-		 +!POWQUTYD_NO_MQTT:libmosquitto \
-		 +!POWQUTYD_NO_SLACK:libcurl
+		 +POWQUTYD_MQTT:libmosquitto \
+		 +POWQUTYD_SLACK:libcurl
 	MAINTAINER:=El Sayed
 	TITLE:=Power quality measurement and analyzer toolset
 endef
@@ -55,29 +55,30 @@ define Package/powqutyd/description
 endef
 
 
-ifeq ($(CONFIG_POWQUTYD_NO_MQTT),y)
+ifeq ($(CONFIG_POWQUTYD_MQTT),y)
 
-  NO_MQTT := y
-  export NO_MQTT
+  MQTT := y
+  export MQTT
+else
+  MQTT := n
+  export MQTT
 
   JKL := $(filter-out +libmosquitto,$(DEPENDS))
   DEPENDS := $(JKL)
-else
-  NO_MQTT := n
-  export NO_MQTT
 endif
 
-ifeq ($(CONFIG_POWQUTYD_NO_SLACK),y)
+ifeq ($(CONFIG_POWQUTYD_SLACK),y)
 
-  NO_SLACK := y
-  export NO_SLACK
+  SLACK := y
+  export SLACK
+
+else
+  SLACK := n
+  export SLACK
 
   JKL := $(filter-out + libcurl,$(DEPENDS))
   DEPENDS := $(JKL)
-else
-  NO_SLACK := n
-  export NO_SLACK
- endif
+endif
 
 CC_TYPE= $(CONFIG_CPU_TYPE)
 export CC_TYPE
