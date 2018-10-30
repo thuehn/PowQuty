@@ -37,16 +37,30 @@ LD_LIBS+=-lm
 LD_LIBS+=-lconfig
 LD_LIBS+=-luci
 
-ifeq ($(NO_MQTT),y)
-else
+OBJS= src/emulator.o \
+        src/file_checks.o \
+	src/helper.o \
+	src/config.o \
+	src/uci_config.o \
+	src/event_handling.o \
+	src/file_handling.o \
+	src/retrieval.o \
+	src/calculation.o \
+	src/raw_dump.o \
+	src/main.o
+
+ifeq ($(MQTT),y)
   CFLAGS+=-DMQTT
   LD_LIBS+=-lmosquitto
+  OBJS+=src/mqtt.o
+else
 endif
 
-ifeq ($(NO_SLACK),y)
-else
+ifeq ($(SLACK),y)
   CFLAGS+=-lcurl -DSLACK
   LD_LIBS+=-lcurl
+  OBJS+=src/libwebslack.o
+else
 endif
 
 LD_LIBS+=-lpthread
@@ -57,19 +71,6 @@ LD_LIBS+=-lpthread
 #LD_PATH+=-L../
 #LD_PATH+=-L/usr/local/lib/
 
-OBJS= src/emulator.o \
-        src/file_checks.o \
-	src/helper.o \
-	src/config.o \
-	src/uci_config.o \
-	src/event_handling.o \
-	src/mqtt.o \
-	src/libwebslack.o \
-	src/file_handling.o \
-	src/retrieval.o \
-	src/calculation.o \
-	src/raw_dump.o \
-	src/main.o
 
 MQTT_OBJS= src/mqtt.o \
 	test/mqtt_test.o 

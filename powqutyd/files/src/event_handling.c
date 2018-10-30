@@ -12,13 +12,17 @@
 #include <unistd.h>
 
 #include "event_handling.h"
+
+#ifdef SLACK
 #include "libwebslack.h"
+#endif
+
 #include "mqtt.h"
 
 #define MAX_MSG_LENGTH		1024
 #define MAX_EVENT_LENGTH	64
 #define MAX_TIME_LENGTH		64
-#define MAX_HOSTNAME_LENGTH 255
+#define MAX_HOSTNAME_LENGTH	255
 
 int send_event(PQEvent pqe, struct powquty_conf *conf) {
 	FILE *file;

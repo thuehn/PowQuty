@@ -15,7 +15,11 @@
 #include "file_handling.h"
 #include "helper.h"
 #include "main.h"
+
+#ifdef MQTT
 #include "mqtt.h"
+#endif
+
 #include "retrieval.h"
 
 #define FILE_READ_OFFSET 0.f
